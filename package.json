@@ -1,0 +1,37 @@
+{
+	"name": "purescript-deku",
+	"version": "0.3.7",
+	"description": "A friendly tree-like structure in the browser.",
+	"scripts": {
+		"postinstall": "node node_modules/puppeteer/install.js",
+		"clean": "rm -rf .spago output node_modules *.lock",
+		"build": "spago build",
+		"build:examples": "spago -x examples.dhall build",
+		"build:test": "spago -x test/test.dhall build",
+		"snapshot": "npm run bundle:performance && spago -x test/test.dhall run --main Performance.Snapshot.Write",
+		"test": "spago -x test/test.dhall test",
+		"test:performance": "npm run bundle:performance && spago -x test/test.dhall run --main Performance.Main",
+		"bundle:examples": "spago -x examples.dhall bundle-app --main Deku.Example.HelloWorld --to examples/hello-world/index.js",
+		"bundle:performance": "spago -x test/test.dhall bundle-app --main Performance.Test.App --to test/test.js --no-build"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"esbuild": "^0.14.38",
+		"filter-console": "^0.1.1",
+		"headless-devtools": "^2.0.1",
+		"netlify-cli": "^8.0.1",
+		"psc-package": "^4.0.1",
+		"pulp": "^15.0.0",
+		"puppeteer": "^5.2.0",
+		"purescript": "^0.15.0",
+		"purs-tidy": "^0.4.6",
+		"spago": "^0.20.8",
+		"test": "^0.6.0",
+		"tracealyzer": "^0.10.3"
+	},
+	"dependencies": {
+		"three": "^0.140.0"
+	}
+}
