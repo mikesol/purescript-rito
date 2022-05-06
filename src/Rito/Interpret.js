@@ -7,7 +7,14 @@ var connectXToY_ = function (x) {
 				if (y === "@portal@") {
 					return;
 				}
-				state.units[y].main.appendChild(state.units[x].main);
+				var xmain = state.units[x].main;
+				if (xmain instanceof THREE.SphereGeometry) {
+					state.units[y].main.geometry = state.units[x].main;
+				} else if (xmain instanceof THREE.MeshStandardMaterial) {
+					state.units[y].main.material = state.units[x].main;
+				} else {
+					state.units[y].main.add(state.units[x].main)
+				}
 			};
 		};
 	};
@@ -67,6 +74,11 @@ export const makeSphere_ = genericMake_(
 			thetaLength
 		)
 );
+export const makeMesh_ = (a) => (state) => () => {
+	genericMake_(() => new THREE.Mesh())(a)(state)();
+	state.units[a.id].main.geometry = state.units[a.geometry].main;
+	state.units[a.id].main.material = state.units[a.material].main;
+}
 export const makeScene_ = genericMake_(() => new THREE.Scene());
 // sphere
 export const setRadius_ = (a) => (state) => () => {
@@ -208,6 +220,37 @@ export const setWireframeLinewidth_ = (a) => (state) => () => {
 export const setFlatShading_ = (a) => (state) => () => {
 	state.units[a.id].main.flatShading = a.flatShading;
 };
+// mesh
+export const setRotationFromAxisAngle_ = (a) => (state) => () => {
+	state.units[a.id].main.setRotationFromAxisAngle(a.axis, a.angle);
+};
+export const setRotationFromEuler_ = (a) => (state) => () => {
+	state.units[a.id].main.setRotationFromEuler(a.euler);
+};
+export const setRotationFromMatrix_ = (a) => (state) => () => {
+	state.units[a.id].main.setRotationFromMatrix(a.matrix4);
+};
+export const setRotationFromQuaternion_ = (a) => (state) => () => {
+	state.units[a.id].main.setRotationFromQuaternion(a.quaternion);
+};
+export const setRotateOnAxis_ = (a) => (state) => () => {
+	state.units[a.id].main.rotateOnAxis(a.axis, a.angle);
+};
+export const setRotateOnWorldAxis_ = (a) => (state) => () => {
+	state.units[a.id].main.rotateOnWorldAxis(a.axis, a.angle);
+};
+export const setTranslateOnAxis_ = (a) => (state) => () => {
+	state.units[a.id].main.translateOnAxis(a.axis, a.distance);
+};
+export const setTranslateX_ = (a) => (state) => () => {
+	state.units[a.id].main.translateX(a.translateX);
+};
+export const setTranslateY_ = (a) => (state) => () => {
+	state.units[a.id].main.translateY(a.translateY);
+};
+export const setTranslateZ_ = (a) => (state) => () => {
+	state.units[a.id].main.translateZ(a.translateZ);
+};
 //
 export function makeFFIThreeSnapshot() {
 	return {
@@ -238,7 +281,7 @@ export function giveNewParent_(a) {
 	};
 }
 
-export function disconnectObject3D_(a) {
+export function disconnect_(a) {
 	return function (state) {
 		return function () {
 			var ptr = a.id;

@@ -332,8 +332,8 @@ meshStandardMaterial
    . InitialMeshStandardMaterial i
   => i
   -> Event MeshStandardMaterial
-  -> C.Geometry lock payload
-meshStandardMaterial i' atts = C.Geometry go
+  -> C.Material lock payload
+meshStandardMaterial i' atts = C.Material go
   where
   C.InitializeMeshStandardMaterial i = toInitializeMeshStandardMaterial i'
   go
@@ -459,5 +459,5 @@ meshStandardMaterial_
   :: forall i lock payload
    . InitialMeshStandardMaterial i
   => i
-  -> C.Geometry lock payload
+  -> C.Material lock payload
 meshStandardMaterial_ i = meshStandardMaterial i empty

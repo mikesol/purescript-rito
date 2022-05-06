@@ -4,9 +4,10 @@ import Prelude
 
 import Data.Maybe (Maybe)
 import Effect (Effect)
-import FRP.Event (Event)
+import FRP.Event (Event, makeEvent)
 import Rito.Box as Box
 import Rito.Color (Color)
+import Rito.Euler (Euler)
 import Rito.Matrix4 (Matrix4)
 import Rito.NormalMapTypes (NormalMapType)
 import Rito.Quaternion (Quaternion)
@@ -16,17 +17,6 @@ import Rito.Undefinable (Undefinable)
 import Rito.Vector2 (Vector2)
 import Rito.Vector3 (Vector3)
 
-data Child lock payload = Add (Mesh lock payload) | Remove
-
-newtype DynamicChildren lock payload = DynamicChildren
-  (Event (Event (Child lock payload)))
-
-newtype FixedChildren lock payload = FixedChildren
-  (Array (Mesh lock payload))
-
-newtype EventfulMesh lock payload = EventfulMesh
-  (Event (Threeful lock payload))
-
 type Ctor payload =
   { parent :: String
   , scope :: String
@@ -35,20 +25,34 @@ type Ctor payload =
   -> ThreeInterpret payload
   -> Event payload
 
+class Connectable :: forall k. (k -> Type -> Type) -> Constraint
+class Connectable ctor where
+  toCtor :: forall lock payload. ctor lock payload -> Ctor payload
+  fromCtor :: forall lock payload. Ctor payload -> ctor lock payload
+  connect :: forall lock payload. String -> ctor lock payload
+
 newtype Camera (lock :: Type) payload = Camera (Ctor payload)
 data Renderer :: forall k. Type -> k -> Type
 data Renderer (lock :: Type) payload
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
 newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
+newtype Scene (lock :: Type) payload = Scene (Ctor payload)
 
-data Threeful lock payload
-  = DynamicChildren' (DynamicChildren lock payload)
-  | FixedChildren' (FixedChildren lock payload)
-  | EventfulMesh' (EventfulMesh lock payload)
-  | Mesh' (Mesh lock payload)
+instance Connectable Mesh where
+  toCtor (Mesh c) = c
+  fromCtor c = Mesh c
+  connect me = Mesh \parent (ThreeInterpret { connectMesh }) -> makeEvent \k -> do
+    parent.raiseId me
+    k $ connectMesh { id: me, parent: parent.parent, scope: parent.scope }
+    pure (pure unit)
 
 type MakeScene =
+  { id :: String
+  , scope :: String
+  , parent :: String
+  }
+type MakeMesh =
   { id :: String
   , scope :: String
   , parent :: String
@@ -202,6 +206,18 @@ type SetEnvMapIntensity = { id :: String, envMapIntensity :: Number }
 type SetWireframe = { id :: String, wireframe :: Boolean }
 type SetWireframeLinewidth = { id :: String, wireframeLinewidth :: Number }
 type SetFlatShading = { id :: String, flatShading :: Boolean }
+-- mesh
+type SetRotationFromAxisAngle =
+  { id :: String, axis :: Vector3, angle :: Number }
+type SetRotationFromEuler = { id :: String, euler :: Euler }
+type SetRotationFromMatrix = { id :: String, matrix4 :: Matrix4 }
+type SetRotationFromQuaternion = { id :: String, quaternion :: Quaternion }
+type SetRotateOnAxis = { id :: String, axis :: Vector3, angle :: Number }
+type SetRotateOnWorldAxis = { id :: String, axis :: Vector3, angle :: Number }
+type SetTranslateOnAxis = { id :: String, axis :: Vector3, distance :: Number }
+type SetTranslateX = { id :: String, translateX :: Number }
+type SetTranslateY = { id :: String, translateY :: Number }
+type SetTranslateZ = { id :: String, translateZ :: Number }
 
 type MakeNoop =
   { id :: String
@@ -213,7 +229,7 @@ type ConnectMesh =
   , parent :: String
   , scope :: String
   }
-type DisconnectMesh =
+type Disconnect =
   { id :: String
   , parent :: String
   , scope :: String
@@ -223,17 +239,7 @@ type ConnectGeometry =
   , parent :: String
   , scope :: String
   }
-type DisconnectGeometry =
-  { id :: String
-  , parent :: String
-  , scope :: String
-  }
 type ConnectMaterial =
-  { id :: String
-  , parent :: String
-  , scope :: String
-  }
-type DisconnectMaterial =
   { id :: String
   , parent :: String
   , scope :: String
@@ -244,6 +250,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   { ids :: Effect String
   --
   , makeScene :: MakeScene -> payload
+  , makeMesh :: MakeMesh -> payload
   , makeSphere :: MakeSphere -> payload
   , makeBox :: MakeBox -> payload
   , makeTorus :: MakeTorus -> payload
@@ -298,13 +305,22 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setWireframe :: SetWireframe -> payload
   , setWireframeLinewidth :: SetWireframeLinewidth -> payload
   , setFlatShading :: SetFlatShading -> payload
+  -- mesh
+  , setRotationFromAxisAngle :: SetRotationFromAxisAngle -> payload
+  , setRotationFromEuler :: SetRotationFromEuler -> payload
+  , setRotationFromMatrix :: SetRotationFromMatrix -> payload
+  , setRotationFromQuaternion :: SetRotationFromQuaternion -> payload
+  , setRotateOnAxis :: SetRotateOnAxis -> payload
+  , setRotateOnWorldAxis :: SetRotateOnWorldAxis -> payload
+  , setTranslateOnAxis :: SetTranslateOnAxis -> payload
+  , setTranslateX :: SetTranslateX -> payload
+  , setTranslateY :: SetTranslateY -> payload
+  , setTranslateZ :: SetTranslateZ -> payload
   -- connectors
   , connectMesh :: ConnectMesh -> payload
-  , disconnectMesh :: DisconnectMesh -> payload
   , connectGeometry :: ConnectGeometry -> payload
-  , disconnectGeometry :: DisconnectGeometry -> payload
   , connectMaterial :: ConnectMaterial -> payload
-  , disconnectMaterial :: DisconnectMaterial -> payload
+  , disconnect :: Disconnect -> payload
   --
   , deleteFromCache :: DeleteFromCache -> payload
   }

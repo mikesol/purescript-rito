@@ -2,32 +2,21 @@ module Rito.Control
   ( blank
   , globalPortal
   , portal
-  , switcher
-  , class Connectable
-  , toCtor
-  , fromCtor
-  , connect
   ) where
 
 import Prelude
 
-import Control.Alt ((<|>))
 import Data.Either (Either(..))
-import Data.Filterable (filter)
 import Data.Foldable (oneOf)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Profunctor (lcmap)
-import Data.Tuple (snd)
-import Data.Tuple.Nested (type (/\), (/\))
 import Data.Vec (toArray, Vec)
 import Effect (Effect, foreachE)
 import Effect.AVar (tryPut)
 import Effect.AVar as AVar
 import Effect.Exception (throwException)
-import FRP.Event (Event, bang, keepLatest, makeEvent, mapAccum, memoize, subscribe)
-import Rito.Core (Child(..), Ctor, DynamicChildren(..), Mesh(..), ThreeInterpret(..), Threeful(..))
-import Safe.Coerce (coerce)
-import Type.Equality (proof)
+import FRP.Event (bang, makeEvent, subscribe)
+import Rito.Core (class Connectable, Mesh(..), ThreeInterpret(..), connect, fromCtor, toCtor)
 import Unsafe.Coerce (unsafeCoerce)
 
 newtype MutAr a = MutAr (Array a)
@@ -35,12 +24,6 @@ newtype MutAr a = MutAr (Array a)
 foreign import mutAr :: forall a. Array a -> Effect (MutAr a)
 foreign import unsafeUpdateMutAr :: forall a. Int -> a -> MutAr a -> Effect Unit
 foreign import readAr :: forall a. MutAr a -> Effect (Array a)
-
-class Connectable :: forall k. (k -> Type -> Type) -> Constraint
-class Connectable ctor where
-  toCtor :: forall lock payload. ctor lock payload -> Ctor payload
-  fromCtor :: forall lock payload. Ctor payload -> ctor lock payload
-  connect :: forall lock payload. String -> ctor lock payload
 
 internalPortal
   :: forall n ctor final lock0 lock1 payload
@@ -130,22 +113,3 @@ blank = Mesh go
       map ((*>) (k (deleteFromCache { id: me }))) $ subscribe
         (bang (makeNoop { id: me, parent, scope }))
         k
-
-switcher
-  :: forall i lock payload
-   . (i -> Mesh lock payload)
-  -> Event i
-  -> Threeful lock payload
-switcher f event = DynamicChildren'
-  (DynamicChildren (proof (coerce i)))
-  where
-  i = keepLatest
-    $ memoize (counter event) \cenv -> map
-      ( \(p /\ n) -> bang (Add $ f p) <|>
-          ((const Remove) <$> filter (eq (n + 1) <<< snd) cenv)
-      )
-      cenv
-  counter :: forall a. Event a → Event (a /\ Int)
-  counter ev = mapAccum fn ev 0
-    where
-    fn a b = (b + 1) /\ (a /\ b)

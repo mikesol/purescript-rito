@@ -39,6 +39,7 @@ foreign import makeFFIThreeSnapshot :: Effect FFIThreeSnapshot
 
 --
 foreign import makeScene_ :: Core.MakeScene -> FFIThreeSnapshot -> Effect Unit
+foreign import makeMesh_ :: Core.MakeMesh -> FFIThreeSnapshot -> Effect Unit
 foreign import makeSphere_ :: Core.MakeSphere -> FFIThreeSnapshot -> Effect Unit
 foreign import makeBox_ :: Core.MakeBox -> FFIThreeSnapshot -> Effect Unit
 foreign import makeTorus_ :: Core.MakeTorus -> FFIThreeSnapshot -> Effect Unit
@@ -130,19 +131,26 @@ foreign import setWireframeLinewidth_
   :: Core.SetWireframeLinewidth -> FFIThreeSnapshot -> Effect Unit
 foreign import setFlatShading_
   :: Core.SetFlatShading -> FFIThreeSnapshot -> Effect Unit
+-- mesh
+foreign import setRotationFromAxisAngle_ :: Core.SetRotationFromAxisAngle -> FFIThreeSnapshot -> Effect Unit
+foreign import setRotationFromEuler_ :: Core.SetRotationFromEuler -> FFIThreeSnapshot -> Effect Unit
+foreign import setRotationFromMatrix_ :: Core.SetRotationFromMatrix -> FFIThreeSnapshot -> Effect Unit
+foreign import setRotationFromQuaternion_ :: Core.SetRotationFromQuaternion -> FFIThreeSnapshot -> Effect Unit
+foreign import setRotateOnAxis_ :: Core.SetRotateOnAxis -> FFIThreeSnapshot -> Effect Unit
+foreign import setRotateOnWorldAxis_ :: Core.SetRotateOnWorldAxis -> FFIThreeSnapshot -> Effect Unit
+foreign import setTranslateOnAxis_ :: Core.SetTranslateOnAxis -> FFIThreeSnapshot -> Effect Unit
+foreign import setTranslateX_ :: Core.SetTranslateX -> FFIThreeSnapshot -> Effect Unit
+foreign import setTranslateY_ :: Core.SetTranslateY -> FFIThreeSnapshot -> Effect Unit
+foreign import setTranslateZ_ :: Core.SetTranslateZ -> FFIThreeSnapshot -> Effect Unit
 --
 foreign import connectMesh_
   :: Core.ConnectMesh -> FFIThreeSnapshot -> Effect Unit
-foreign import disconnectMesh_
-  :: Core.DisconnectMesh -> FFIThreeSnapshot -> Effect Unit
 foreign import connectGeometry_
   :: Core.ConnectGeometry -> FFIThreeSnapshot -> Effect Unit
-foreign import disconnectGeometry_
-  :: Core.DisconnectGeometry -> FFIThreeSnapshot -> Effect Unit
 foreign import connectMaterial_
   :: Core.ConnectMaterial -> FFIThreeSnapshot -> Effect Unit
-foreign import disconnectMaterial_
-  :: Core.DisconnectMaterial -> FFIThreeSnapshot -> Effect Unit
+foreign import disconnect_
+  :: Core.Disconnect -> FFIThreeSnapshot -> Effect Unit
 
 class FFIMe i o | i -> o where
   ffiMe :: i -> o
@@ -204,6 +212,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   { ids: map show R.random
   -- makers
   , makeScene: makeScene_
+  , makeMesh: makeMesh_
   , makeSphere: makeSphere_
   , makeBox: makeBox_
   , makeTorus: makeTorus_
@@ -259,13 +268,22 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setWireframe: setWireframe_
   , setWireframeLinewidth: setWireframeLinewidth_
   , setFlatShading: setFlatShading_
+  --
+  , setRotationFromAxisAngle: setRotationFromAxisAngle_
+  , setRotationFromEuler: setRotationFromEuler_
+  , setRotationFromMatrix: setRotationFromMatrix_
+  , setRotationFromQuaternion: setRotationFromQuaternion_
+  , setRotateOnAxis: setRotateOnAxis_
+  , setRotateOnWorldAxis: setRotateOnWorldAxis_
+  , setTranslateOnAxis: setTranslateOnAxis_
+  , setTranslateX: setTranslateX_
+  , setTranslateY: setTranslateY_
+  , setTranslateZ: setTranslateZ_
   -- connectors
   , connectMesh: connectMesh_
-  , disconnectMesh: disconnectMesh_
   , connectGeometry: connectGeometry_
-  , disconnectGeometry: disconnectGeometry_
   , connectMaterial: connectMaterial_
-  , disconnectMaterial: disconnectMaterial_
+  , disconnect: disconnect_
   --
   , deleteFromCache: deleteFromCache_
   }

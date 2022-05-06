@@ -1,33 +1,14 @@
-A = '''color :: Color
-      , roughness :: Number
-      , metalness :: Number
-      , map :: Texture
-      , lightMap :: Texture
-      , lightMapIntensity :: Number
-      , aoMap :: Texture
-      , aoMapIntensity :: Number
-      , emissive :: Color
-      , emissiveIntensity :: Number
-      , emissiveMap :: Texture
-      , bumpMap :: Texture
-      , bumpScale :: Number
-      , normalMap :: Texture
-      , normalMapType :: NormalMapType
-      , normalScale :: Vector2
-      , displacementMap :: Texture
-      , displacementScale :: Number
-      , displacementBias :: Number
-      , roughnessMap :: Texture
-      , metalnessMap :: Texture
-      , alphaMap :: Texture
-      , envMap :: Texture
-      , envMapIntensity :: Number
-      , wireframe :: Boolean
-      , wireframeLinewidth :: Number
-      , flatShading :: Boolean'''
+A = '''  , rotationFromAxisAngle :: { axis :: Vector3, angle :: Number }
+  , rotationFromEuler :: Euler
+  , rotationFromMatrix :: Matrix4
+  , rotationFromQuaternion :: Quaternion
+  , rotateOnAxis :: { axis :: Vector3, angle :: Number }
+  , rotateOnWorldAxis :: { axis :: Vector3, angle :: Number }
+  , translateOnAxis :: { axis :: Vector3, distance :: Number }
+  , translateX :: Number
+  , translateY :: Number
+  , translateZ :: Number'''
 A=[[x for x in y.split(' ') if x != ''][0] for y in A.replace(',', ' ').split('\n')]
 for x in A:
     cp = x[0].capitalize()+x[1:]
-    print(f'''export const set{cp}_ = (a) => (state) => () => {{
-	state.units[a.id].main.{x} = a.{x};
-}};''')
+    print(f'''foreign import set{cp}_ :: Core.Set{cp}_ -> FFIThreeSnapshot -> Effect Unit''')
