@@ -31,21 +31,22 @@ class Connectable ctor where
   fromCtor :: forall lock payload. Ctor payload -> ctor lock payload
   connect :: forall lock payload. String -> ctor lock payload
 
-newtype Camera (lock :: Type) payload = Camera (Ctor payload)
 data Renderer :: forall k. Type -> k -> Type
 data Renderer (lock :: Type) payload
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
 newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
 newtype Scene (lock :: Type) payload = Scene (Ctor payload)
+newtype Camera (lock :: Type) payload = Camera (Ctor payload)
 
 instance Connectable Mesh where
   toCtor (Mesh c) = c
   fromCtor c = Mesh c
-  connect me = Mesh \parent (ThreeInterpret { connectMesh }) -> makeEvent \k -> do
-    parent.raiseId me
-    k $ connectMesh { id: me, parent: parent.parent, scope: parent.scope }
-    pure (pure unit)
+  connect me = Mesh \parent (ThreeInterpret { connectMesh }) -> makeEvent \k ->
+    do
+      parent.raiseId me
+      k $ connectMesh { id: me, parent: parent.parent, scope: parent.scope }
+      pure (pure unit)
 
 type MakeScene =
   { id :: String
@@ -158,6 +159,20 @@ type InitializePlane' =
   , heightSegments :: Int
   )
 newtype InitializePlane = InitializePlane { | InitializePlane' }
+type MakePerspectiveCamera =
+  { id :: String
+  , scope :: String
+  , parent :: String
+  | InitializePerspectiveCamera'
+  }
+type InitializePerspectiveCamera' =
+  ( fov :: Number
+  , aspect :: Number
+  , near :: Number
+  , far :: Number
+  )
+newtype InitializePerspectiveCamera = InitializePerspectiveCamera { | InitializePerspectiveCamera' }
+
 --
 type SetRadius = { id :: String, radius :: Number }
 type SetWidthSegments = { id :: String, widthSegments :: Int }

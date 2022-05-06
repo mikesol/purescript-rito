@@ -13,7 +13,7 @@ var connectXToY_ = function (x) {
 				} else if (xmain instanceof THREE.MeshStandardMaterial) {
 					state.units[y].main.material = state.units[x].main;
 				} else {
-					state.units[y].main.add(state.units[x].main)
+					state.units[y].main.add(state.units[x].main);
 				}
 			};
 		};
@@ -74,11 +74,15 @@ export const makeSphere_ = genericMake_(
 			thetaLength
 		)
 );
+export const makePerspectiveCamera_ = genericMake_(
+	({ fov, aspect, near, far }) =>
+		new THREE.PerspectiveCamera(fov, aspect, near, far)
+);
 export const makeMesh_ = (a) => (state) => () => {
 	genericMake_(() => new THREE.Mesh())(a)(state)();
 	state.units[a.id].main.geometry = state.units[a.geometry].main;
 	state.units[a.id].main.material = state.units[a.material].main;
-}
+};
 export const makeScene_ = genericMake_(() => new THREE.Scene());
 // sphere
 export const setRadius_ = (a) => (state) => () => {
