@@ -1,4 +1,4 @@
-module Rito.Scene (scene, Scene, dscene, escene, fscene) where
+module Rito.Scene (scene, Scene, fscene) where
 
 import Prelude
 
@@ -12,19 +12,22 @@ import Rito.Quaternion (Quaternion)
 import Rito.Threeful (Child, DynamicChildren(..), Eventful(..), FixedChildren(..), Threeful(..), handleKids)
 import Rito.Vector3 (Vector3)
 
-escene
-  :: forall lock payload. Event (Threeful C.Scene lock payload) -> Threeful C.Scene lock payload
-escene = Eventful' <<< Eventful
+-- escene
+--   :: forall lock payload. Event (Threeful C.Sceneful lock payload) -> Threeful C.Scene lock payload
+-- escene = Eventful' <<< Eventful
 
 fscene
-  :: forall lock payload. Array (Threeful C.Scene lock payload) -> Threeful C.Scene lock payload
-fscene = FixedChildren' <<< FixedChildren
-
-dscene
   :: forall lock payload
-   . Event (Event (Child C.Scene lock payload))
-  -> Threeful C.Scene lock payload
-dscene = DynamicChildren' <<< DynamicChildren
+   . Event Scene
+  -> Array (Threeful C.Sceneful lock payload)
+  -> C.Scene lock payload
+fscene e a = scene e (FixedChildren' (FixedChildren a))
+
+-- dscene
+--   :: forall lock payload
+--    . Event (Event (Child C.Scene lock payload))
+--   -> Threeful C.Scene lock payload
+-- dscene = DynamicChildren' <<< DynamicChildren
 
 ----
 newtype Scene = Scene
@@ -52,7 +55,7 @@ newtype Scene = Scene
 scene
   :: forall lock payload
    . Event Scene
-  -> Threeful C.Mesh lock payload
+  -> Threeful C.Sceneful lock payload
   -> C.Scene lock payload
 scene props kidz = C.Scene go
   where

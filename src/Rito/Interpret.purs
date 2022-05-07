@@ -21,11 +21,14 @@ import Record.Builder (Builder, insert, build)
 import Rito.Color (Color)
 import Rito.Core as Core
 import Rito.NormalMapTypes (NormalMapType(..))
+import Rito.Renderers.WebGLRenderingPowerPreference as WPP
+import Rito.Renderers.WebGLRenderingPrecision as WRP
 import Rito.Texture (Texture)
 import Rito.Undefinable (Undefinable, m2u)
 import Rito.Vector2 (Vector2)
 import Rito.Vector3 (Vector3)
 import Type.Proxy (Proxy(..))
+import Web.HTML (HTMLCanvasElement)
 
 -- foreign
 data FFIThreeSnapshot
@@ -38,6 +41,9 @@ export const ObjectSpaceNormalMap = 1;
 foreign import makeFFIThreeSnapshot :: Effect FFIThreeSnapshot
 
 --
+foreign import webGLRender_ :: Core.WebGLRender -> FFIThreeSnapshot -> Effect Unit
+--
+foreign import makeWebGLRenderer_ :: Core.MakeWebGLRenderer' -> FFIThreeSnapshot -> Effect Unit
 foreign import makeScene_ :: Core.MakeScene -> FFIThreeSnapshot -> Effect Unit
 foreign import makeMesh_ :: Core.MakeMesh -> FFIThreeSnapshot -> Effect Unit
 foreign import makeSphere_ :: Core.MakeSphere -> FFIThreeSnapshot -> Effect Unit
@@ -99,6 +105,8 @@ foreign import setEmissive_
   :: Core.SetEmissive -> FFIThreeSnapshot -> Effect Unit
 foreign import setEmissiveIntensity_
   :: Core.SetEmissiveIntensity -> FFIThreeSnapshot -> Effect Unit
+foreign import makePerspectiveCamera_
+  :: Core.MakePerspectiveCamera -> FFIThreeSnapshot -> Effect Unit
 foreign import setEmissiveMap_
   :: Core.SetEmissiveMap -> FFIThreeSnapshot -> Effect Unit
 foreign import setBumpMap_ :: Core.SetBumpMap -> FFIThreeSnapshot -> Effect Unit
@@ -142,7 +150,20 @@ foreign import setTranslateOnAxis_ :: Core.SetTranslateOnAxis -> FFIThreeSnapsho
 foreign import setTranslateX_ :: Core.SetTranslateX -> FFIThreeSnapshot -> Effect Unit
 foreign import setTranslateY_ :: Core.SetTranslateY -> FFIThreeSnapshot -> Effect Unit
 foreign import setTranslateZ_ :: Core.SetTranslateZ -> FFIThreeSnapshot -> Effect Unit
+-- perspective camera
+foreign import setAspect_ :: Core.SetAspect -> FFIThreeSnapshot -> Effect Unit
+foreign import setFar_ :: Core.SetFar -> FFIThreeSnapshot -> Effect Unit
+foreign import setFilmGauge_ :: Core.SetFilmGauge -> FFIThreeSnapshot -> Effect Unit
+foreign import setFilmOffset_ :: Core.SetFilmOffset -> FFIThreeSnapshot -> Effect Unit
+foreign import setFocus_ :: Core.SetFocus -> FFIThreeSnapshot -> Effect Unit
+foreign import setFov_ :: Core.SetFov -> FFIThreeSnapshot -> Effect Unit
+foreign import setNear_ :: Core.SetNear -> FFIThreeSnapshot -> Effect Unit
+foreign import setZoom_ :: Core.SetZoom -> FFIThreeSnapshot -> Effect Unit
+foreign import setFocalLength_ :: Core.SetFocalLength -> FFIThreeSnapshot -> Effect Unit
+foreign import setViewOffset_ :: Core.SetViewOffset -> FFIThreeSnapshot -> Effect Unit
 --
+foreign import connectToScene_
+  :: Core.ConnectToScene -> FFIThreeSnapshot -> Effect Unit
 foreign import connectMesh_
   :: Core.ConnectMesh -> FFIThreeSnapshot -> Effect Unit
 foreign import connectGeometry_
@@ -176,9 +197,22 @@ instance FFIMe Vector2 Vector2 where
 instance FFIMe Vector3 Vector3 where
   ffiMe = identity
 
+instance FFIMe HTMLCanvasElement HTMLCanvasElement where
+  ffiMe = identity
+
 instance FFIMe NormalMapType Int where
   ffiMe TangentSpaceNormalMap = 0
   ffiMe ObjectSpaceNormalMap = 1
+
+instance FFIMe WRP.WebGLRenderingPrecision String where
+  ffiMe WRP.High = "highp"
+  ffiMe WRP.Medium = "mediump"
+  ffiMe WRP.Low = "lowp"
+
+instance FFIMe WPP.WebGLRenderingPowerPreference String where
+  ffiMe WPP.High = "high-performance"
+  ffiMe WPP.Default = "default"
+  ffiMe WPP.Low = "low-power"
 
 instance FFIMe a b => FFIMe (Maybe a) (Undefinable b) where
   ffiMe = m2u <<< map ffiMe
@@ -210,7 +244,10 @@ ffiize i = build (ffiize' (Proxy :: _ ri) i) {}
 effectfulThreeInterpret :: Core.ThreeInterpret (FFIThreeSnapshot -> Effect Unit)
 effectfulThreeInterpret = Core.ThreeInterpret
   { ids: map show R.random
+  -- render
+  , webGLRender: webGLRender_
   -- makers
+  , makeWebGLRenderer: lcmap ffiize makeWebGLRenderer_
   , makeScene: makeScene_
   , makeMesh: makeMesh_
   , makeSphere: makeSphere_
@@ -218,6 +255,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeTorus: makeTorus_
   , makePlane: makePlane_
   , makeNoop: makeNoop_
+  , makePerspectiveCamera: makePerspectiveCamera_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
   -- sphere geometry
   , setRadius: setRadius_
@@ -279,10 +317,22 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setTranslateX: setTranslateX_
   , setTranslateY: setTranslateY_
   , setTranslateZ: setTranslateZ_
+  -- perspective camera
+  , setAspect: setAspect_
+  , setFar: setFar_
+  , setFilmGauge: setFilmGauge_
+  , setFilmOffset: setFilmOffset_
+  , setFocus: setFocus_
+  , setFov: setFov_
+  , setNear: setNear_
+  , setZoom: setZoom_
+  , setFocalLength: setFocalLength_
+  , setViewOffset: setViewOffset_
   -- connectors
   , connectMesh: connectMesh_
   , connectGeometry: connectGeometry_
   , connectMaterial: connectMaterial_
+  , connectToScene: connectToScene_
   , disconnect: disconnect_
   --
   , deleteFromCache: deleteFromCache_

@@ -7,7 +7,6 @@
   , "either"
   , "event"
   , "exceptions"
-  , "filterable"
   , "foldable-traversable"
   , "foreign-object"
   , "maybe"
@@ -21,11 +20,10 @@
   , "refs"
   , "safe-coerce"
   , "sized-vectors"
-  , "tuples"
-  , "type-equality"
   , "unsafe-coerce"
   , "variant"
   , "web-events"
+  , "web-html"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]

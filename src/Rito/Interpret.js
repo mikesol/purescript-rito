@@ -1,38 +1,35 @@
 import * as THREE from "three";
 
-var connectXToY_ = function (x) {
-	return function (y) {
-		return function (state) {
-			return function () {
-				if (y === "@portal@") {
-					return;
-				}
-				var xmain = state.units[x].main;
-				if (xmain instanceof THREE.SphereGeometry) {
-					state.units[y].main.geometry = state.units[x].main;
-				} else if (xmain instanceof THREE.MeshStandardMaterial) {
-					state.units[y].main.material = state.units[x].main;
-				} else {
-					state.units[y].main.add(state.units[x].main);
-				}
-			};
-		};
-	};
-};
-
-var genericMake_ = (ctor) => (a) => (state) => () => {
-	var { id, scope, parent, ...rest } = a;
+const genericMake_ = (ctor) => (conn) => (a) => (state) => () => {
+	const { id, scope, parent, ...rest } = a;
 	if (!state.scopes[scope]) {
 		state.scopes[scope] = [];
 	}
-	state.scopes[scope].push(ptr);
+	state.scopes[scope].push(id);
 	state.units[id] = {
 		listeners: {},
 		parent: parent,
 		scope: scope,
 		main: ctor(rest),
 	};
-	connectXToY_(id)(parent)(state)();
+	if (parent === "@portal@") {
+		return;
+	}
+	conn(state.units[id], state.units[parent]);
+};
+
+export const connectToScene_ = (a) => (state) => () =>
+	state.units[a.parent].main.add(state.units[a.id].main);
+
+export const connectMesh_ = (a) => (state) => () =>
+	state.units[a.parent].main.add(state.units[a.id].main);
+
+export const connectGeometry_ = (a) => (state) => () => {
+	state.units[a.parent].main.geometry = state.units[a.id].main;
+};
+
+export const connectMaterial_ = (a) => (state) => () => {
+	state.units[a.parent].main.material = state.units[a.id].main;
 };
 
 export const makeBox_ = genericMake_(
@@ -45,15 +42,21 @@ export const makeBox_ = genericMake_(
 			heightSegments,
 			depthSegments
 		)
-);
+)((x, y) => {
+	y.main.geometry = x.main;
+});
 export const makePlane_ = genericMake_(
 	({ width, height, widthSegments, heightSegments }) =>
 		new THREE.PlaneGeometry(width, height, widthSegments, heightSegments)
-);
+)((x, y) => {
+	y.main.geometry = x.main;
+});
 export const makeTorus_ = genericMake_(
 	({ radius, tube, radialSegments, tubularSegments, arc }) =>
 		new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc)
-);
+)((x, y) => {
+	y.main.geometry = x.main;
+});
 export const makeSphere_ = genericMake_(
 	({
 		radius,
@@ -73,17 +76,29 @@ export const makeSphere_ = genericMake_(
 			thetaStart,
 			thetaLength
 		)
-);
+)((x, y) => {
+	y.main.geometry = x.main;
+});
 export const makePerspectiveCamera_ = genericMake_(
 	({ fov, aspect, near, far }) =>
 		new THREE.PerspectiveCamera(fov, aspect, near, far)
-);
-export const makeMesh_ = (a) => (state) => () => {
-	genericMake_(() => new THREE.Mesh())(a)(state)();
-	state.units[a.id].main.geometry = state.units[a.geometry].main;
-	state.units[a.id].main.material = state.units[a.material].main;
+)(() => {});
+
+export const makeMesh_ = genericMake_(() => new THREE.Scene())((x,y) => {y.main.add(x.main)});
+export const makeMeshStandardMaterial_ = genericMake_(() => new THREE.MeshStandardMaterial())((x, y) => {
+	y.main.material = x.main;
+});
+export const makeScene_ = genericMake_(() => new THREE.Scene())(() => {});
+export const webGLRender_ = (a) => (state) => () => {
+	state.units[a.id].main.render(
+		state.units[a.scene].main,
+		state.units[a.camera].main
+	);
 };
-export const makeScene_ = genericMake_(() => new THREE.Scene());
+export const makeWebGLRenderer_ = (a) => (state) => () => {
+	const { id, ...parameters } = a;
+	state.units[a.id] = { main: new THREE.WebGLRenderer(parameters) };
+};
 // sphere
 export const setRadius_ = (a) => (state) => () => {
 	state.units[a.id].main.radius = a.radius;
@@ -255,6 +270,56 @@ export const setTranslateY_ = (a) => (state) => () => {
 export const setTranslateZ_ = (a) => (state) => () => {
 	state.units[a.id].main.translateZ(a.translateZ);
 };
+// perspective camera
+export const setAspect_ = (a) => (state) => () => {
+	state.units[a.id].main.aspect = a.aspect;
+	state.units[a.id].main.updateProjectionMatrix();
+};
+export const setFar_ = (a) => (state) => () => {
+	state.units[a.id].main.far = a.far;
+	state.units[a.id].main.updateProjectionMatrix();
+};
+export const setFilmGauge_ = (a) => (state) => () => {
+	state.units[a.id].main.filmGauge = a.filmGauge;
+	state.units[a.id].main.updateProjectionMatrix();
+};
+export const setFilmOffset_ = (a) => (state) => () => {
+	state.units[a.id].main.filmOffset = a.filmOffset;
+	state.units[a.id].main.updateProjectionMatrix();
+};
+export const setFocus_ = (a) => (state) => () => {
+	state.units[a.id].main.focus = a.focus;
+	state.units[a.id].main.updateProjectionMatrix();
+};
+export const setFov_ = (a) => (state) => () => {
+	state.units[a.id].main.fov = a.fov;
+	state.units[a.id].main.updateProjectionMatrix();
+};
+export const setNear_ = (a) => (state) => () => {
+	state.units[a.id].main.updateProjectionMatrix();
+	state.units[a.id].main.near = a.near;
+};
+export const setZoom_ = (a) => (state) => () => {
+	state.units[a.id].main.zoom = a.zoom;
+	state.units[a.id].main.updateProjectionMatrix();
+};
+export const setFocalLength_ = (a) => (state) => () => {
+	state.units[a.id].main.setFocalLength(a.focalLength);
+};
+export const setViewOffset_ =
+	({ id, fullWidth, fullHeight, x, y, width, height }) =>
+	(state) =>
+	() => {
+		state.units[id].main.setViewOffset(
+			fullWidth,
+			fullHeight,
+			x,
+			y,
+			width,
+			height
+		);
+	};
+
 //
 export function makeFFIThreeSnapshot() {
 	return {
@@ -266,7 +331,7 @@ export function makeFFIThreeSnapshot() {
 export function makeNoop_(a) {
 	return function (state) {
 		return function () {
-			var ptr = a.id;
+			const ptr = a.id;
 			state.units[ptr] = {
 				noop: true,
 			};
@@ -277,8 +342,8 @@ export function makeNoop_(a) {
 export function giveNewParent_(a) {
 	return function (state) {
 		return function () {
-			var ptr = a.id;
-			var parent = a.parent;
+			const ptr = a.id;
+			const parent = a.parent;
 			state.units[ptr].containingScope = a.scope;
 			state.units[parent].main.prepend(state.units[ptr].main);
 		};
@@ -288,7 +353,7 @@ export function giveNewParent_(a) {
 export function disconnect_(a) {
 	return function (state) {
 		return function () {
-			var ptr = a.id;
+			const ptr = a.id;
 			if (state.units[ptr].noop) {
 				return;
 			}

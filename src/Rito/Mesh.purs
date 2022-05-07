@@ -1,9 +1,10 @@
-module Rito.Mesh (mesh, mesh', Mesh, dmesh, emesh, fmesh) where
+module Rito.Mesh (mesh, mesh', Mesh(..), Mesh', dmesh, emesh, fmesh) where
 
 import Prelude
 
 import Control.Plus (empty)
 import Data.Foldable (oneOf)
+import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Core as C
@@ -28,8 +29,7 @@ dmesh
 dmesh = DynamicChildren' <<< DynamicChildren
 
 ----
-newtype Mesh = Mesh
-  ( Variant
+type Mesh' = Variant
       ( matrix4 :: Matrix4
       , quaternion :: Quaternion
       , rotationFromAxisAngle :: { axis :: Vector3, angle :: Number }
@@ -48,7 +48,8 @@ newtype Mesh = Mesh
       , scale :: { x :: Number, y :: Number, z :: Number }
       , lookAt :: Vector3
       )
-  )
+newtype Mesh = Mesh Mesh'
+instance Newtype Mesh Mesh'
 
 mesh'
   :: forall lock payload
@@ -56,8 +57,8 @@ mesh'
   -> C.Material lock payload
   -> Event Mesh
   -> Threeful C.Mesh lock payload
-  -> Threeful C.Mesh lock payload
-mesh' (C.Geometry geo) (C.Material mat) props kidz = PlainOld' $ C.Mesh go
+  -> C.Mesh lock payload
+mesh' (C.Geometry geo) (C.Material mat) props kidz = C.Mesh go
   where
   go
     parent
@@ -177,5 +178,5 @@ mesh
    . C.Geometry lock payload
   -> C.Material lock payload
   -> Event Mesh
-  -> Threeful C.Mesh lock payload
+  -> C.Mesh lock payload
 mesh geo mat props = mesh' geo mat props (Eventful' (Eventful empty))

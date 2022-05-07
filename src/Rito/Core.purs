@@ -11,11 +11,14 @@ import Rito.Euler (Euler)
 import Rito.Matrix4 (Matrix4)
 import Rito.NormalMapTypes (NormalMapType)
 import Rito.Quaternion (Quaternion)
+import Rito.Renderers.WebGLRenderingPowerPreference as WPP
+import Rito.Renderers.WebGLRenderingPrecision as WRP
 import Rito.Sphere as Sphere
 import Rito.Texture (Texture)
 import Rito.Undefinable (Undefinable)
 import Rito.Vector2 (Vector2)
 import Rito.Vector3 (Vector3)
+import Web.HTML (HTMLCanvasElement)
 
 type Ctor payload =
   { parent :: String
@@ -31,13 +34,25 @@ class Connectable ctor where
   fromCtor :: forall lock payload. Ctor payload -> ctor lock payload
   connect :: forall lock payload. String -> ctor lock payload
 
-data Renderer :: forall k. Type -> k -> Type
-data Renderer (lock :: Type) payload
+class Sceneable ctor where
+  hi :: forall lock payload. ctor lock payload -> Sceneful lock payload
+
+newtype Renderer (lock :: Type) payload = Renderer
+  ( ThreeInterpret payload
+    -> Event payload
+  )
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
 newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
 newtype Scene (lock :: Type) payload = Scene (Ctor payload)
+newtype Sceneful (lock :: Type) payload = Sceneful (Ctor payload)
 newtype Camera (lock :: Type) payload = Camera (Ctor payload)
+
+instance Sceneable Mesh where
+  hi (Mesh x) = Sceneful x
+
+instance Sceneable Camera where
+  hi (Camera x) = Sceneful x
 
 instance Connectable Mesh where
   toCtor (Mesh c) = c
@@ -47,6 +62,46 @@ instance Connectable Mesh where
       parent.raiseId me
       k $ connectMesh { id: me, parent: parent.parent, scope: parent.scope }
       pure (pure unit)
+
+instance Connectable Sceneful where
+  toCtor (Sceneful c) = c
+  fromCtor c = Sceneful c
+  connect me = Sceneful \parent (ThreeInterpret { connectToScene }) -> makeEvent
+    \k ->
+      do
+        parent.raiseId me
+        k $ connectToScene
+          { id: me, parent: parent.parent, scope: parent.scope }
+        pure (pure unit)
+
+type WebGLRender = { scene :: String, camera :: String }
+type MakeWebGLRenderer =
+  { id :: String
+  | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
+      WPP.WebGLRenderingPowerPreference
+  }
+type MakeWebGLRenderer' =
+  { id :: String
+  | InitializeWebGLRenderer' String String
+  }
+type InitializeWebGLRenderer' precision powerPreference =
+  ( canvas :: HTMLCanvasElement
+  , precision :: precision
+  , alpha :: Boolean
+  , premultipliedAlpha :: Boolean
+  , antialias :: Boolean
+  , stencil :: Boolean
+  , preserveDrawingBuffer :: Boolean
+  , powerPreference :: powerPreference
+  , failIfMajorPerformanceCaveat :: Boolean
+  , depth :: Boolean
+  , logarithmicDepthBuffer :: Boolean
+  )
+
+newtype InitializeWebGLRenderer = InitializeWebGLRenderer
+  { | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
+      WPP.WebGLRenderingPowerPreference
+  }
 
 type MakeScene =
   { id :: String
@@ -171,7 +226,8 @@ type InitializePerspectiveCamera' =
   , near :: Number
   , far :: Number
   )
-newtype InitializePerspectiveCamera = InitializePerspectiveCamera { | InitializePerspectiveCamera' }
+newtype InitializePerspectiveCamera = InitializePerspectiveCamera
+  { | InitializePerspectiveCamera' }
 
 --
 type SetRadius = { id :: String, radius :: Number }
@@ -233,13 +289,36 @@ type SetTranslateOnAxis = { id :: String, axis :: Vector3, distance :: Number }
 type SetTranslateX = { id :: String, translateX :: Number }
 type SetTranslateY = { id :: String, translateY :: Number }
 type SetTranslateZ = { id :: String, translateZ :: Number }
-
+-- perspective camera
+type SetAspect = { id :: String, aspect :: Number }
+type SetFar = { id :: String, far :: Number }
+type SetFilmGauge = { id :: String, filmGauge :: Number }
+type SetFilmOffset = { id :: String, filmOffset :: Number }
+type SetFocus = { id :: String, focus :: Number }
+type SetFov = { id :: String, fov :: Number }
+type SetNear = { id :: String, near :: Number }
+type SetZoom = { id :: String, zoom :: Number }
+type SetFocalLength = { id :: String, focalLength :: Number }
+type SetViewOffset =
+  { id :: String
+  , fullWidth :: Number
+  , fullHeight :: Number
+  , x :: Number
+  , y :: Number
+  , width :: Number
+  , height :: Number
+  }
 type MakeNoop =
   { id :: String
   , scope :: String
   , parent :: String
   }
 type ConnectMesh =
+  { id :: String
+  , parent :: String
+  , scope :: String
+  }
+type ConnectToScene =
   { id :: String
   , parent :: String
   , scope :: String
@@ -264,6 +343,9 @@ type DeleteFromCache = { id :: String }
 newtype ThreeInterpret payload = ThreeInterpret
   { ids :: Effect String
   --
+  , webGLRender :: WebGLRender -> payload
+  --
+  , makeWebGLRenderer :: MakeWebGLRenderer -> payload
   , makeScene :: MakeScene -> payload
   , makeMesh :: MakeMesh -> payload
   , makeSphere :: MakeSphere -> payload
@@ -271,6 +353,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeTorus :: MakeTorus -> payload
   , makePlane :: MakePlane -> payload
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial -> payload
+  , makePerspectiveCamera :: MakePerspectiveCamera -> payload
   , makeNoop :: MakeNoop -> payload
   -- SphereGeometry
   , setRadius :: SetRadius -> payload
@@ -331,10 +414,23 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setTranslateX :: SetTranslateX -> payload
   , setTranslateY :: SetTranslateY -> payload
   , setTranslateZ :: SetTranslateZ -> payload
+  -- perspective camera
+  , setAspect :: SetAspect -> payload
+  , setFar :: SetFar -> payload
+  , setFilmGauge :: SetFilmGauge -> payload
+  , setFilmOffset :: SetFilmOffset -> payload
+  , setFocus :: SetFocus -> payload
+  , setFov :: SetFov -> payload
+  , setNear :: SetNear -> payload
+  , setZoom :: SetZoom -> payload
+  , setFocalLength :: SetFocalLength -> payload
+  , setViewOffset :: SetViewOffset -> payload
+
   -- connectors
   , connectMesh :: ConnectMesh -> payload
   , connectGeometry :: ConnectGeometry -> payload
   , connectMaterial :: ConnectMaterial -> payload
+  , connectToScene :: ConnectToScene -> payload
   , disconnect :: Disconnect -> payload
   --
   , deleteFromCache :: DeleteFromCache -> payload

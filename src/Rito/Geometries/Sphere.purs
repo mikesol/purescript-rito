@@ -1,8 +1,10 @@
 module Rito.Geometries.Sphere
   ( sphere
   , sphere_
-  , Sphere
+  , Sphere(..)
+  , Sphere'
   , class InitialSphere
+  , SphereOptions
   , toInitializeSphere
   ) where
 
@@ -11,6 +13,7 @@ import Prelude
 import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
+import Data.Newtype (class Newtype)
 import Data.Number (pi)
 import Data.Variant (Variant, match)
 import Effect (Effect)
@@ -112,8 +115,7 @@ instance
   toInitializeSphere provided = C.InitializeSphere
     (convertOptionsWithDefaults SphereOptions defaultSphere provided)
 
-newtype Sphere = Sphere
-  ( Variant
+type Sphere' = Variant
       ( radius :: Number
       , widthSegments :: Int
       , heightSegments :: Int
@@ -133,7 +135,8 @@ newtype Sphere = Sphere
       , boundingBox :: Box.Box -> Effect Unit
       , boundingSphere :: Sphere.Sphere -> Effect Unit
       )
-  )
+newtype Sphere = Sphere Sphere'
+instance Newtype Sphere Sphere'
 
 sphere
   :: forall i lock payload

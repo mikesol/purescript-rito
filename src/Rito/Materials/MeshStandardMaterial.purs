@@ -1,9 +1,11 @@
 module Rito.Materials.MeshStandardMaterial
   ( meshStandardMaterial
   , meshStandardMaterial_
-  , MeshStandardMaterial
+  , MeshStandardMaterial(..)
+  , MeshStandardMaterial'
   , class InitialMeshStandardMaterial
   , toInitializeMeshStandardMaterial
+  , MeshStandardMaterialOptions
   ) where
 
 import Prelude
@@ -12,6 +14,7 @@ import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Maybe (Maybe(..))
+import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Color (class ColorRepresentation, Color, color)
@@ -295,8 +298,7 @@ instance
         provided
     )
 
-newtype MeshStandardMaterial = MeshStandardMaterial
-  ( Variant
+type MeshStandardMaterial' = Variant
       ( color :: Color
       , roughness :: Number
       , metalness :: Number
@@ -325,7 +327,9 @@ newtype MeshStandardMaterial = MeshStandardMaterial
       , wireframeLinewidth :: Number
       , flatShading :: Boolean
       )
-  )
+
+newtype MeshStandardMaterial = MeshStandardMaterial MeshStandardMaterial'
+instance Newtype MeshStandardMaterial MeshStandardMaterial'
 
 meshStandardMaterial
   :: forall i lock payload

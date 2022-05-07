@@ -136,3 +136,24 @@ boundingSphere
   => (Sphere.Sphere -> Effect Unit)
   -> nt
 boundingSphere = wrap <<< inj (Proxy :: Proxy "boundingSphere")
+--
+translateX
+  :: forall nt r
+   . Newtype nt (Variant (translateX :: Number | r))
+  => Number
+  -> nt
+translateX = wrap <<< inj (Proxy :: Proxy "translateX")
+
+translateY
+  :: forall nt r
+   . Newtype nt (Variant (translateY :: Number | r))
+  => Number
+  -> nt
+translateY = wrap <<< inj (Proxy :: Proxy "translateY")
+
+translateZ
+  :: forall nt r
+   . Newtype nt (Variant (translateZ :: Number | r))
+  => Number
+  -> nt
+translateZ = wrap <<< inj (Proxy :: Proxy "translateZ")

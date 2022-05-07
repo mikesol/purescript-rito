@@ -1,9 +1,11 @@
-module Rito.Geometries.PerspectiveCamera
+module Rito.Cameras.PerspectiveCamera
   ( perspectiveCamera
   , perspectiveCamera_
-  , PerspectiveCamera
+  , PerspectiveCamera(..)
+  , PerspectiveCamera'
   , class InitialPerspectiveCamera
   , toInitializePerspectiveCamera
+  , PerspectiveCameraOptions
   ) where
 
 import Prelude
@@ -11,18 +13,12 @@ import Prelude
 import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
+import Data.Newtype (class Newtype)
 import Data.Number (pi)
 import Data.Variant (Variant, match)
-import Effect (Effect)
 import FRP.Event (Event, bang, makeEvent, subscribe)
-import Record (union)
-import Rito.Box as Box
 import Rito.Core as C
-import Rito.Matrix4 (Matrix4)
-import Rito.Quaternion (Quaternion)
-import Rito.Vector3 (Vector3)
 
-twoPi = pi * 2.0 :: Number
 data PerspectiveCameraOptions = PerspectiveCameraOptions
 
 instance
@@ -89,8 +85,7 @@ instance
         provided
     )
 
-newtype PerspectiveCamera = PerspectiveCamera
-  ( Variant
+type PerspectiveCamera' = Variant
       ( aspect :: Number
       , far :: Number
       , filmGauge :: Number
@@ -109,15 +104,15 @@ newtype PerspectiveCamera = PerspectiveCamera
           , height :: Number
           }
       )
-  )
-
+newtype PerspectiveCamera = PerspectiveCamera PerspectiveCamera'
+instance Newtype PerspectiveCamera PerspectiveCamera'
 perspectiveCamera
   :: forall i lock payload
    . InitialPerspectiveCamera i
   => i
   -> Event PerspectiveCamera
-  -> C.Geometry lock payload
-perspectiveCamera i' atts = C.Geometry go
+  -> C.Camera lock payload
+perspectiveCamera i' atts = C.Camera go
   where
   C.InitializePerspectiveCamera i = toInitializePerspectiveCamera i'
   go
@@ -125,7 +120,17 @@ perspectiveCamera i' atts = C.Geometry go
     ( C.ThreeInterpret
         { ids
         , deleteFromCache
-        --, makePerspectiveCamera
+        , makePerspectiveCamera
+        , setAspect
+        , setFar
+        , setFilmGauge
+        , setFilmOffset
+        , setFocus
+        , setFov
+        , setNear
+        , setZoom
+        , setFocalLength
+        , setViewOffset
         }
     ) = makeEvent \k -> do
     me <- ids
@@ -136,39 +141,40 @@ perspectiveCamera i' atts = C.Geometry go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
-            , radius: i.radius
-            , widthSegments: i.widthSegments
-            , heightSegments: i.heightSegments
-            , phiStart: i.phiStart
-            , phiLength: i.phiLength
-            , thetaStart: i.thetaStart
-            , thetaLength: i.thetaLength
+            , aspect: i.aspect
+            , far: i.far
+            , fov: i.fov
+            , near: i.near
             }
         )
         <|>
           ( map
               ( \(PerspectiveCamera e) -> match
-                  { radius: setRadius <<< { id: me, radius: _ }
-                  , widthSegments: setWidthSegments <<<
-                      { id: me, widthSegments: _ }
-                  , heightSegments: setHeightSegments <<<
-                      { id: me, heightSegments: _ }
-                  , phiStart: setPhiStart <<< { id: me, phiStart: _ }
-                  , phiLength: setPhiLength <<< { id: me, phiLength: _ }
-                  , thetaStart: setThetaStart <<< { id: me, thetaStart: _ }
-                  , thetaLength: setThetaLength <<< { id: me, thetaLength: _ }
-                  , matrix4: setMatrix4 <<< { id: me, matrix4: _ }
-                  , quaternion: setQuaternion <<< { id: me, quaternion: _ }
-                  , rotateX: setRotateX <<< { id: me, rotateX: _ }
-                  , rotateY: setRotateY <<< { id: me, rotateY: _ }
-                  , rotateZ: setRotateZ <<< { id: me, rotateZ: _ }
-                  , translate: setTranslate <<< union { id: me }
-                  , scale: setScale <<< union { id: me }
-                  , lookAt: setLookAt <<< { id: me, v: _ }
-                  , center: \_ -> setCenter { id: me }
-                  , boundingBox: getBoundingBox <<< { id: me, box: _ }
-                  , boundingPerspectiveCamera: getBoundingPerspectiveCamera <<<
-                      { id: me, perspectiveCamera: _ }
+                  { aspect: setAspect <<< { id: me, aspect: _ }
+                  , far: setFar <<< { id: me, far: _ }
+                  , filmGauge: setFilmGauge <<< { id: me, filmGauge: _ }
+                  , filmOffset: setFilmOffset <<< { id: me, filmOffset: _ }
+                  , focus: setFocus <<< { id: me, focus: _ }
+                  , fov: setFov <<< { id: me, fov: _ }
+                  , near: setNear <<< { id: me, near: _ }
+                  , zoom: setZoom <<< { id: me, zoom: _ }
+                  , focalLength: setFocalLength <<< { id: me, focalLength: _ }
+                  , viewOffset:
+                      \{ fullWidth
+                       , fullHeight
+                       , x
+                       , y
+                       , width
+                       , height
+                       } -> setViewOffset
+                        { id: me
+                        , fullWidth
+                        , fullHeight
+                        , x
+                        , y
+                        , width
+                        , height
+                        }
                   }
                   e
               )
@@ -179,5 +185,5 @@ perspectiveCamera_
   :: forall i lock payload
    . InitialPerspectiveCamera i
   => i
-  -> C.Geometry lock payload
+  -> C.Camera lock payload
 perspectiveCamera_ i = perspectiveCamera i empty
