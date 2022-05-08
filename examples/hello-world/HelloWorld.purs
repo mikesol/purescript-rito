@@ -34,7 +34,7 @@ import Effect.Random (randomInt)
 import Effect.Random as Random
 import Effect.Ref (new, read, write)
 import FRP.Behavior (behavior)
-import FRP.Event (Event, bang, keepLatest, makeEvent, memoize, sampleOn, subscribe)
+import FRP.Event (Event, bang, create, keepLatest, makeEvent, memoize, sampleOn, subscribe)
 import FRP.Event.Animate (animationFrameEvent)
 import FRP.Event.Time (withTime)
 import FRP.Event.VBus (V, vbus)
@@ -44,11 +44,11 @@ import Random.LCG (mkSeed)
 import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Color (RGB(..))
 import Rito.Core (hi)
-import Rito.Lights.PointLight (pointLight)
 import Rito.Geometries.Sphere (sphere)
+import Rito.Lights.PointLight (pointLight)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Mesh (mesh)
-import Rito.Properties (aspect, heightSegments, positionX, positionY, positionZ, radius, render, scaleX, scaleY, scaleZ)
+import Rito.Properties (aspect, heightSegments, positionX, size, positionY, positionZ, radius, render, scaleX, scaleY, scaleZ)
 import Rito.Renderers.WebGL (webGLRenderer)
 import Rito.Run as Rito.Run
 import Rito.Scene (fscene, scene)
@@ -65,9 +65,11 @@ import WAGS.Properties as P
 import WAGS.Run (run2)
 import WAGS.WebAPI (AnalyserNodeCb(..))
 import Web.Event.Event (target)
+import Web.HTML (window)
 import Web.HTML.HTMLCanvasElement (HTMLCanvasElement, height, width)
 import Web.HTML.HTMLCanvasElement as HTMLCanvasElement
 import Web.HTML.HTMLInputElement (fromEventTarget, valueAsNumber)
+import Web.HTML.Window (innerHeight, innerWidth)
 
 type StartStop = V (start :: Unit, stop :: Effect Unit)
 type CanvasInfo = { x :: Number, y :: Number } /\ Number
@@ -136,8 +138,8 @@ denv s e = bang
 
 ttap (o /\ n) = AudioNumeric { o: o + 0.04, n, t: _linear }
 
-runThree :: _ -> HTMLCanvasElement -> Effect Unit
-runThree canvas e = do
+runThree :: _ -> Number -> Number -> HTMLCanvasElement -> Effect Unit
+runThree canvas iw ih e = do
   _ <- Rito.Run.run
     ( webGLRenderer
         ( fscene empty
@@ -224,7 +226,7 @@ runThree canvas e = do
         )
         ( perspectiveCamera
             { fov: 75.0
-            , aspect: 1.4
+            , aspect: iw / ih
             , near: 0.1
             , far: 100.0
             }
@@ -232,31 +234,19 @@ runThree canvas e = do
                 [ bang (positionX 0.0)
                 , bang (positionY 0.0)
                 , bang (positionZ 2.0)
-                , aspect <$>
-                    ( sampleOn
-                        ( e2e
-                            ( Int.toNumber <$>
-                                height e
-                            )
-                        )
-                        ( div <$>
-                            ( e2e
-                                ( Int.toNumber <$>
-                                    width e
-                                )
-                            )
-                        )
-                    )
                 ]
             )
         )
         { canvas: e }
-        (bang render <|> (canvas $> render))
+        (bang (size { width: iw, height: ih}) <|> bang render <|> (canvas $> render))
     )
   pure unit
 
 main :: Effect Unit
 main = launchAff_ do
+  w <- liftEffect $ window
+  iw <- liftEffect $ Int.toNumber <$> innerWidth w
+  ih <- liftEffect $ Int.toNumber <$> innerHeight w
   ctx' <- context
   sounds <- Rc.fromHomogeneous <$> parTraverse
     (decodeAudioDataFromUri ctx')
@@ -365,101 +355,103 @@ main = launchAff_ do
                           ]
                       ]
               ]
-          plant $ D.div
-            ( bang $ D.Style :=
-                "height: 100%; width: 100%; display:flex; flex-direction: column;"
-            )
-            [ D.input
-                ( oneOfMap bang
-                    [ D.Xtype := "range"
-                    , D.Min := "0"
-                    , D.Max := "100"
-                    , D.Step := "1"
-                    , D.Value := "50"
-                    , D.Style := "width: 100%; flex-grow: 0;"
-                    , D.OnInput := cb
-                        ( traverse_
-                            (valueAsNumber >=> push.slider)
-                            <<< (=<<) fromEventTarget
-                            <<< target
-                        )
-                    ]
-                )
-                blank
-            , D.button
-                ( oneOf
-                    [ bang $ D.Style :=
-                        "width:100%; padding:1.0rem; flex-grow: 0;"
-                    , ( oneOfMap (map (attr D.OnClick <<< cb <<< const))
-                          [ stopE <#>
-                              ( _ *> push.startStop.start unit
-                              )
-                          , startE <#> \_ -> do
-                              analyserE <- new Nothing
-                              -- todo: fix race condition in case
-                              -- we turn off while loading
-                              ctx <- context
-                              c0h <- constant0Hack ctx
-                              ri <- liftEffect $ randomInt 0 50000
-                              let
-                                randSound = evalGen
-                                  ( elements
-                                      $ fromMaybe (singleton sounds.pluck0)
-                                      $ fromArray
-                                      $ values
-                                      $ fromHomogeneous sounds
-                                  )
-                                  { newSeed: mkSeed ri, size: 4 }
-                              liftEffect do
-                                rands <- 0 .. 127 # traverse \_ -> do
-                                  x <- Random.random
-                                  y <- Random.random
-                                  pure { x, y }
-                                ssub <- run2 ctx (music ctx randSound analyserE)
-                                anisub <- subscribe animationFrameEvent \_ -> do
-                                  ae <- read analyserE
-                                  for_ ae \a -> do
-                                    frequencyData <-
-                                      getByteFrequencyData a
-                                    arr <- map
-                                      ( zip rands <<< map
-                                          ((_ / 255.0) <<< toNumber)
-                                      )
-                                      (toArray frequencyData)
-                                    push.canvas arr
-                                    pure unit
-                                let res = ssub *> c0h *> close ctx *> anisub
-                                push.startStop.stop res
-                              -- pure res
-                              pure unit
-                          ]
-                      )
-                    ]
-                )
-                [ text $ oneOf
-                    [ map (const "Turn off") stopE
-                    , map (const "Turn on") startE
-                    ]
-                ]
-            , D.div
+          plant $ D.div_
+            [ D.div
                 ( bang
                     ( D.Style :=
-                        "width;100%;display:flex;flex-direction:row;flex-grow: 1;"
+                        "position:absolute;"
                     )
                 )
-                [ D.div (bang (D.Style := "flex-grow: 1;")) blank
-                , D.canvas
+                [ D.canvas
                     ( oneOfMap bang
                         [ D.Width := cvsxs
                         , D.Height := cvsys
-                        , D.Style := "width: 100%; flex-grow: 0;"
-                        , D.Self := HTMLCanvasElement.fromElement >>> traverse_
-                            (runThree event.canvas)
+                        , D.Style := "width: 100%;"
+                        , D.Self := HTMLCanvasElement.fromElement >>>
+                            traverse_
+                              (runThree event.canvas iw ih)
                         ]
                     )
                     blank
-                , D.div (bang (D.Style := "flex-grow: 1;")) blank
                 ]
-
+            , D.div
+                ( bang $ D.Style :=
+                    "position: absolute; width:100%; background-color: rgba(200,200,200,0.8);"
+                )
+                [ D.input
+                    ( oneOfMap bang
+                        [ D.Xtype := "range"
+                        , D.Min := "0"
+                        , D.Max := "100"
+                        , D.Step := "1"
+                        , D.Value := "50"
+                        , D.Style := "width: 100%; margin-top: 15px; margin-bottom: 15px;"
+                        , D.OnInput := cb
+                            ( traverse_
+                                (valueAsNumber >=> push.slider)
+                                <<< (=<<) fromEventTarget
+                                <<< target
+                            )
+                        ]
+                    )
+                    blank
+                , D.button
+                    ( oneOf
+                        [ bang $ D.Style :=
+                            "width:100%; padding:1.0rem;"
+                        , ( oneOfMap (map (attr D.OnClick <<< cb <<< const))
+                              [ stopE <#>
+                                  ( _ *> push.startStop.start unit
+                                  )
+                              , startE <#> \_ -> do
+                                  analyserE <- new Nothing
+                                  -- todo: fix race condition in case
+                                  -- we turn off while loading
+                                  ctx <- context
+                                  c0h <- constant0Hack ctx
+                                  ri <- liftEffect $ randomInt 0 50000
+                                  let
+                                    randSound = evalGen
+                                      ( elements
+                                          $ fromMaybe (singleton sounds.pluck0)
+                                          $ fromArray
+                                          $ values
+                                          $ fromHomogeneous sounds
+                                      )
+                                      { newSeed: mkSeed ri, size: 4 }
+                                  liftEffect do
+                                    rands <- 0 .. 127 # traverse \_ -> do
+                                      x <- Random.random
+                                      y <- Random.random
+                                      pure { x, y }
+                                    ssub <- run2 ctx
+                                      (music ctx randSound analyserE)
+                                    anisub <- subscribe animationFrameEvent
+                                      \_ -> do
+                                        ae <- read analyserE
+                                        for_ ae \a -> do
+                                          frequencyData <-
+                                            getByteFrequencyData a
+                                          arr <- map
+                                            ( zip rands <<< map
+                                                ((_ / 255.0) <<< toNumber)
+                                            )
+                                            (toArray frequencyData)
+                                          push.canvas arr
+                                          pure unit
+                                    let res = ssub *> c0h *> close ctx *> anisub
+                                    push.startStop.stop res
+                                  -- pure res
+                                  pure unit
+                              ]
+                          )
+                        ]
+                    )
+                    [ text $ oneOf
+                        [ map (const "Turn off") stopE
+                        , map (const "Turn on") startE
+                        ]
+                    ]
+                ]
             ]
     )

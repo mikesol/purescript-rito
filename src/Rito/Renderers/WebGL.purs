@@ -143,6 +143,7 @@ instance
 
 type WebGLRenderer' = Variant
       ( render :: Unit
+      , size :: { width :: Number, height :: Number }
       -- todo, add shadow map & other goodies
       )
 newtype WebGLRenderer = WebGLRenderer WebGLRenderer'
@@ -166,6 +167,7 @@ webGLRenderer (C.Scene sne) (C.Camera cam) i' props = C.Renderer go
           , deleteFromCache
           , makeWebGLRenderer
           , webGLRender
+          , setSize
           }
       ) = makeEvent \k0 -> do
     me <- ids
@@ -216,6 +218,7 @@ webGLRenderer (C.Scene sne) (C.Camera cam) i' props = C.Renderer go
                                 msh # match
                                   { render: \_ -> webGLRender
                                       { id: me, scene: sceneId, camera: cameraId }
+                                  , size: \{ width, height} -> setSize { id: me, width, height }
                                   }
                             )
                         )

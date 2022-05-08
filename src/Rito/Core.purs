@@ -335,6 +335,8 @@ type SetViewOffset =
 type SetIntensity = { id :: String, intensity :: Number }
 type SetDistance = { id :: String, distance :: Number }
 type SetDecay = { id :: String, decay :: Number }
+-- renderer
+type SetSize = { id :: String, width :: Number, height :: Number }
 --
 type MakeNoop =
   { id :: String
@@ -464,6 +466,8 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setIntensity :: SetIntensity -> payload
   , setDistance :: SetDistance -> payload
   , setDecay :: SetDecay -> payload
+  -- webgl
+  , setSize :: SetSize -> payload
   -- connectors
   , connectMesh :: ConnectMesh -> payload
   , connectGeometry :: ConnectGeometry -> payload

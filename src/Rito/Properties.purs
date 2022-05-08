@@ -212,3 +212,10 @@ render
    . Newtype nt (Variant (render :: Unit | r))
   => nt
 render = wrap (inj (Proxy :: Proxy "render") unit)
+
+size
+  :: forall nt r
+   . Newtype nt (Variant (size :: { width :: Number, height :: Number } | r))
+  => { width :: Number, height :: Number }
+  -> nt
+size = wrap <<< (inj (Proxy :: Proxy "size"))

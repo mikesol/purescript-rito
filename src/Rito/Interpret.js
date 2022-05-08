@@ -98,6 +98,9 @@ export const makeMeshStandardMaterial_ = genericMake_(
 )((x, y) => {
 	y.main.material = x.main;
 });
+export const setSize_ = (a) => (state) => () => {
+	state.units[a.id].main.setSize(a.width, a.height);
+}
 export const makeScene_ = genericMake_(() => new THREE.Scene())(() => {});
 export const webGLRender_ = (a) => (state) => () => {
 	state.units[a.id].main.render(

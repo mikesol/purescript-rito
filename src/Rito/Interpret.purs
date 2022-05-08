@@ -160,6 +160,8 @@ foreign import setPositionZ_ :: Core.SetPositionZ -> FFIThreeSnapshot -> Effect 
 foreign import setScaleX_ :: Core.SetScaleX -> FFIThreeSnapshot -> Effect Unit
 foreign import setScaleY_ :: Core.SetScaleY -> FFIThreeSnapshot -> Effect Unit
 foreign import setScaleZ_ :: Core.SetScaleZ -> FFIThreeSnapshot -> Effect Unit
+-- renderer
+foreign import setSize_ :: Core.SetSize -> FFIThreeSnapshot -> Effect Unit
 -- perspective camera
 foreign import setAspect_ :: Core.SetAspect -> FFIThreeSnapshot -> Effect Unit
 foreign import setFar_ :: Core.SetFar -> FFIThreeSnapshot -> Effect Unit
@@ -349,6 +351,8 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setZoom: setZoom_
   , setFocalLength: setFocalLength_
   , setViewOffset: setViewOffset_
+  -- renderer
+  , setSize: setSize_
   -- connectors
   , connectMesh: connectMesh_
   , connectGeometry: connectGeometry_
