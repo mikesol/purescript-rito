@@ -8,11 +8,16 @@ import Control.Plus (empty)
 import Data.Array (zip, (!!), (..))
 import Data.Array.NonEmpty (fromArray, singleton)
 import Data.ArrayBuffer.Typed (toArray)
+import Data.DateTime.Instant (unInstant)
 import Data.Foldable (for_, oneOf, oneOfMap, traverse_)
 import Data.Homogeneous.Record as Rc
 import Data.Int as Int
+import Data.JSDate (getTime, now)
+import Data.Lens (over)
+import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Data.Number (pi)
+import Data.Newtype (unwrap)
+import Data.Number (cos, pi, sin)
 import Data.Profunctor (lcmap)
 import Data.Profunctor.Strong (second)
 import Data.Traversable (traverse)
@@ -29,18 +34,20 @@ import Effect.Random (randomInt)
 import Effect.Random as Random
 import Effect.Ref (new, read, write)
 import FRP.Behavior (behavior)
-import FRP.Event (bang, keepLatest, makeEvent, subscribe)
+import FRP.Event (Event, bang, keepLatest, makeEvent, memoize, sampleOn, subscribe)
 import FRP.Event.Animate (animationFrameEvent)
+import FRP.Event.Time (withTime)
 import FRP.Event.VBus (V, vbus)
 import Foreign.Object (fromHomogeneous, values)
 import Graphics.Canvas (CanvasElement, arc, beginPath, fill, fillRect, getContext2D, setFillStyle)
 import Random.LCG (mkSeed)
 import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Core (hi)
+import Rito.Geometries.PointLight (pointLight)
 import Rito.Geometries.Sphere (sphere)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Mesh (mesh)
-import Rito.Properties (radius, translateX, translateY)
+import Rito.Properties (aspect, heightSegments, positionX, positionY, positionZ, radius, render, scaleX, scaleY, scaleZ)
 import Rito.Renderers.WebGL (webGLRenderer)
 import Rito.Run as Rito.Run
 import Rito.Scene (fscene, scene)
@@ -57,6 +64,7 @@ import WAGS.Properties as P
 import WAGS.Run (run2)
 import WAGS.WebAPI (AnalyserNodeCb(..))
 import Web.Event.Event (target)
+import Web.HTML.HTMLCanvasElement (HTMLCanvasElement, height, width)
 import Web.HTML.HTMLCanvasElement as HTMLCanvasElement
 import Web.HTML.HTMLInputElement (fromEventTarget, valueAsNumber)
 
@@ -67,6 +75,11 @@ type UIEvents = V
   , slider :: Number
   , canvas :: Array CanvasInfo
   )
+
+e2e :: Effect ~> Event
+e2e e = makeEvent \k -> do
+  e >>= k
+  pure (pure unit)
 
 buffers' =
   { pluck0: "https://freesound.org/data/previews/493/493016_10350281-lq.mp3"
@@ -106,10 +119,10 @@ fade1 = bang
     , d: 18.0
     }
 
-cvsx = 600
+cvsx = 1200
 cvsxs = show cvsx <> "px"
 cvsxn = Int.toNumber cvsx
-cvsy = 400
+cvsy = 600
 cvsys = show cvsy <> "px"
 cvsyn = Int.toNumber cvsy
 fenv s e = bang
@@ -122,6 +135,100 @@ denv s e = bang
 
 ttap (o /\ n) = AudioNumeric { o: o + 0.04, n, t: _linear }
 
+runThree :: _ -> HTMLCanvasElement -> Effect Unit
+runThree canvas e = do
+  void $ Rito.Run.run
+    ( webGLRenderer
+        ( fscene empty
+            ( [ PlainOld' $ hi $ pointLight {}
+                  ( oneOfMap bang
+                      [ positionX 1.0
+                      , positionY (-0.5)
+                      , positionZ 1.0
+                      ]
+                  )
+              ]
+                <>
+                  ( 0 .. 40 <#> \i -> PlainOld'
+                      $ hi
+                      $ mesh
+                        (sphere {widthSegments:32, heightSegments:32} empty)
+                        ( meshStandardMaterial
+                            { color: 0xffffff }
+                            empty
+                        )
+                        ( keepLatest $ keepLatest
+                            ( memoize
+                                ( over
+                                    ( prop
+                                        ( Proxy
+                                            :: _
+                                              "time"
+                                        )
+                                    )
+                                    ( (_ / 1000.0)
+                                        <<< unwrap
+                                        <<<    unInstant
+                                    ) <$> withTime canvas
+                                )
+                                ( \ev -> ev <#>
+                                    \{ time
+                                     , value: a
+                                     } -> (a !! i) #
+                                      maybe empty
+                                        \({ x, y } /\ n) -> let tni = Int.toNumber i / 40.0 in
+                                          oneOfMap
+                                            bang
+                                            [ positionX
+                                                (sin (0.2 * tni * time * twoPi) + x * 2.0 - 1.0)
+                                            , positionY
+                                                (cos (0.2 * tni * time * twoPi) + y * 2.0 - 1.0)
+                                            , positionZ
+                                                ((if i `mod` 2 == 0 then cos else sin) (0.2 * tni * time * twoPi) * 1.0)
+                                            , scaleX
+                                                (n * 0.1)
+                                            , scaleY
+                                                (n * 0.1)
+                                            , scaleZ
+                                                (n * 0.1)
+                                            ]
+                                )
+                            )
+                        )
+                  )
+            )
+        )
+        ( perspectiveCamera
+            { fov: 75.0
+            , aspect: 1.4
+            , near: 0.1
+            , far: 100.0
+            }
+            ( oneOf
+                [ bang (positionX 0.0)
+                , bang (positionY 0.0)
+                , bang (positionZ 2.0)
+                , aspect <$>
+                    ( sampleOn
+                        ( e2e
+                            ( Int.toNumber <$>
+                                height e
+                            )
+                        )
+                        ( div <$>
+                            ( e2e
+                                ( Int.toNumber <$>
+                                    width e
+                                )
+                            )
+                        )
+                    )
+                ]
+            )
+        )
+        { canvas: e }
+        (canvas $> render)
+    )
 main :: Effect Unit
 main = launchAff_ do
   ctx' <- context
@@ -214,7 +321,7 @@ main = launchAff_ do
                                                             0.1
                                                         )
                                                   ) <$> sliderE
-                                                ) {-(denv 0.75 0.99)-}
+                                                )
                                                 0.6
                                                 empty
                                                 4000.0
@@ -308,50 +415,25 @@ main = launchAff_ do
                     , map (const "Turn on") startE
                     ]
                 ]
-            , D.canvas
-                ( oneOfMap bang
-                    [ D.Width := cvsxs
-                    , D.Height := cvsys
-                    , D.Style := "width: 100%; flex-grow: 1;"
-                    , D.Self := HTMLCanvasElement.fromElement >>> traverse_
-                        \e ->
-                          do
-                            void $ Rito.Run.run
-                              ( webGLRenderer
-                                  ( fscene empty
-                                      ( 0 .. 127 <#> \i -> PlainOld' $ hi $ mesh
-                                          ( sphere {}
-                                              ( keepLatest
-                                                  ( event.canvas <#>
-                                                      ( \a -> (a !! i) # maybe
-                                                          empty
-                                                          \(_ /\ n) ->
-                                                            bang $ radius n
-                                                      )
-                                                  )
-                                              )
-                                          )
-                                          (meshStandardMaterial {} empty)
-                                          ( keepLatest
-                                              ( event.canvas <#>
-                                                  ( \a -> (a !! i) # maybe empty
-                                                      \({ x, y } /\ _) ->
-                                                        oneOfMap bang
-                                                          [ translateX x
-                                                          , translateY y
-                                                          ]
-                                                  )
-                                              )
-                                          )
-                                      )
-                                  )
-                                  (perspectiveCamera {} empty)
-                                  { canvas: e }
-                                  empty
-                              )
-                    ]
+            , D.div
+                ( bang
+                    ( D.Style :=
+                        "width;100%;display:flex;flex-direction:row;flex-grow: 1;"
+                    )
                 )
-                blank
+                [ D.div (bang (D.Style := "flex-grow: 1;")) blank
+                , D.canvas
+                    ( oneOfMap bang
+                        [ D.Width := cvsxs
+                        , D.Height := cvsys
+                        , D.Style := "width: 100%; flex-grow: 0;"
+                        , D.Self := HTMLCanvasElement.fromElement >>> traverse_
+                            (runThree event.canvas)
+                        ]
+                    )
+                    blank
+                , D.div (bang (D.Style := "flex-grow: 1;")) blank
+                ]
 
             ]
     )

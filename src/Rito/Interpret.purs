@@ -44,6 +44,7 @@ foreign import makeFFIThreeSnapshot :: Effect FFIThreeSnapshot
 foreign import webGLRender_ :: Core.WebGLRender -> FFIThreeSnapshot -> Effect Unit
 --
 foreign import makeWebGLRenderer_ :: Core.MakeWebGLRenderer' -> FFIThreeSnapshot -> Effect Unit
+foreign import makePointLight_ :: Core.MakePointLight -> FFIThreeSnapshot -> Effect Unit
 foreign import makeScene_ :: Core.MakeScene -> FFIThreeSnapshot -> Effect Unit
 foreign import makeMesh_ :: Core.MakeMesh -> FFIThreeSnapshot -> Effect Unit
 foreign import makeSphere_ :: Core.MakeSphere -> FFIThreeSnapshot -> Effect Unit
@@ -53,7 +54,6 @@ foreign import makePlane_ :: Core.MakePlane -> FFIThreeSnapshot -> Effect Unit
 foreign import makeMeshStandardMaterial_
   :: Core.MakeMeshStandardMaterial' -> FFIThreeSnapshot -> Effect Unit
 --
-
 foreign import deleteFromCache_
   :: Core.DeleteFromCache -> FFIThreeSnapshot -> Effect Unit
 foreign import makeNoop_ :: Core.MakeNoop -> FFIThreeSnapshot -> Effect Unit
@@ -87,7 +87,11 @@ foreign import getBoundingBox_
   :: Core.GetBoundingBox -> FFIThreeSnapshot -> Effect Unit
 foreign import getBoundingSphere_
   :: Core.GetBoundingSphere -> FFIThreeSnapshot -> Effect Unit
---
+-- point light
+foreign import setDecay_ :: Core.SetDecay -> FFIThreeSnapshot -> Effect Unit
+foreign import setIntensity_ :: Core.SetIntensity -> FFIThreeSnapshot -> Effect Unit
+foreign import setDistance_ :: Core.SetDistance -> FFIThreeSnapshot -> Effect Unit
+-- mesh standard material
 foreign import setColor_ :: Core.SetColor -> FFIThreeSnapshot -> Effect Unit
 foreign import setRoughness_
   :: Core.SetRoughness -> FFIThreeSnapshot -> Effect Unit
@@ -150,6 +154,12 @@ foreign import setTranslateOnAxis_ :: Core.SetTranslateOnAxis -> FFIThreeSnapsho
 foreign import setTranslateX_ :: Core.SetTranslateX -> FFIThreeSnapshot -> Effect Unit
 foreign import setTranslateY_ :: Core.SetTranslateY -> FFIThreeSnapshot -> Effect Unit
 foreign import setTranslateZ_ :: Core.SetTranslateZ -> FFIThreeSnapshot -> Effect Unit
+foreign import setPositionX_ :: Core.SetPositionX -> FFIThreeSnapshot -> Effect Unit
+foreign import setPositionY_ :: Core.SetPositionY -> FFIThreeSnapshot -> Effect Unit
+foreign import setPositionZ_ :: Core.SetPositionZ -> FFIThreeSnapshot -> Effect Unit
+foreign import setScaleX_ :: Core.SetScaleX -> FFIThreeSnapshot -> Effect Unit
+foreign import setScaleY_ :: Core.SetScaleY -> FFIThreeSnapshot -> Effect Unit
+foreign import setScaleZ_ :: Core.SetScaleZ -> FFIThreeSnapshot -> Effect Unit
 -- perspective camera
 foreign import setAspect_ :: Core.SetAspect -> FFIThreeSnapshot -> Effect Unit
 foreign import setFar_ :: Core.SetFar -> FFIThreeSnapshot -> Effect Unit
@@ -254,6 +264,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeBox: makeBox_
   , makeTorus: makeTorus_
   , makePlane: makePlane_
+  , makePointLight: makePointLight_
   , makeNoop: makeNoop_
   , makePerspectiveCamera: makePerspectiveCamera_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
@@ -317,6 +328,16 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setTranslateX: setTranslateX_
   , setTranslateY: setTranslateY_
   , setTranslateZ: setTranslateZ_
+  , setPositionX: setPositionX_
+  , setPositionY: setPositionY_
+  , setPositionZ: setPositionZ_
+  , setScaleX: setScaleX_
+  , setScaleY: setScaleY_
+  , setScaleZ: setScaleZ_
+  -- point light
+  , setDecay: setDecay_
+  , setDistance: setDistance_
+  , setIntensity: setIntensity_
   -- perspective camera
   , setAspect: setAspect_
   , setFar: setFar_

@@ -93,9 +93,9 @@ type SphereAll =
 
 defaultSphere :: { | SphereOptional }
 defaultSphere =
-  { radius: 50.0
-  , widthSegments: 8
-  , heightSegments: 6
+  { radius: 1.0
+  , widthSegments: 32
+  , heightSegments: 16
   , phiStart: zero
   , phiLength: twoPi
   , thetaStart: zero

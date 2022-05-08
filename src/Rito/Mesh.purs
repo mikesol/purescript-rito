@@ -15,11 +15,15 @@ import Rito.Threeful (Child, DynamicChildren(..), Eventful(..), FixedChildren(..
 import Rito.Vector3 (Vector3)
 
 emesh
-  :: forall lock payload. Event (Threeful C.Mesh lock payload) -> Threeful C.Mesh lock payload
+  :: forall lock payload
+   . Event (Threeful C.Mesh lock payload)
+  -> Threeful C.Mesh lock payload
 emesh = Eventful' <<< Eventful
 
 fmesh
-  :: forall lock payload. Array (Threeful C.Mesh lock payload) -> Threeful C.Mesh lock payload
+  :: forall lock payload
+   . Array (Threeful C.Mesh lock payload)
+  -> Threeful C.Mesh lock payload
 fmesh = FixedChildren' <<< FixedChildren
 
 dmesh
@@ -30,24 +34,30 @@ dmesh = DynamicChildren' <<< DynamicChildren
 
 ----
 type Mesh' = Variant
-      ( matrix4 :: Matrix4
-      , quaternion :: Quaternion
-      , rotationFromAxisAngle :: { axis :: Vector3, angle :: Number }
-      , rotationFromEuler :: Euler
-      , rotationFromMatrix :: Matrix4
-      , rotationFromQuaternion :: Quaternion
-      , rotateOnAxis :: { axis :: Vector3, angle :: Number }
-      , rotateOnWorldAxis :: { axis :: Vector3, angle :: Number }
-      , rotateX :: Number
-      , rotateY :: Number
-      , rotateZ :: Number
-      , translateOnAxis :: { axis :: Vector3, distance :: Number }
-      , translateX :: Number
-      , translateY :: Number
-      , translateZ :: Number
-      , scale :: { x :: Number, y :: Number, z :: Number }
-      , lookAt :: Vector3
-      )
+  ( -- object3D
+    matrix4 :: Matrix4
+  , quaternion :: Quaternion
+  , rotationFromAxisAngle :: { axis :: Vector3, angle :: Number }
+  , rotationFromEuler :: Euler
+  , rotationFromMatrix :: Matrix4
+  , rotationFromQuaternion :: Quaternion
+  , rotateOnAxis :: { axis :: Vector3, angle :: Number }
+  , rotateOnWorldAxis :: { axis :: Vector3, angle :: Number }
+  , rotateX :: Number
+  , rotateY :: Number
+  , rotateZ :: Number
+  , translateOnAxis :: { axis :: Vector3, distance :: Number }
+  , translateX :: Number
+  , translateY :: Number
+  , translateZ :: Number
+  , positionX :: Number
+  , positionY :: Number
+  , positionZ :: Number
+  , scaleX :: Number
+  , scaleY :: Number
+  , scaleZ :: Number
+  , lookAt :: Vector3
+  )
 newtype Mesh = Mesh Mesh'
 instance Newtype Mesh Mesh'
 
@@ -67,6 +77,7 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = C.Mesh go
           { ids
           , deleteFromCache
           , makeMesh
+          -- object 3D
           , setMatrix4
           , setQuaternion
           , setRotationFromAxisAngle
@@ -82,7 +93,12 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = C.Mesh go
           , setTranslateX
           , setTranslateY
           , setTranslateZ
-          , setScale
+          , setPositionX
+          , setPositionY
+          , setPositionZ
+          , setScaleX
+          , setScaleY
+          , setScaleZ
           , setLookAt
           }
       ) = makeEvent \k -> do
@@ -132,7 +148,12 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = C.Mesh go
                   , translateX: setTranslateX <<< { id: me, translateX: _ }
                   , translateY: setTranslateY <<< { id: me, translateY: _ }
                   , translateZ: setTranslateZ <<< { id: me, translateZ: _ }
-                  , scale: \{ x, y, z } -> setScale { id: me, x, y, z }
+                  , positionX: setPositionX <<< { id: me, positionX: _ }
+                  , positionY: setPositionY <<< { id: me, positionY: _ }
+                  , positionZ: setPositionZ <<< { id: me, positionZ: _ }
+                  , scaleX: setScaleX <<< { id: me, scaleX: _ }
+                  , scaleY: setScaleY <<< { id: me, scaleY: _ }
+                  , scaleZ: setScaleZ <<< { id: me, scaleZ: _ }
                   , lookAt: setLookAt <<< { id: me, v: _ }
                   }
             )

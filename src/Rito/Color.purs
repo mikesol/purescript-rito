@@ -1,5 +1,8 @@
 module Rito.Color where
 
+import Prelude
+import Data.Int (toNumber)
+
 data Color
 
 foreign import ctor_ :: forall rep. rep -> Color
@@ -10,6 +13,8 @@ class ColorRepresentation rep where
 
 data RGB = RGB Number Number Number
 
+instance ColorRepresentation Int where
+  color = ctor_ <<< toNumber
 instance ColorRepresentation Number where
   color = ctor_
 instance ColorRepresentation String where

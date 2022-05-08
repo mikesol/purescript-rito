@@ -41,12 +41,16 @@ newtype Renderer (lock :: Type) payload = Renderer
   ( ThreeInterpret payload
     -> Event payload
   )
+newtype Light (lock :: Type) payload = Light (Ctor payload)
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
 newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
 newtype Scene (lock :: Type) payload = Scene (Ctor payload)
 newtype Sceneful (lock :: Type) payload = Sceneful (Ctor payload)
 newtype Camera (lock :: Type) payload = Camera (Ctor payload)
+
+instance Sceneable Light where
+  hi (Light x) = Sceneful x
 
 instance Sceneable Mesh where
   hi (Mesh x) = Sceneful x
@@ -74,7 +78,7 @@ instance Connectable Sceneful where
           { id: me, parent: parent.parent, scope: parent.scope }
         pure (pure unit)
 
-type WebGLRender = { scene :: String, camera :: String }
+type WebGLRender = { id :: String, scene :: String, camera :: String }
 type MakeWebGLRenderer =
   { id :: String
   | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
@@ -119,6 +123,7 @@ type MakeSphere =
   , parent :: String
   | InitializeSphere'
   }
+newtype InitializeSphere = InitializeSphere { | InitializeSphere' }
 type InitializeSphere' =
   ( radius :: Number
   , widthSegments :: Int
@@ -128,7 +133,19 @@ type InitializeSphere' =
   , thetaStart :: Number
   , thetaLength :: Number
   )
-newtype InitializeSphere = InitializeSphere { | InitializeSphere' }
+type MakePointLight =
+  { id :: String
+  , scope :: String
+  , parent :: String
+  | InitializePointLight'
+  }
+type InitializePointLight' =
+  ( color :: Color
+  , intensity :: Number
+  , distance :: Number
+  , decay :: Number
+  )
+newtype InitializePointLight = InitializePointLight { | InitializePointLight' }
 type MakeMeshStandardMaterial =
   { id :: String
   , scope :: String
@@ -286,6 +303,12 @@ type SetRotationFromQuaternion = { id :: String, quaternion :: Quaternion }
 type SetRotateOnAxis = { id :: String, axis :: Vector3, angle :: Number }
 type SetRotateOnWorldAxis = { id :: String, axis :: Vector3, angle :: Number }
 type SetTranslateOnAxis = { id :: String, axis :: Vector3, distance :: Number }
+type SetPositionX = { id :: String, positionX :: Number }
+type SetPositionY = { id :: String, positionY :: Number }
+type SetPositionZ = { id :: String, positionZ :: Number }
+type SetScaleX = { id :: String, scaleX :: Number }
+type SetScaleY = { id :: String, scaleY :: Number }
+type SetScaleZ = { id :: String, scaleZ :: Number }
 type SetTranslateX = { id :: String, translateX :: Number }
 type SetTranslateY = { id :: String, translateY :: Number }
 type SetTranslateZ = { id :: String, translateZ :: Number }
@@ -308,6 +331,11 @@ type SetViewOffset =
   , width :: Number
   , height :: Number
   }
+-- point light
+type SetIntensity = { id :: String, intensity :: Number }
+type SetDistance = { id :: String, distance :: Number }
+type SetDecay = { id :: String, decay :: Number }
+--
 type MakeNoop =
   { id :: String
   , scope :: String
@@ -352,6 +380,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeBox :: MakeBox -> payload
   , makeTorus :: MakeTorus -> payload
   , makePlane :: MakePlane -> payload
+  , makePointLight :: MakePointLight -> payload
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera -> payload
   , makeNoop :: MakeNoop -> payload
@@ -414,6 +443,12 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setTranslateX :: SetTranslateX -> payload
   , setTranslateY :: SetTranslateY -> payload
   , setTranslateZ :: SetTranslateZ -> payload
+  , setPositionX :: SetPositionX -> payload
+  , setPositionY :: SetPositionY -> payload
+  , setPositionZ :: SetPositionZ -> payload
+  , setScaleX :: SetScaleX -> payload
+  , setScaleY :: SetScaleY -> payload
+  , setScaleZ :: SetScaleZ -> payload
   -- perspective camera
   , setAspect :: SetAspect -> payload
   , setFar :: SetFar -> payload
@@ -425,7 +460,10 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setZoom :: SetZoom -> payload
   , setFocalLength :: SetFocalLength -> payload
   , setViewOffset :: SetViewOffset -> payload
-
+  -- point light
+  , setIntensity :: SetIntensity -> payload
+  , setDistance :: SetDistance -> payload
+  , setDecay :: SetDecay -> payload
   -- connectors
   , connectMesh :: ConnectMesh -> payload
   , connectGeometry :: ConnectGeometry -> payload

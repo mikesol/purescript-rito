@@ -157,3 +157,58 @@ translateZ
   => Number
   -> nt
 translateZ = wrap <<< inj (Proxy :: Proxy "translateZ")
+
+positionX
+  :: forall nt r
+   . Newtype nt (Variant (positionX :: Number | r))
+  => Number
+  -> nt
+positionX = wrap <<< inj (Proxy :: Proxy "positionX")
+
+positionY
+  :: forall nt r
+   . Newtype nt (Variant (positionY :: Number | r))
+  => Number
+  -> nt
+positionY = wrap <<< inj (Proxy :: Proxy "positionY")
+
+positionZ
+  :: forall nt r
+   . Newtype nt (Variant (positionZ :: Number | r))
+  => Number
+  -> nt
+positionZ = wrap <<< inj (Proxy :: Proxy "positionZ")
+
+scaleX
+  :: forall nt r
+   . Newtype nt (Variant (scaleX :: Number | r))
+  => Number
+  -> nt
+scaleX = wrap <<< inj (Proxy :: Proxy "scaleX")
+
+scaleY
+  :: forall nt r
+   . Newtype nt (Variant (scaleY :: Number | r))
+  => Number
+  -> nt
+scaleY = wrap <<< inj (Proxy :: Proxy "scaleY")
+
+scaleZ
+  :: forall nt r
+   . Newtype nt (Variant (scaleZ :: Number | r))
+  => Number
+  -> nt
+scaleZ = wrap <<< inj (Proxy :: Proxy "scaleZ")
+
+aspect
+  :: forall nt r
+   . Newtype nt (Variant (aspect :: Number | r))
+  => Number
+  -> nt
+aspect = wrap <<< inj (Proxy :: Proxy "aspect")
+
+render
+  :: forall nt r
+   . Newtype nt (Variant (render :: Unit | r))
+  => nt
+render = wrap (inj (Proxy :: Proxy "render") unit)

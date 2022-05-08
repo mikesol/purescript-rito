@@ -84,8 +84,18 @@ export const makePerspectiveCamera_ = genericMake_(
 		new THREE.PerspectiveCamera(fov, aspect, near, far)
 )(() => {});
 
-export const makeMesh_ = genericMake_(() => new THREE.Scene())((x,y) => {y.main.add(x.main)});
-export const makeMeshStandardMaterial_ = genericMake_(() => new THREE.MeshStandardMaterial())((x, y) => {
+export const makeMesh_ = genericMake_(() => new THREE.Mesh())((x, y) => {
+	y.main.add(x.main);
+});
+export const makePointLight_ = genericMake_(
+	({ color, intensity, distance, decay }) =>
+		new THREE.PointLight(color, intensity, distance, decay)
+)((x, y) => {
+	y.main.add(x.main);
+});
+export const makeMeshStandardMaterial_ = genericMake_(
+	() => new THREE.MeshStandardMaterial()
+)((x, y) => {
 	y.main.material = x.main;
 });
 export const makeScene_ = genericMake_(() => new THREE.Scene())(() => {});
@@ -97,7 +107,10 @@ export const webGLRender_ = (a) => (state) => () => {
 };
 export const makeWebGLRenderer_ = (a) => (state) => () => {
 	const { id, ...parameters } = a;
-	state.units[a.id] = { main: new THREE.WebGLRenderer(parameters) };
+	const renderer = new THREE.WebGLRenderer(parameters);
+	state.units[a.id] = { main: renderer };
+	renderer.setSize(parameters.canvas.width, parameters.canvas.height);
+	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 };
 // sphere
 export const setRadius_ = (a) => (state) => () => {
@@ -142,6 +155,15 @@ export const setTranslate_ = (a) => (state) => () => {
 };
 export const setScale_ = (a) => (state) => () => {
 	state.units[a.id].main.scale(a.x, a.y, a.z);
+};
+export const setScaleX_ = (a) => (state) => () => {
+	state.units[a.id].main.scale.x = a.scaleX;
+};
+export const setScaleY_ = (a) => (state) => () => {
+	state.units[a.id].main.scale.y = a.scaleY;
+};
+export const setScaleZ_ = (a) => (state) => () => {
+	state.units[a.id].main.scale.z = a.scaleZ;
 };
 export const setLookAt_ = (a) => (state) => () => {
 	state.units[a.id].main.lookAt(a.v);
@@ -239,6 +261,16 @@ export const setWireframeLinewidth_ = (a) => (state) => () => {
 export const setFlatShading_ = (a) => (state) => () => {
 	state.units[a.id].main.flatShading = a.flatShading;
 };
+// point light
+export const setDistance_ = (a) => (state) => () => {
+	state.units[a.id].main.distance = a.distance;
+};
+export const setDecay_ = (a) => (state) => () => {
+	state.units[a.id].main.decay = a.decay;
+};
+export const setIntensity_ = (a) => (state) => () => {
+	state.units[a.id].main.intensity = a.intensity;
+};
 // mesh
 export const setRotationFromAxisAngle_ = (a) => (state) => () => {
 	state.units[a.id].main.setRotationFromAxisAngle(a.axis, a.angle);
@@ -269,6 +301,15 @@ export const setTranslateY_ = (a) => (state) => () => {
 };
 export const setTranslateZ_ = (a) => (state) => () => {
 	state.units[a.id].main.translateZ(a.translateZ);
+};
+export const setPositionX_ = (a) => (state) => () => {
+	state.units[a.id].main.position.x = a.positionX;
+};
+export const setPositionY_ = (a) => (state) => () => {
+	state.units[a.id].main.position.y = a.positionY;
+};
+export const setPositionZ_ = (a) => (state) => () => {
+	state.units[a.id].main.position.z = a.positionZ;
 };
 // perspective camera
 export const setAspect_ = (a) => (state) => () => {
