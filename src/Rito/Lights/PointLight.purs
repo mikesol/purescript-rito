@@ -1,4 +1,4 @@
-module Rito.Geometries.PointLight
+module Rito.Lights.PointLight
   ( pointLight
   , pointLight_
   , PointLight(..)

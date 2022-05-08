@@ -9,6 +9,7 @@
   , "exceptions"
   , "foldable-traversable"
   , "foreign-object"
+  , "integers"
   , "maybe"
   , "newtype"
   , "numbers"

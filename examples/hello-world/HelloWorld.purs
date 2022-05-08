@@ -17,7 +17,7 @@ import Data.Lens (over)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Newtype (unwrap)
-import Data.Number (cos, pi, sin)
+import Data.Number (cos, pi, sin, (%))
 import Data.Profunctor (lcmap)
 import Data.Profunctor.Strong (second)
 import Data.Traversable (traverse)
@@ -42,8 +42,9 @@ import Foreign.Object (fromHomogeneous, values)
 import Graphics.Canvas (CanvasElement, arc, beginPath, fill, fillRect, getContext2D, setFillStyle)
 import Random.LCG (mkSeed)
 import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
+import Rito.Color (RGB(..))
 import Rito.Core (hi)
-import Rito.Geometries.PointLight (pointLight)
+import Rito.Lights.PointLight (pointLight)
 import Rito.Geometries.Sphere (sphere)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Mesh (mesh)
@@ -137,7 +138,7 @@ ttap (o /\ n) = AudioNumeric { o: o + 0.04, n, t: _linear }
 
 runThree :: _ -> HTMLCanvasElement -> Effect Unit
 runThree canvas e = do
-  void $ Rito.Run.run
+  _ <- Rito.Run.run
     ( webGLRenderer
         ( fscene empty
             ( [ PlainOld' $ hi $ pointLight {}
@@ -149,42 +150,65 @@ runThree canvas e = do
                   )
               ]
                 <>
-                  ( 0 .. 40 <#> \i -> PlainOld'
-                      $ hi
-                      $ mesh
-                        (sphere {widthSegments:32, heightSegments:32} empty)
-                        ( meshStandardMaterial
-                            { color: 0xffffff }
-                            empty
-                        )
-                        ( keepLatest $ keepLatest
-                            ( memoize
-                                ( over
-                                    ( prop
-                                        ( Proxy
-                                            :: _
-                                              "time"
-                                        )
-                                    )
-                                    ( (_ / 1000.0)
-                                        <<< unwrap
-                                        <<<    unInstant
-                                    ) <$> withTime canvas
-                                )
-                                ( \ev -> ev <#>
-                                    \{ time
-                                     , value: a
-                                     } -> (a !! i) #
-                                      maybe empty
-                                        \({ x, y } /\ n) -> let tni = Int.toNumber i / 40.0 in
+                  ( 0 .. 40 <#> \i -> do
+                      let tni = Int.toNumber i
+                      let tni40 = tni / 40.0
+                      PlainOld'
+                        $ hi
+                        $ mesh
+                          ( sphere { widthSegments: 32, heightSegments: 32 }
+                              empty
+                          )
+                          ( meshStandardMaterial
+                              { color: RGB ((tni + 0.1) * 420.85 % 1.0)
+                                  ((tni + 0.6) * 3852.34 % 1.0)
+                                  ((tni + 0.32) * 12341.123 % 1.0)
+                              , metalness: if i `mod` 6 == 0 then 1.0 else 0.0
+                              }
+                              empty
+                          )
+                          ( keepLatest $ keepLatest
+                              ( memoize
+                                  ( over
+                                      (prop (Proxy :: Proxy "time"))
+                                      ( (_ / 1000.0)
+                                          <<< unwrap
+                                          <<< unInstant
+                                      ) <$> withTime (canvas <|> bang [])
+                                  )
+                                  ( \ev -> ev <#>
+                                      \{ time
+                                       , value: a
+                                       } ->
+                                        fromMaybe ({ x: 0.0, y: 0.0 } /\ 0.0)
+                                          (a !! i) # \({ x, y } /\ n) -> do
                                           oneOfMap
                                             bang
                                             [ positionX
-                                                (sin (0.2 * tni * time * twoPi) + x * 2.0 - 1.0)
+                                                ( sin
+                                                    ( 0.2 * tni40 * time *
+                                                        twoPi
+                                                    )
+                                                    + x * 2.0
+                                                    - 1.0
+                                                )
                                             , positionY
-                                                (cos (0.2 * tni * time * twoPi) + y * 2.0 - 1.0)
+                                                ( cos
+                                                    ( 0.2 * tni40 * time *
+                                                        twoPi
+                                                    )
+                                                    + y * 2.0
+                                                    - 1.0
+                                                )
                                             , positionZ
-                                                ((if i `mod` 2 == 0 then cos else sin) (0.2 * tni * time * twoPi) * 1.0)
+                                                ( ( if i `mod` 2 == 0 then cos
+                                                    else sin
+                                                  )
+                                                    ( 0.2 * tni40 * time *
+                                                        twoPi
+                                                    )
+                                                    * 1.0
+                                                )
                                             , scaleX
                                                 (n * 0.1)
                                             , scaleY
@@ -192,9 +216,9 @@ runThree canvas e = do
                                             , scaleZ
                                                 (n * 0.1)
                                             ]
-                                )
-                            )
-                        )
+                                  )
+                              )
+                          )
                   )
             )
         )
@@ -227,8 +251,10 @@ runThree canvas e = do
             )
         )
         { canvas: e }
-        (canvas $> render)
+        (bang render <|> (canvas $> render))
     )
+  pure unit
+
 main :: Effect Unit
 main = launchAff_ do
   ctx' <- context
