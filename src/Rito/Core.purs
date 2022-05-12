@@ -2,9 +2,11 @@ module Rito.Core where
 
 import Prelude
 
+import Bolson.Core (Entity, Scope)
 import Data.Maybe (Maybe)
+import Data.Newtype (class Newtype)
 import Effect (Effect)
-import FRP.Event (Event, makeEvent)
+import FRP.Event (Event)
 import Rito.Box as Box
 import Rito.Color (Color)
 import Rito.Euler (Euler)
@@ -18,65 +20,64 @@ import Rito.Texture (Texture)
 import Rito.Undefinable (Undefinable)
 import Rito.Vector2 (Vector2)
 import Rito.Vector3 (Vector3)
+import Unsafe.Coerce (unsafeCoerce)
 import Web.HTML (HTMLCanvasElement)
 
-type Ctor payload =
-  { parent :: String
-  , scope :: String
-  , raiseId :: String -> Effect Unit
-  }
-  -> ThreeInterpret payload
-  -> Event payload
-
-class Connectable :: forall k. (k -> Type -> Type) -> Constraint
-class Connectable ctor where
-  toCtor :: forall lock payload. ctor lock payload -> Ctor payload
-  fromCtor :: forall lock payload. Ctor payload -> ctor lock payload
-  connect :: forall lock payload. String -> ctor lock payload
-
 class Sceneable ctor where
-  hi :: forall lock payload. ctor lock payload -> Sceneful lock payload
+  toScene :: forall lock payload. Entity Void (ctor lock payload) Effect lock -> Entity Void (Sceneful lock payload) Effect lock
+
+class Groupable ctor where
+  toGroup :: forall lock payload. Entity Void (ctor lock payload) Effect lock -> Entity Void (Groupful lock payload) Effect lock
 
 newtype Renderer (lock :: Type) payload = Renderer
   ( ThreeInterpret payload
     -> Event payload
   )
+
+type Ctor payload =
+  { parent :: Maybe String
+  , scope :: Scope
+  , raiseId :: String -> Effect Unit
+  }
+  -> ThreeInterpret payload
+  -> Event payload
+
 newtype Light (lock :: Type) payload = Light (Ctor payload)
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
 newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
+newtype Group (lock :: Type) payload = Group (Ctor payload)
 newtype Scene (lock :: Type) payload = Scene (Ctor payload)
 newtype Sceneful (lock :: Type) payload = Sceneful (Ctor payload)
+newtype Groupful (lock :: Type) payload = Groupful (Ctor payload)
 newtype Camera (lock :: Type) payload = Camera (Ctor payload)
 
 instance Sceneable Light where
-  hi (Light x) = Sceneful x
+  toScene = unsafeCoerce
 
 instance Sceneable Mesh where
-  hi (Mesh x) = Sceneful x
+  toScene = unsafeCoerce
 
 instance Sceneable Camera where
-  hi (Camera x) = Sceneful x
+  toScene = unsafeCoerce
 
-instance Connectable Mesh where
-  toCtor (Mesh c) = c
-  fromCtor c = Mesh c
-  connect me = Mesh \parent (ThreeInterpret { connectMesh }) -> makeEvent \k ->
-    do
-      parent.raiseId me
-      k $ connectMesh { id: me, parent: parent.parent, scope: parent.scope }
-      pure (pure unit)
+instance Sceneable Group where
+  toScene = unsafeCoerce
 
-instance Connectable Sceneful where
-  toCtor (Sceneful c) = c
-  fromCtor c = Sceneful c
-  connect me = Sceneful \parent (ThreeInterpret { connectToScene }) -> makeEvent
-    \k ->
-      do
-        parent.raiseId me
-        k $ connectToScene
-          { id: me, parent: parent.parent, scope: parent.scope }
-        pure (pure unit)
+instance Groupable Light where
+  toGroup = unsafeCoerce
+
+instance Groupable Mesh where
+  toGroup = unsafeCoerce
+
+instance Groupable Camera where
+  toGroup = unsafeCoerce
+
+instance Groupable Group where
+  toGroup = unsafeCoerce
+
+instance Groupable Scene where
+  toGroup = unsafeCoerce
 
 type WebGLRender = { id :: String, scene :: String, camera :: String }
 type MakeWebGLRenderer =
@@ -107,20 +108,25 @@ newtype InitializeWebGLRenderer = InitializeWebGLRenderer
       WPP.WebGLRenderingPowerPreference
   }
 
-type MakeScene =
+type MakeScene f s =
   { id :: String
-  , scope :: String
-  , parent :: String
+  , scope :: s
+  , parent :: f String
   }
-type MakeMesh =
+type MakeGroup f s =
   { id :: String
-  , scope :: String
-  , parent :: String
+  , scope :: s
+  , parent :: f String
   }
-type MakeSphere =
+type MakeMesh f s =
   { id :: String
-  , scope :: String
-  , parent :: String
+  , scope :: s
+  , parent :: f String
+  }
+type MakeSphere f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
   | InitializeSphere'
   }
 newtype InitializeSphere = InitializeSphere { | InitializeSphere' }
@@ -133,10 +139,10 @@ type InitializeSphere' =
   , thetaStart :: Number
   , thetaLength :: Number
   )
-type MakePointLight =
+type MakePointLight f s =
   { id :: String
-  , scope :: String
-  , parent :: String
+  , scope :: s
+  , parent :: f String
   | InitializePointLight'
   }
 type InitializePointLight' =
@@ -146,16 +152,16 @@ type InitializePointLight' =
   , decay :: Number
   )
 newtype InitializePointLight = InitializePointLight { | InitializePointLight' }
-type MakeMeshStandardMaterial =
+type MakeMeshStandardMaterial f s =
   { id :: String
-  , scope :: String
-  , parent :: String
+  , scope :: s
+  , parent :: f String
   | (InitializeMeshStandardMaterial' Maybe NormalMapType)
   }
-type MakeMeshStandardMaterial' =
+type MakeMeshStandardMaterial' f s =
   { id :: String
-  , scope :: String
-  , parent :: String
+  , scope :: s
+  , parent :: f String
   | (InitializeMeshStandardMaterial' Undefinable Int)
   }
 type InitializeMeshStandardMaterial' (opt :: Type -> Type) normalMapType =
@@ -189,10 +195,10 @@ type InitializeMeshStandardMaterial' (opt :: Type -> Type) normalMapType =
   )
 newtype InitializeMeshStandardMaterial = InitializeMeshStandardMaterial
   { | (InitializeMeshStandardMaterial' Maybe NormalMapType) }
-type MakeBox =
+type MakeBox f s =
   { id :: String
-  , scope :: String
-  , parent :: String
+  , scope :: s
+  , parent :: f String
   | InitializeBox'
   }
 type InitializeBox' =
@@ -204,10 +210,10 @@ type InitializeBox' =
   , depthSegments :: Number
   )
 newtype InitializeBox = InitializeBox { | InitializeBox' }
-type MakeTorus =
+type MakeTorus f s =
   { id :: String
-  , scope :: String
-  , parent :: String
+  , scope :: s
+  , parent :: f String
   | InitializeTorus'
   }
 type InitializeTorus' =
@@ -218,10 +224,10 @@ type InitializeTorus' =
   , arc :: Number
   )
 newtype InitializeTorus = InitializeTorus { | InitializeTorus' }
-type MakePlane =
+type MakePlane f s =
   { id :: String
-  , scope :: String
-  , parent :: String
+  , scope :: s
+  , parent :: f String
   | InitializePlane'
   }
 type InitializePlane' =
@@ -231,10 +237,10 @@ type InitializePlane' =
   , heightSegments :: Int
   )
 newtype InitializePlane = InitializePlane { | InitializePlane' }
-type MakePerspectiveCamera =
+type MakePerspectiveCamera f s =
   { id :: String
-  , scope :: String
-  , parent :: String
+  , scope :: s
+  , parent :: f String
   | InitializePerspectiveCamera'
   }
 type InitializePerspectiveCamera' =
@@ -338,37 +344,34 @@ type SetDecay = { id :: String, decay :: Number }
 -- renderer
 type SetSize = { id :: String, width :: Number, height :: Number }
 --
-type MakeNoop =
-  { id :: String
-  , scope :: String
-  , parent :: String
-  }
 type ConnectMesh =
   { id :: String
   , parent :: String
-  , scope :: String
+  , scope :: Scope
   }
 type ConnectToScene =
   { id :: String
   , parent :: String
-  , scope :: String
+  , scope :: Scope
   }
 type Disconnect =
   { id :: String
   , parent :: String
-  , scope :: String
+  , scope :: Scope
   }
 type ConnectGeometry =
   { id :: String
   , parent :: String
-  , scope :: String
+  , scope :: Scope
   }
 type ConnectMaterial =
   { id :: String
   , parent :: String
-  , scope :: String
+  , scope :: Scope
   }
 type DeleteFromCache = { id :: String }
+
+derive instance Newtype (ThreeInterpret payload) _
 
 newtype ThreeInterpret payload = ThreeInterpret
   { ids :: Effect String
@@ -376,16 +379,16 @@ newtype ThreeInterpret payload = ThreeInterpret
   , webGLRender :: WebGLRender -> payload
   --
   , makeWebGLRenderer :: MakeWebGLRenderer -> payload
-  , makeScene :: MakeScene -> payload
-  , makeMesh :: MakeMesh -> payload
-  , makeSphere :: MakeSphere -> payload
-  , makeBox :: MakeBox -> payload
-  , makeTorus :: MakeTorus -> payload
-  , makePlane :: MakePlane -> payload
-  , makePointLight :: MakePointLight -> payload
-  , makeMeshStandardMaterial :: MakeMeshStandardMaterial -> payload
-  , makePerspectiveCamera :: MakePerspectiveCamera -> payload
-  , makeNoop :: MakeNoop -> payload
+  , makeGroup :: MakeGroup Maybe Scope -> payload
+  , makeScene :: MakeScene Maybe Scope -> payload
+  , makeMesh :: MakeMesh Maybe Scope -> payload
+  , makeSphere :: MakeSphere Maybe Scope -> payload
+  , makeBox :: MakeBox Maybe Scope -> payload
+  , makeTorus :: MakeTorus Maybe Scope -> payload
+  , makePlane :: MakePlane Maybe Scope -> payload
+  , makePointLight :: MakePointLight Maybe Scope -> payload
+  , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
+  , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
   -- SphereGeometry
   , setRadius :: SetRadius -> payload
   , setWidthSegments :: SetWidthSegments -> payload

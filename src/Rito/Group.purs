@@ -1,4 +1,4 @@
-module Rito.Scene (scene, Scene, AScene) where
+module Rito.Group (group, Group, AGroup) where
 
 import Prelude
 
@@ -12,24 +12,23 @@ import Data.Newtype (unwrap)
 import Data.Variant (Variant, match)
 import Effect (Effect)
 import FRP.Event (Event, bang, makeEvent, subscribe)
-import Rito.Core (Sceneful, toGroup)
+import Rito.Core (Groupful, toGroup)
 import Rito.Core as C
 import Rito.Euler (Euler)
-import Rito.Group as Group
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
 import Rito.Vector3 (Vector3)
 import Unsafe.Coerce (unsafeCoerce)
 
-type Sceneable lock payload = Bolson.Entity Void (C.Sceneful lock payload)
+type Groupable lock payload = Bolson.Entity Void (C.Groupful lock payload)
   Effect
   lock
 
-type AScene lock payload = Bolson.Entity Void (C.Scene lock payload)
+type AGroup lock payload = Bolson.Entity Void (C.Group lock payload)
   Effect
   lock
 
-newtype Scene = Scene
+newtype Group = Group
   ( Variant
       ( matrix4 :: Matrix4
       , quaternion :: Quaternion
@@ -51,12 +50,12 @@ newtype Scene = Scene
       )
   )
 
-scene
+group
   :: forall lock payload
-   . Event Scene
-  -> Array (Sceneable lock payload)
-  -> AScene lock payload
-scene props kidz = Element' $ C.Scene go
+   . Event Group
+  -> Array (Groupable lock payload)
+  -> AGroup lock payload
+group props kidz = Element' $ C.Group go
   where
   go
     parent
@@ -64,7 +63,7 @@ scene props kidz = Element' $ C.Scene go
       ( C.ThreeInterpret
           { ids
           , deleteFromCache
-          , makeScene
+          , makeGroup
           , setMatrix4
           , setQuaternion
           , setRotationFromAxisAngle
@@ -88,13 +87,13 @@ scene props kidz = Element' $ C.Scene go
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
       oneOf
-        [ bang $ makeScene
+        [ bang $ makeGroup
             { id: me
             , parent: parent.parent
             , scope: parent.scope
             }
         , props <#>
-            ( \(Scene msh) ->
+            ( \(Group msh) ->
                 msh # match
                   { matrix4: setMatrix4 <<< { id: me, matrix4: _ }
                   , quaternion: setQuaternion <<< { id: me, quaternion: _ }
@@ -126,16 +125,16 @@ scene props kidz = Element' $ C.Scene go
             { doLogic: absurd
             , ids: unwrap >>> _.ids
             , disconnectElement: unwrap >>> _.disconnect
-            , wrapElt: \a -> (unsafeCoerce :: Group.AGroup lock payload -> AScene lock payload) (Group.group empty [ toGroup a ])
-            , toElt: \(C.Scene obj) -> Bolson.Element obj
+            , wrapElt: \a -> group empty [ toGroup a ]
+            , toElt: \(C.Group obj) -> Bolson.Element obj
             }
             { parent: Just me, scope: parent.scope, raiseId: pure mempty }
             di
             ( fixed
                 ( map
                     ( unsafeCoerce
-                        :: Entity Void (Sceneful lock payload) Effect lock
-                        -> Entity Void (C.Scene lock payload) Effect lock
+                        :: Entity Void (Groupful lock payload) Effect lock
+                        -> Entity Void (C.Group lock payload) Effect lock
                     )
                     kidz
                 )

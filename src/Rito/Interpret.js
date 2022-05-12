@@ -102,6 +102,7 @@ export const setSize_ = (a) => (state) => () => {
 	state.units[a.id].main.setSize(a.width, a.height);
 }
 export const makeScene_ = genericMake_(() => new THREE.Scene())(() => {});
+export const makeGroup_ = genericMake_(() => new THREE.Group())(() => {});
 export const webGLRender_ = (a) => (state) => () => {
 	state.units[a.id].main.render(
 		state.units[a.scene].main,
@@ -369,17 +370,6 @@ export function makeFFIThreeSnapshot() {
 	return {
 		units: {},
 		scopes: {},
-	};
-}
-
-export function makeNoop_(a) {
-	return function (state) {
-		return function () {
-			const ptr = a.id;
-			state.units[ptr] = {
-				noop: true,
-			};
-		};
 	};
 }
 

@@ -13,7 +13,7 @@ import Data.Foldable (for_, oneOf, oneOfMap, traverse_)
 import Data.Homogeneous.Record as Rc
 import Data.Int as Int
 import Data.JSDate (getTime, now)
-import Data.Lens (over)
+import Data.Lens (_2, over)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Newtype (unwrap)
