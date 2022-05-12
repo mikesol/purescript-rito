@@ -211,10 +211,10 @@ let additions =
           , "web-events"
           ]
         , repo = "https://github.com/mikesol/purescript-wags.git"
-        , version = "v1.1.6"
+        , version = "v1.1.5"
         }
       , bolson =
-        { dependencies = [ "heterogeneous" ]
+        { dependencies = [ "heterogeneous", "fast-vect" ]
         , repo = "https://github.com/mikesol/purescript-bolson.git"
         , version = "v0.0.1"
         }

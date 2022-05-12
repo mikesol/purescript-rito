@@ -12,53 +12,48 @@ import Data.DateTime.Instant (unInstant)
 import Data.Foldable (for_, oneOf, oneOfMap, traverse_)
 import Data.Homogeneous.Record as Rc
 import Data.Int as Int
-import Data.JSDate (getTime, now)
-import Data.Lens (_2, over)
+import Data.Lens (over)
 import Data.Lens.Record (prop)
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
 import Data.Number (cos, pi, sin, (%))
-import Data.Profunctor (lcmap)
 import Data.Profunctor.Strong (second)
 import Data.Traversable (traverse)
 import Data.Tuple.Nested (type (/\), (/\))
 import Data.UInt (toNumber)
 import Deku.Attribute (attr, cb, (:=))
-import Deku.Control (blank, plant, text)
+import Deku.Control (text)
 import Deku.DOM as D
 import Deku.Toplevel (runInBody1)
-import Effect (Effect, foreachE)
-import Effect.Aff (launchAff, launchAff_)
+import Effect (Effect)
+import Effect.Aff (launchAff_)
 import Effect.Class (liftEffect)
 import Effect.Random (randomInt)
 import Effect.Random as Random
 import Effect.Ref (new, read, write)
 import FRP.Behavior (behavior)
-import FRP.Event (Event, bang, create, keepLatest, makeEvent, memoize, sampleOn, subscribe)
+import FRP.Event (Event, bang, keepLatest, makeEvent, memoize, subscribe)
 import FRP.Event.Animate (animationFrameEvent)
 import FRP.Event.Time (withTime)
 import FRP.Event.VBus (V, vbus)
 import Foreign.Object (fromHomogeneous, values)
-import Graphics.Canvas (CanvasElement, arc, beginPath, fill, fillRect, getContext2D, setFillStyle)
 import Random.LCG (mkSeed)
 import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Color (RGB(..))
-import Rito.Core (hi)
+import Rito.Core (toScene)
 import Rito.Geometries.Sphere (sphere)
 import Rito.Lights.PointLight (pointLight)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Mesh (mesh)
-import Rito.Properties (aspect, heightSegments, positionX, size, positionY, positionZ, radius, render, scaleX, scaleY, scaleZ)
+import Rito.Properties (positionX, positionY, positionZ, render, scaleX, scaleY, scaleZ, size)
 import Rito.Renderers.WebGL (webGLRenderer)
 import Rito.Run as Rito.Run
-import Rito.Scene (fscene, scene)
-import Rito.Threeful (Threeful(..))
+import Rito.Scene (scene)
 import Test.QuickCheck.Gen (elements, evalGen)
 import Type.Proxy (Proxy(..))
-import Unsafe.Coerce (unsafeCoerce)
 import WAGS.Clock (withACTime)
 import WAGS.Control (analyser_, bandpass, delay, fan1, fix, gain, gain_, highpass, lowpass, playBuf)
-import WAGS.Core (AudioEnvelope(..), AudioNumeric(..), Node, Po2(..), _linear, bangOn, mix)
+import WAGS.Core (Audible, AudioEnvelope(..), AudioNumeric(..), Po2(..), _linear, bangOn)
 import WAGS.Interpret (close, constant0Hack, context, decodeAudioDataFromUri, getByteFrequencyData)
 import WAGS.Math (calcSlope)
 import WAGS.Properties as P
@@ -66,7 +61,7 @@ import WAGS.Run (run2)
 import WAGS.WebAPI (AnalyserNodeCb(..))
 import Web.Event.Event (target)
 import Web.HTML (window)
-import Web.HTML.HTMLCanvasElement (HTMLCanvasElement, height, width)
+import Web.HTML.HTMLCanvasElement (HTMLCanvasElement)
 import Web.HTML.HTMLCanvasElement as HTMLCanvasElement
 import Web.HTML.HTMLInputElement (fromEventTarget, valueAsNumber)
 import Web.HTML.Window (innerHeight, innerWidth)
@@ -142,8 +137,8 @@ runThree :: _ -> Number -> Number -> HTMLCanvasElement -> Effect Unit
 runThree canvas iw ih e = do
   _ <- Rito.Run.run
     ( webGLRenderer
-        ( fscene empty
-            ( [ PlainOld' $ hi $ pointLight {}
+        ( scene empty
+            ( [ toScene $ pointLight {}
                   ( oneOfMap bang
                       [ positionX 1.0
                       , positionY (-0.5)
@@ -155,8 +150,7 @@ runThree canvas iw ih e = do
                   ( 0 .. 40 <#> \i -> do
                       let tni = Int.toNumber i
                       let tni40 = tni / 40.0
-                      PlainOld'
-                        $ hi
+                      toScene
                         $ mesh
                           ( sphere { widthSegments: 32, heightSegments: 32 }
                               empty
@@ -260,7 +254,7 @@ main = launchAff_ do
             startE = bang unit <|> event.startStop.start
             stopE = event.startStop.stop
 
-            music :: forall lock. _ -> _ -> _ -> Array (Node _ lock _)
+            music :: forall lock. _ -> _ -> _ -> Array (Audible _ lock _)
             music ctx buffer analyserE = do
               let
                 sliderE = (\{ acTime, value } -> acTime /\ value) <$> withACTime
@@ -275,7 +269,7 @@ main = launchAff_ do
                           )
                       )
                   , fftSize: TTT7
-                  } $ fan1
+                  } [fan1
                   ( playBuf buffer
                       ( bangOn <|>
                           ( P.playbackRate <<< ttap <<< second
@@ -283,7 +277,7 @@ main = launchAff_ do
                           ) <$> sliderE
                       )
                   )
-                  \b _ -> mix $ fix
+                  \b _ -> fix
                     \g0 -> gain_ 1.0
                       [ b
                       , delay { maxDelayTime: 2.5, delayTime: 1.0 }
@@ -353,9 +347,9 @@ main = launchAff_ do
                                     ]
                                 ]
                           ]
-                      ]
+                      ]]
               ]
-          plant $ D.div_
+          D.div_
             [ D.div
                 ( bang
                     ( D.Style :=
@@ -372,7 +366,7 @@ main = launchAff_ do
                               (runThree event.canvas iw ih)
                         ]
                     )
-                    blank
+                    []
                 ]
             , D.div
                 ( bang $ D.Style :=
@@ -394,7 +388,7 @@ main = launchAff_ do
                             )
                         ]
                     )
-                    blank
+                    []
                 , D.button
                     ( oneOf
                         [ bang $ D.Style :=

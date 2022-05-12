@@ -1,36 +1,24 @@
-module Rito.Mesh (mesh, mesh', Mesh(..), Mesh', dmesh, emesh, fmesh) where
+module Rito.Mesh (mesh, mesh', Mesh(..), Mesh') where
 
 import Prelude
 
+import Bolson.Control (flatten)
+import Bolson.Core (fixed)
+import Bolson.Core as Bolson
 import Control.Plus (empty)
 import Data.Foldable (oneOf)
-import Data.Newtype (class Newtype)
+import Data.Maybe (Maybe(..))
+import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
+import Rito.Core (toGroup)
 import Rito.Core as C
 import Rito.Euler (Euler)
+import Rito.Group as Group
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
-import Rito.Threeful (Child, DynamicChildren(..), Eventful(..), FixedChildren(..), Threeful(..), handleKids)
 import Rito.Vector3 (Vector3)
-
-emesh
-  :: forall lock payload
-   . Event (Threeful C.Mesh lock payload)
-  -> Threeful C.Mesh lock payload
-emesh = Eventful' <<< Eventful
-
-fmesh
-  :: forall lock payload
-   . Array (Threeful C.Mesh lock payload)
-  -> Threeful C.Mesh lock payload
-fmesh = FixedChildren' <<< FixedChildren
-
-dmesh
-  :: forall lock payload
-   . Event (Event (Child C.Mesh lock payload))
-  -> Threeful C.Mesh lock payload
-dmesh = DynamicChildren' <<< DynamicChildren
+import Unsafe.Coerce (unsafeCoerce)
 
 ----
 type Mesh' = Variant
@@ -66,9 +54,9 @@ mesh'
    . C.Geometry lock payload
   -> C.Material lock payload
   -> Event Mesh
-  -> Threeful C.Mesh lock payload
-  -> C.Mesh lock payload
-mesh' (C.Geometry geo) (C.Material mat) props kidz = C.Mesh go
+  -> Array (C.AMesh lock payload)
+  -> C.AMesh lock payload
+mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
   where
   go
     parent
@@ -112,13 +100,13 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = C.Mesh go
             , scope: parent.scope
             }
         , geo
-            { parent: me
+            { parent: Just me
             , scope: parent.scope
             , raiseId: mempty
             }
             di
         , mat
-            { parent: me
+            { parent: Just me
             , scope: parent.scope
             , raiseId: mempty
             }
@@ -157,47 +145,22 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = C.Mesh go
                   , lookAt: setLookAt <<< { id: me, v: _ }
                   }
             )
-        , handleKids me parent.scope di kidz
+        , flatten
+            { doLogic: absurd
+            , ids: unwrap >>> _.ids
+            , disconnectElement: unwrap >>> _.disconnect
+            , wrapElt: \a -> (unsafeCoerce :: C.AGroup lock payload -> C.AMesh lock payload) (Group.group empty [ toGroup a ])
+            , toElt: \(C.Mesh obj) -> Bolson.Element obj
+            }
+            { parent: Just me, scope: parent.scope, raiseId: pure mempty }
+            di
+            ( fixed kidz            )
         ]
-
--- group
---   :: forall i lock payload
---    . Event Group
---   -> Threeful lock payload
---   -> Threeful lock payload
--- group props kidz = C.Geometry go
---   where
---   go
---     parent
---     di@( C.ThreeInterpret
---         { ids
---         , createMesh
---         , deleteFromCache
---         , makeMesh
---         , connectGeometry
---         , connectMaterial
---         }
---     ) = makeEvent \k -> do
---     me <- ids
---     parent.raiseId me
---     -- do geo
---     -- do mat
---     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
---       oneOf
---         [ bang $ makeMesh
---             { id: me
---             , parent: parent.parent
---             , scope: parent.scope
---             , geometry: ?hole
---             , material: ?hole
---             }
---         , __internalRitoFlatten me di kidz
---         ]
 
 mesh
   :: forall lock payload
    . C.Geometry lock payload
   -> C.Material lock payload
   -> Event Mesh
-  -> C.Mesh lock payload
-mesh geo mat props = mesh' geo mat props (Eventful' (Eventful empty))
+  -> C.AMesh lock payload
+mesh geo mat props = mesh' geo mat props []

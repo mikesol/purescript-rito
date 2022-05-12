@@ -1,4 +1,4 @@
-module Rito.Group (group, Group, AGroup) where
+module Rito.Group (group, Group) where
 
 import Prelude
 
@@ -10,23 +10,13 @@ import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
 import Data.Variant (Variant, match)
-import Effect (Effect)
 import FRP.Event (Event, bang, makeEvent, subscribe)
-import Rito.Core (Groupful, toGroup)
 import Rito.Core as C
 import Rito.Euler (Euler)
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
 import Rito.Vector3 (Vector3)
 import Unsafe.Coerce (unsafeCoerce)
-
-type Groupable lock payload = Bolson.Entity Void (C.Groupful lock payload)
-  Effect
-  lock
-
-type AGroup lock payload = Bolson.Entity Void (C.Group lock payload)
-  Effect
-  lock
 
 newtype Group = Group
   ( Variant
@@ -53,8 +43,8 @@ newtype Group = Group
 group
   :: forall lock payload
    . Event Group
-  -> Array (Groupable lock payload)
-  -> AGroup lock payload
+  -> Array (C.AGroupful lock payload)
+  -> C.AGroup lock payload
 group props kidz = Element' $ C.Group go
   where
   go
@@ -125,7 +115,7 @@ group props kidz = Element' $ C.Group go
             { doLogic: absurd
             , ids: unwrap >>> _.ids
             , disconnectElement: unwrap >>> _.disconnect
-            , wrapElt: \a -> group empty [ toGroup a ]
+            , wrapElt: \a -> group empty [ C.toGroup a ]
             , toElt: \(C.Group obj) -> Bolson.Element obj
             }
             { parent: Just me, scope: parent.scope, raiseId: pure mempty }
@@ -133,8 +123,8 @@ group props kidz = Element' $ C.Group go
             ( fixed
                 ( map
                     ( unsafeCoerce
-                        :: Entity Void (Groupful lock payload) Effect lock
-                        -> Entity Void (C.Group lock payload) Effect lock
+                        :: C.AGroupful lock payload
+                        -> C.AGroup lock payload
                     )
                     kidz
                 )

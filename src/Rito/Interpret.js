@@ -1,22 +1,35 @@
 import * as THREE from "three";
 
+const GLOBAL_SCOPE = "@global@";
+
 const genericMake_ = (ctor) => (conn) => (a) => (state) => () => {
 	const { id, scope, parent, ...rest } = a;
-	if (!state.scopes[scope]) {
-		state.scopes[scope] = [];
+	const $scope = scope ? scope : GLOBAL_SCOPE;
+	if (!state.scopes[$scope]) {
+		state.scopes[$scope] = [];
 	}
-	state.scopes[scope].push(id);
+	state.scopes[$scope].push(id);
 	state.units[id] = {
 		listeners: {},
 		parent: parent,
-		scope: scope,
+		scope: $scope,
 		main: ctor(rest),
 	};
-	if (parent === "@portal@") {
+	if (parent === undefined) {
 		return;
 	}
 	conn(state.units[id], state.units[parent]);
 };
+
+export const stripUndefined_ = (a) => {
+	const out = {...a};
+	for (const key in a) {
+		if (a[key] === undefined) {
+			delete out[key];
+		}
+	}
+	return out;
+}
 
 export const connectToScene_ = (a) => (state) => () =>
 	state.units[a.parent].main.add(state.units[a.id].main);
@@ -388,9 +401,6 @@ export function disconnect_(a) {
 	return function (state) {
 		return function () {
 			const ptr = a.id;
-			if (state.units[ptr].noop) {
-				return;
-			}
 			if (
 				state.units[ptr].containingScope &&
 				state.units[ptr].containingScope !== a.scope
@@ -399,7 +409,7 @@ export function disconnect_(a) {
 			}
 			// check to make sure this actually works
 			state.units[ptr].main.remove();
-			state.units[ptr].main.destroy();
+			if (a.scope !== GLOBAL_SCOPE) { state.units[ptr].main.destroy(); }
 		};
 	};
 }

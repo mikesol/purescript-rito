@@ -258,8 +258,10 @@ instance
     where
     key = Proxy :: _ key
 
+foreign import stripUndefined_ :: forall a. a -> a
+
 ffiize :: forall ri i o. RowToList i ri => FFIIze ri i o => { | i } -> { | o }
-ffiize i = build (ffiize' (Proxy :: _ ri) i) {}
+ffiize i = stripUndefined_ (build (ffiize' (Proxy :: _ ri) i) {})
 
 effectfulThreeInterpret :: Core.ThreeInterpret (FFIThreeSnapshot -> Effect Unit)
 effectfulThreeInterpret = Core.ThreeInterpret

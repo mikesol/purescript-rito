@@ -1,4 +1,4 @@
-module Rito.Scene (scene, Scene, AScene) where
+module Rito.Scene (scene, Scene) where
 
 import Prelude
 
@@ -10,24 +10,15 @@ import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
 import Data.Variant (Variant, match)
-import Effect (Effect)
 import FRP.Event (Event, bang, makeEvent, subscribe)
-import Rito.Core (Sceneful, toGroup)
 import Rito.Core as C
 import Rito.Euler (Euler)
 import Rito.Group as Group
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
 import Rito.Vector3 (Vector3)
+import Safe.Coerce (coerce)
 import Unsafe.Coerce (unsafeCoerce)
-
-type Sceneable lock payload = Bolson.Entity Void (C.Sceneful lock payload)
-  Effect
-  lock
-
-type AScene lock payload = Bolson.Entity Void (C.Scene lock payload)
-  Effect
-  lock
 
 newtype Scene = Scene
   ( Variant
@@ -54,8 +45,8 @@ newtype Scene = Scene
 scene
   :: forall lock payload
    . Event Scene
-  -> Array (Sceneable lock payload)
-  -> AScene lock payload
+  -> Array (C.ASceneful lock payload)
+  -> C.AScene lock payload
 scene props kidz = Element' $ C.Scene go
   where
   go
@@ -126,7 +117,7 @@ scene props kidz = Element' $ C.Scene go
             { doLogic: absurd
             , ids: unwrap >>> _.ids
             , disconnectElement: unwrap >>> _.disconnect
-            , wrapElt: \a -> (unsafeCoerce :: Group.AGroup lock payload -> AScene lock payload) (Group.group empty [ toGroup a ])
+            , wrapElt: \a -> (unsafeCoerce :: C.AGroup lock payload -> C.AScene lock payload) (Group.group empty [ coerce a ])
             , toElt: \(C.Scene obj) -> Bolson.Element obj
             }
             { parent: Just me, scope: parent.scope, raiseId: pure mempty }
@@ -134,8 +125,8 @@ scene props kidz = Element' $ C.Scene go
             ( fixed
                 ( map
                     ( unsafeCoerce
-                        :: Entity Void (Sceneful lock payload) Effect lock
-                        -> Entity Void (C.Scene lock payload) Effect lock
+                        :: C.ASceneful lock payload
+                        -> C.AScene lock payload
                     )
                     kidz
                 )

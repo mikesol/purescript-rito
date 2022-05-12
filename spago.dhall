@@ -8,9 +8,7 @@
   , "either"
   , "event"
   , "exceptions"
-  , "fast-vect"
   , "foldable-traversable"
-  , "foreign-object"
   , "integers"
   , "maybe"
   , "newtype"
@@ -22,10 +20,8 @@
   , "record"
   , "refs"
   , "safe-coerce"
-  , "sized-vectors"
   , "unsafe-coerce"
   , "variant"
-  , "web-events"
   , "web-html"
   ]
 , packages = ./packages.dhall

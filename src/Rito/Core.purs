@@ -43,14 +43,21 @@ type Ctor payload =
   -> Event payload
 
 newtype Light (lock :: Type) payload = Light (Ctor payload)
+type ALight lock payload = Entity Void (Light lock payload) Effect lock
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
 newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
+type AMesh lock payload = Entity Void (Mesh lock payload) Effect lock
 newtype Group (lock :: Type) payload = Group (Ctor payload)
+type AGroup lock payload = Entity Void (Group lock payload) Effect lock
 newtype Scene (lock :: Type) payload = Scene (Ctor payload)
+type AScene lock payload = Entity Void (Scene lock payload) Effect lock
 newtype Sceneful (lock :: Type) payload = Sceneful (Ctor payload)
+type ASceneful lock payload = Entity Void (Sceneful lock payload) Effect lock
 newtype Groupful (lock :: Type) payload = Groupful (Ctor payload)
+type AGroupful lock payload = Entity Void (Groupful lock payload) Effect lock
 newtype Camera (lock :: Type) payload = Camera (Ctor payload)
+type ACamera lock payload = Entity Void (Camera lock payload) Effect lock
 
 instance Sceneable Light where
   toScene = unsafeCoerce
@@ -74,9 +81,6 @@ instance Groupable Camera where
   toGroup = unsafeCoerce
 
 instance Groupable Group where
-  toGroup = unsafeCoerce
-
-instance Groupable Scene where
   toGroup = unsafeCoerce
 
 type WebGLRender = { id :: String, scene :: String, camera :: String }
