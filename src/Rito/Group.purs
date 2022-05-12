@@ -1,62 +1,51 @@
-module Rito.Mesh (mesh, mesh', Mesh(..), Mesh') where
+module Rito.Group (group, Group) where
 
 import Prelude
 
 import Bolson.Control (flatten)
-import Bolson.Core (fixed)
+import Bolson.Core (Entity(..), fixed)
 import Bolson.Core as Bolson
 import Control.Plus (empty)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (unwrap)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
-import Rito.Core (toGroup)
 import Rito.Core as C
 import Rito.Euler (Euler)
-import Rito.Group as Group
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
 import Rito.Vector3 (Vector3)
 import Unsafe.Coerce (unsafeCoerce)
 
-----
-type Mesh' = Variant
-  ( -- object3D
-    matrix4 :: Matrix4
-  , quaternion :: Quaternion
-  , rotationFromAxisAngle :: { axis :: Vector3, angle :: Number }
-  , rotationFromEuler :: Euler
-  , rotationFromMatrix :: Matrix4
-  , rotationFromQuaternion :: Quaternion
-  , rotateOnAxis :: { axis :: Vector3, angle :: Number }
-  , rotateOnWorldAxis :: { axis :: Vector3, angle :: Number }
-  , rotateX :: Number
-  , rotateY :: Number
-  , rotateZ :: Number
-  , translateOnAxis :: { axis :: Vector3, distance :: Number }
-  , translateX :: Number
-  , translateY :: Number
-  , translateZ :: Number
-  , positionX :: Number
-  , positionY :: Number
-  , positionZ :: Number
-  , scaleX :: Number
-  , scaleY :: Number
-  , scaleZ :: Number
-  , lookAt :: Vector3
+newtype Group = Group
+  ( Variant
+      ( matrix4 :: Matrix4
+      , quaternion :: Quaternion
+      , rotationFromAxisAngle :: { axis :: Vector3, angle :: Number }
+      , rotationFromEuler :: Euler
+      , rotationFromMatrix :: Matrix4
+      , rotationFromQuaternion :: Quaternion
+      , rotateOnAxis :: { axis :: Vector3, angle :: Number }
+      , rotateOnWorldAxis :: { axis :: Vector3, angle :: Number }
+      , rotateX :: Number
+      , rotateY :: Number
+      , rotateZ :: Number
+      , translateOnAxis :: { axis :: Vector3, distance :: Number }
+      , translateX :: Number
+      , translateY :: Number
+      , translateZ :: Number
+      , scale :: { x :: Number, y :: Number, z :: Number }
+      , lookAt :: Vector3
+      )
   )
-newtype Mesh = Mesh Mesh'
-instance Newtype Mesh Mesh'
 
-mesh'
+group
   :: forall lock payload
-   . C.Geometry lock payload
-  -> C.Material lock payload
-  -> Event Mesh
-  -> Array (C.AMesh lock payload)
-  -> C.AMesh lock payload
-mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
+   . Event Group
+  -> Array (C.AGroupful lock payload)
+  -> C.AGroup lock payload
+group props kidz = Element' $ C.Group go
   where
   go
     parent
@@ -64,8 +53,7 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
       ( C.ThreeInterpret
           { ids
           , deleteFromCache
-          , makeMesh
-          -- object 3D
+          , makeGroup
           , setMatrix4
           , setQuaternion
           , setRotationFromAxisAngle
@@ -81,12 +69,7 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
           , setTranslateX
           , setTranslateY
           , setTranslateZ
-          , setPositionX
-          , setPositionY
-          , setPositionZ
-          , setScaleX
-          , setScaleY
-          , setScaleZ
+          , setScale
           , setLookAt
           }
       ) = makeEvent \k -> do
@@ -94,25 +77,13 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
       oneOf
-        [ bang $ makeMesh
+        [ bang $ makeGroup
             { id: me
             , parent: parent.parent
             , scope: parent.scope
             }
-        , geo
-            { parent: Just me
-            , scope: parent.scope
-            , raiseId: mempty
-            }
-            di
-        , mat
-            { parent: Just me
-            , scope: parent.scope
-            , raiseId: mempty
-            }
-            di
         , props <#>
-            ( \(Mesh msh) ->
+            ( \(Group msh) ->
                 msh # match
                   { matrix4: setMatrix4 <<< { id: me, matrix4: _ }
                   , quaternion: setQuaternion <<< { id: me, quaternion: _ }
@@ -136,12 +107,7 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
                   , translateX: setTranslateX <<< { id: me, translateX: _ }
                   , translateY: setTranslateY <<< { id: me, translateY: _ }
                   , translateZ: setTranslateZ <<< { id: me, translateZ: _ }
-                  , positionX: setPositionX <<< { id: me, positionX: _ }
-                  , positionY: setPositionY <<< { id: me, positionY: _ }
-                  , positionZ: setPositionZ <<< { id: me, positionZ: _ }
-                  , scaleX: setScaleX <<< { id: me, scaleX: _ }
-                  , scaleY: setScaleY <<< { id: me, scaleY: _ }
-                  , scaleZ: setScaleZ <<< { id: me, scaleZ: _ }
+                  , scale: \{ x, y, z } -> setScale { id: me, x, y, z }
                   , lookAt: setLookAt <<< { id: me, v: _ }
                   }
             )
@@ -149,18 +115,18 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
             { doLogic: absurd
             , ids: unwrap >>> _.ids
             , disconnectElement: unwrap >>> _.disconnect
-            , wrapElt: \a -> (unsafeCoerce :: C.AGroup lock payload -> C.AMesh lock payload) (Group.group empty [ toGroup a ])
-            , toElt: \(C.Mesh obj) -> Bolson.Element obj
+            , wrapElt: \a -> group empty [ C.toGroup a ]
+            , toElt: \(C.Group obj) -> Bolson.Element obj
             }
             { parent: Just me, scope: parent.scope, raiseId: pure mempty }
             di
-            ( fixed kidz            )
+            ( fixed
+                ( map
+                    ( unsafeCoerce
+                        :: C.AGroupful lock payload
+                        -> C.AGroup lock payload
+                    )
+                    kidz
+                )
+            )
         ]
-
-mesh
-  :: forall lock payload
-   . C.Geometry lock payload
-  -> C.Material lock payload
-  -> Event Mesh
-  -> C.AMesh lock payload
-mesh geo mat props = mesh' geo mat props []

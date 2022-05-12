@@ -6,9 +6,10 @@ module Rito.Interpret
 
 import Prelude
 
+import Bolson.Core (Scope(..))
 import Data.Lens (over)
 import Data.Lens.Record (prop)
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
 import Data.Symbol (class IsSymbol)
 import Effect (Effect)
@@ -44,19 +45,19 @@ foreign import makeFFIThreeSnapshot :: Effect FFIThreeSnapshot
 foreign import webGLRender_ :: Core.WebGLRender -> FFIThreeSnapshot -> Effect Unit
 --
 foreign import makeWebGLRenderer_ :: Core.MakeWebGLRenderer' -> FFIThreeSnapshot -> Effect Unit
-foreign import makePointLight_ :: Core.MakePointLight -> FFIThreeSnapshot -> Effect Unit
-foreign import makeScene_ :: Core.MakeScene -> FFIThreeSnapshot -> Effect Unit
-foreign import makeMesh_ :: Core.MakeMesh -> FFIThreeSnapshot -> Effect Unit
-foreign import makeSphere_ :: Core.MakeSphere -> FFIThreeSnapshot -> Effect Unit
-foreign import makeBox_ :: Core.MakeBox -> FFIThreeSnapshot -> Effect Unit
-foreign import makeTorus_ :: Core.MakeTorus -> FFIThreeSnapshot -> Effect Unit
-foreign import makePlane_ :: Core.MakePlane -> FFIThreeSnapshot -> Effect Unit
+foreign import makePointLight_ :: Core.MakePointLight Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makeScene_ :: Core.MakeScene Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makeGroup_ :: Core.MakeGroup Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makeMesh_ :: Core.MakeMesh Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makeSphere_ :: Core.MakeSphere Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makeBox_ :: Core.MakeBox Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makeTorus_ :: Core.MakeTorus Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makePlane_ :: Core.MakePlane Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeMeshStandardMaterial_
-  :: Core.MakeMeshStandardMaterial' -> FFIThreeSnapshot -> Effect Unit
+  :: Core.MakeMeshStandardMaterial' Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 --
 foreign import deleteFromCache_
   :: Core.DeleteFromCache -> FFIThreeSnapshot -> Effect Unit
-foreign import makeNoop_ :: Core.MakeNoop -> FFIThreeSnapshot -> Effect Unit
 --
 foreign import setRadius_ :: Core.SetRadius -> FFIThreeSnapshot -> Effect Unit
 foreign import setWidthSegments_
@@ -110,7 +111,7 @@ foreign import setEmissive_
 foreign import setEmissiveIntensity_
   :: Core.SetEmissiveIntensity -> FFIThreeSnapshot -> Effect Unit
 foreign import makePerspectiveCamera_
-  :: Core.MakePerspectiveCamera -> FFIThreeSnapshot -> Effect Unit
+  :: Core.MakePerspectiveCamera Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import setEmissiveMap_
   :: Core.SetEmissiveMap -> FFIThreeSnapshot -> Effect Unit
 foreign import setBumpMap_ :: Core.SetBumpMap -> FFIThreeSnapshot -> Effect Unit
@@ -188,8 +189,15 @@ foreign import disconnect_
 class FFIMe i o | i -> o where
   ffiMe :: i -> o
 
+instance FFIMe Int Int where
+  ffiMe = identity
+
 instance FFIMe Boolean Boolean where
   ffiMe = identity
+
+instance FFIMe Scope (Undefinable String) where
+  ffiMe Global = m2u Nothing
+  ffiMe (Local s) = m2u (Just s)
 
 instance FFIMe Number Number where
   ffiMe = identity
@@ -250,8 +258,10 @@ instance
     where
     key = Proxy :: _ key
 
+foreign import stripUndefined_ :: forall a. a -> a
+
 ffiize :: forall ri i o. RowToList i ri => FFIIze ri i o => { | i } -> { | o }
-ffiize i = build (ffiize' (Proxy :: _ ri) i) {}
+ffiize i = stripUndefined_ (build (ffiize' (Proxy :: _ ri) i) {})
 
 effectfulThreeInterpret :: Core.ThreeInterpret (FFIThreeSnapshot -> Effect Unit)
 effectfulThreeInterpret = Core.ThreeInterpret
@@ -260,15 +270,15 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , webGLRender: webGLRender_
   -- makers
   , makeWebGLRenderer: lcmap ffiize makeWebGLRenderer_
-  , makeScene: makeScene_
-  , makeMesh: makeMesh_
-  , makeSphere: makeSphere_
-  , makeBox: makeBox_
-  , makeTorus: makeTorus_
-  , makePlane: makePlane_
-  , makePointLight: makePointLight_
-  , makeNoop: makeNoop_
-  , makePerspectiveCamera: makePerspectiveCamera_
+  , makeScene: lcmap ffiize makeScene_
+  , makeGroup: lcmap ffiize makeGroup_
+  , makeMesh: lcmap ffiize makeMesh_
+  , makeSphere: lcmap ffiize makeSphere_
+  , makeBox: lcmap ffiize makeBox_
+  , makeTorus: lcmap ffiize makeTorus_
+  , makePlane: lcmap ffiize makePlane_
+  , makePointLight: lcmap ffiize makePointLight_
+  , makePerspectiveCamera: lcmap ffiize makePerspectiveCamera_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
   -- sphere geometry
   , setRadius: setRadius_

@@ -10,6 +10,7 @@ module Rito.Lights.PointLight
 
 import Prelude
 
+import Bolson.Core as Bolson
 import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
@@ -123,8 +124,8 @@ pointLight
    . InitialPointLight i
   => i
   -> Event PointLight
-  -> C.Light lock payload
-pointLight i' atts = C.Light go
+  -> C.ALight lock payload
+pointLight i' atts = Bolson.Element' $ C.Light go
   where
   C.InitializePointLight i = toInitializePointLight i'
   go
@@ -223,5 +224,5 @@ pointLight_
   :: forall i lock payload
    . InitialPointLight i
   => i
-  -> C.Light lock payload
+  -> C.ALight lock payload
 pointLight_ i = pointLight i empty

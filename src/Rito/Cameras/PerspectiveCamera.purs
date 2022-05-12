@@ -10,6 +10,7 @@ module Rito.Cameras.PerspectiveCamera
 
 import Prelude
 
+import Bolson.Core (Entity(..))
 import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
@@ -132,13 +133,14 @@ type PerspectiveCamera' = Variant
   )
 newtype PerspectiveCamera = PerspectiveCamera PerspectiveCamera'
 instance Newtype PerspectiveCamera PerspectiveCamera'
+
 perspectiveCamera
   :: forall i lock payload
    . InitialPerspectiveCamera i
   => i
   -> Event PerspectiveCamera
-  -> C.Camera lock payload
-perspectiveCamera i' atts = C.Camera go
+  -> C.ACamera lock payload
+perspectiveCamera i' atts = Element' $ C.Camera go
   where
   C.InitializePerspectiveCamera i = toInitializePerspectiveCamera i'
   go
@@ -263,5 +265,5 @@ perspectiveCamera_
   :: forall i lock payload
    . InitialPerspectiveCamera i
   => i
-  -> C.Camera lock payload
+  -> C.ACamera lock payload
 perspectiveCamera_ i = perspectiveCamera i empty

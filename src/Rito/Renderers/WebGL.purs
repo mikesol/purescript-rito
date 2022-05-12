@@ -2,18 +2,25 @@ module Rito.Renderers.WebGL where
 
 import Prelude
 
+import Bolson.Core (Entity(..), Scope(..))
+import Control.Lazy (fix)
+import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Either (Either(..))
 import Data.Foldable (oneOf)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import Effect.AVar as AVar
 import Effect.Exception (throwException)
 import Effect.Ref as Ref
 import FRP.Event (Event, bang, makeEvent, subscribe)
+import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Core as C
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
+import Rito.Scene (scene)
+import Safe.Coerce (coerce)
 import Web.HTML (HTMLCanvasElement)
 
 data WebGLRendererOptions = WebGLRendererOptions
@@ -142,22 +149,22 @@ instance
     )
 
 type WebGLRenderer' = Variant
-      ( render :: Unit
-      , size :: { width :: Number, height :: Number }
-      -- todo, add shadow map & other goodies
-      )
+  ( render :: Unit
+  , size :: { width :: Number, height :: Number }
+  -- todo, add shadow map & other goodies
+  )
 newtype WebGLRenderer = WebGLRenderer WebGLRenderer'
 instance Newtype WebGLRenderer WebGLRenderer'
 
 webGLRenderer
   :: forall i lock payload
    . InitialWebGLRenderer i
-  => C.Scene lock payload
-  -> C.Camera lock payload
+  => C.AScene lock payload
+  -> C.ACamera lock payload
   -> i
   -> Event WebGLRenderer
   -> C.Renderer lock payload
-webGLRenderer (C.Scene sne) (C.Camera cam) i' props = C.Renderer go
+webGLRenderer sne cam i' props = C.Renderer go
   where
   C.InitializeWebGLRenderer i = toInitializeWebGLRenderer i'
   go
@@ -190,18 +197,33 @@ webGLRenderer (C.Scene sne) (C.Camera cam) i' props = C.Renderer go
             , depth: i.depth
             , logarithmicDepthBuffer: i.logarithmicDepthBuffer
             }
-        , sne
-            { parent: me
-            , scope: scope
-            , raiseId: \i -> void $ AVar.tryPut i sceneAvar
-            }
-            di
-        , cam
-            { parent: me
-            , scope: scope
-            , raiseId: \i -> void $ AVar.tryPut i cameraAvar
-            }
-            di
+        , sne #
+            fix \f -> case _ of
+              Element' (C.Scene gooo) -> gooo
+                { parent: Just me
+                , scope: Local scope
+                , raiseId: \i -> void $ AVar.tryPut i sceneAvar
+                }
+                di
+              _ -> f (scene empty [ coerce sne ])
+        , cam #
+            fix \f ->
+              case _ of
+                Element' (C.Camera gooo) -> gooo
+                  { parent: Just me
+                  , scope: Local scope
+                  , raiseId: \i -> void $ AVar.tryPut i cameraAvar
+                  }
+                  di
+                -- todo: this is a bug and means we've rigged
+                -- our smart constructors wrong
+                -- watch for it?
+                _ -> f $ perspectiveCamera
+                  { fov: 75.0
+                  , aspect: 1.0
+                  , near: 0.1
+                  , far: 100.0
+                  }  empty
         , makeEvent \k -> do
             usuRef <- Ref.new mempty
             -- ugh, there's got to be a better way...
@@ -217,8 +239,12 @@ webGLRenderer (C.Scene sne) (C.Camera cam) i' props = C.Renderer go
                             ( \(WebGLRenderer msh) ->
                                 msh # match
                                   { render: \_ -> webGLRender
-                                      { id: me, scene: sceneId, camera: cameraId }
-                                  , size: \{ width, height} -> setSize { id: me, width, height }
+                                      { id: me
+                                      , scene: sceneId
+                                      , camera: cameraId
+                                      }
+                                  , size: \{ width, height } -> setSize
+                                      { id: me, width, height }
                                   }
                             )
                         )

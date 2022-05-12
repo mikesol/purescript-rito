@@ -1,35 +1,25 @@
-module Rito.Scene (scene, Scene, fscene) where
+module Rito.Scene (scene, Scene) where
 
 import Prelude
 
+import Bolson.Control (flatten)
+import Bolson.Core (Entity(..), fixed)
+import Bolson.Core as Bolson
+import Control.Plus (empty)
 import Data.Foldable (oneOf)
+import Data.Maybe (Maybe(..))
+import Data.Newtype (unwrap)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Core as C
 import Rito.Euler (Euler)
+import Rito.Group as Group
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
-import Rito.Threeful (Child, DynamicChildren(..), Eventful(..), FixedChildren(..), Threeful(..), handleKids)
 import Rito.Vector3 (Vector3)
+import Safe.Coerce (coerce)
+import Unsafe.Coerce (unsafeCoerce)
 
--- escene
---   :: forall lock payload. Event (Threeful C.Sceneful lock payload) -> Threeful C.Scene lock payload
--- escene = Eventful' <<< Eventful
-
-fscene
-  :: forall lock payload
-   . Event Scene
-  -> Array (Threeful C.Sceneful lock payload)
-  -> C.Scene lock payload
-fscene e a = scene e (FixedChildren' (FixedChildren a))
-
--- dscene
---   :: forall lock payload
---    . Event (Event (Child C.Scene lock payload))
---   -> Threeful C.Scene lock payload
--- dscene = DynamicChildren' <<< DynamicChildren
-
-----
 newtype Scene = Scene
   ( Variant
       ( matrix4 :: Matrix4
@@ -55,9 +45,9 @@ newtype Scene = Scene
 scene
   :: forall lock payload
    . Event Scene
-  -> Threeful C.Sceneful lock payload
-  -> C.Scene lock payload
-scene props kidz = C.Scene go
+  -> Array (C.ASceneful lock payload)
+  -> C.AScene lock payload
+scene props kidz = Element' $ C.Scene go
   where
   go
     parent
@@ -123,5 +113,22 @@ scene props kidz = C.Scene go
                   , lookAt: setLookAt <<< { id: me, v: _ }
                   }
             )
-        , handleKids me parent.scope di kidz
+        , flatten
+            { doLogic: absurd
+            , ids: unwrap >>> _.ids
+            , disconnectElement: unwrap >>> _.disconnect
+            , wrapElt: \a -> (unsafeCoerce :: C.AGroup lock payload -> C.AScene lock payload) (Group.group empty [ coerce a ])
+            , toElt: \(C.Scene obj) -> Bolson.Element obj
+            }
+            { parent: Just me, scope: parent.scope, raiseId: pure mempty }
+            di
+            ( fixed
+                ( map
+                    ( unsafeCoerce
+                        :: C.ASceneful lock payload
+                        -> C.AScene lock payload
+                    )
+                    kidz
+                )
+            )
         ]

@@ -9,6 +9,8 @@ in      conf
               , "filterable"
               , "affjax-web"
               , "arraybuffer"
+              , "foreign-object"
+              , "web-events"
               , "affjax"
               , "datetime"
               , "tuples"
