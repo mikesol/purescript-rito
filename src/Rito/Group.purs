@@ -12,33 +12,10 @@ import Data.Newtype (unwrap)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Core as C
-import Rito.Euler (Euler)
-import Rito.Matrix4 (Matrix4)
-import Rito.Quaternion (Quaternion)
-import Rito.Vector3 (Vector3)
 import Unsafe.Coerce (unsafeCoerce)
 
 newtype Group = Group
-  ( Variant
-      ( matrix4 :: Matrix4
-      , quaternion :: Quaternion
-      , rotationFromAxisAngle :: { axis :: Vector3, angle :: Number }
-      , rotationFromEuler :: Euler
-      , rotationFromMatrix :: Matrix4
-      , rotationFromQuaternion :: Quaternion
-      , rotateOnAxis :: { axis :: Vector3, angle :: Number }
-      , rotateOnWorldAxis :: { axis :: Vector3, angle :: Number }
-      , rotateX :: Number
-      , rotateY :: Number
-      , rotateZ :: Number
-      , translateOnAxis :: { axis :: Vector3, distance :: Number }
-      , translateX :: Number
-      , translateY :: Number
-      , translateZ :: Number
-      , scale :: { x :: Number, y :: Number, z :: Number }
-      , lookAt :: Vector3
-      )
-  )
+  (Variant (| C.Object3D))
 
 group
   :: forall lock payload
@@ -54,23 +31,6 @@ group props kidz = Element' $ C.Group go
           { ids
           , deleteFromCache
           , makeGroup
-          , setMatrix4
-          , setQuaternion
-          , setRotationFromAxisAngle
-          , setRotationFromEuler
-          , setRotationFromMatrix
-          , setRotationFromQuaternion
-          , setRotateOnAxis
-          , setRotateOnWorldAxis
-          , setRotateX
-          , setRotateY
-          , setRotateZ
-          , setTranslateOnAxis
-          , setTranslateX
-          , setTranslateY
-          , setTranslateZ
-          , setScale
-          , setLookAt
           }
       ) = makeEvent \k -> do
     me <- ids
@@ -84,32 +44,7 @@ group props kidz = Element' $ C.Group go
             }
         , props <#>
             ( \(Group msh) ->
-                msh # match
-                  { matrix4: setMatrix4 <<< { id: me, matrix4: _ }
-                  , quaternion: setQuaternion <<< { id: me, quaternion: _ }
-                  , rotationFromAxisAngle: \{ axis, angle } ->
-                      setRotationFromAxisAngle { id: me, axis, angle }
-                  , rotationFromEuler: setRotationFromEuler <<<
-                      { id: me, euler: _ }
-                  , rotationFromMatrix: setRotationFromMatrix <<<
-                      { id: me, matrix4: _ }
-                  , rotationFromQuaternion: setRotationFromQuaternion <<<
-                      { id: me, quaternion: _ }
-                  , rotateOnAxis: \{ axis, angle } -> setRotateOnAxis
-                      { id: me, axis, angle }
-                  , rotateOnWorldAxis: \{ axis, angle } -> setRotateOnWorldAxis
-                      { id: me, axis, angle }
-                  , rotateX: setRotateX <<< { id: me, rotateX: _ }
-                  , rotateY: setRotateY <<< { id: me, rotateY: _ }
-                  , rotateZ: setRotateZ <<< { id: me, rotateZ: _ }
-                  , translateOnAxis: \{ axis, distance } -> setTranslateOnAxis
-                      { id: me, axis, distance }
-                  , translateX: setTranslateX <<< { id: me, translateX: _ }
-                  , translateY: setTranslateY <<< { id: me, translateY: _ }
-                  , translateZ: setTranslateZ <<< { id: me, translateZ: _ }
-                  , scale: \{ x, y, z } -> setScale { id: me, x, y, z }
-                  , lookAt: setLookAt <<< { id: me, v: _ }
-                  }
+                msh # match (C.object3D me di)
             )
         , flatten
             { doLogic: absurd

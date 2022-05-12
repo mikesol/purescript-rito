@@ -17,11 +17,9 @@ import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
+import Record (union)
+import Rito.Core (object3D)
 import Rito.Core as C
-import Rito.Euler (Euler)
-import Rito.Matrix4 (Matrix4)
-import Rito.Quaternion (Quaternion)
-import Rito.Vector3 (Vector3)
 
 data PerspectiveCameraOptions = PerspectiveCameraOptions
 
@@ -107,29 +105,7 @@ type PerspectiveCamera' = Variant
       , width :: Number
       , height :: Number
       }
-  -- object3D
-  , matrix4 :: Matrix4
-  , quaternion :: Quaternion
-  , rotationFromAxisAngle :: { axis :: Vector3, angle :: Number }
-  , rotationFromEuler :: Euler
-  , rotationFromMatrix :: Matrix4
-  , rotationFromQuaternion :: Quaternion
-  , rotateOnAxis :: { axis :: Vector3, angle :: Number }
-  , rotateOnWorldAxis :: { axis :: Vector3, angle :: Number }
-  , rotateX :: Number
-  , rotateY :: Number
-  , rotateZ :: Number
-  , translateOnAxis :: { axis :: Vector3, distance :: Number }
-  , translateX :: Number
-  , translateY :: Number
-  , translateZ :: Number
-  , positionX :: Number
-  , positionY :: Number
-  , positionZ :: Number
-  , scaleX :: Number
-  , scaleY :: Number
-  , scaleZ :: Number
-  , lookAt :: Vector3
+    | C.Object3D
   )
 newtype PerspectiveCamera = PerspectiveCamera PerspectiveCamera'
 instance Newtype PerspectiveCamera PerspectiveCamera'
@@ -145,7 +121,7 @@ perspectiveCamera i' atts = Element' $ C.Camera go
   C.InitializePerspectiveCamera i = toInitializePerspectiveCamera i'
   go
     parent
-    ( C.ThreeInterpret
+    di@( C.ThreeInterpret
         { ids
         , deleteFromCache
         , makePerspectiveCamera
@@ -159,28 +135,6 @@ perspectiveCamera i' atts = Element' $ C.Camera go
         , setZoom
         , setFocalLength
         , setViewOffset
-        , setMatrix4
-        , setQuaternion
-        , setRotationFromAxisAngle
-        , setRotationFromEuler
-        , setRotationFromMatrix
-        , setRotationFromQuaternion
-        , setRotateOnAxis
-        , setRotateOnWorldAxis
-        , setRotateX
-        , setRotateY
-        , setRotateZ
-        , setTranslateOnAxis
-        , setTranslateX
-        , setTranslateY
-        , setTranslateZ
-        , setPositionX
-        , setPositionY
-        , setPositionZ
-        , setScaleX
-        , setScaleY
-        , setScaleZ
-        , setLookAt
         }
     ) = makeEvent \k -> do
     me <- ids
@@ -200,7 +154,7 @@ perspectiveCamera i' atts = Element' $ C.Camera go
         <|>
           ( map
               ( \(PerspectiveCamera e) -> match
-                  { aspect: setAspect <<< { id: me, aspect: _ }
+                  (union { aspect: setAspect <<< { id: me, aspect: _ }
                   , far: setFar <<< { id: me, far: _ }
                   , filmGauge: setFilmGauge <<< { id: me, filmGauge: _ }
                   , filmOffset: setFilmOffset <<< { id: me, filmOffset: _ }
@@ -225,37 +179,7 @@ perspectiveCamera i' atts = Element' $ C.Camera go
                         , width
                         , height
                         }
-                  -- object3D
-                  , matrix4: setMatrix4 <<< { id: me, matrix4: _ }
-                  , quaternion: setQuaternion <<< { id: me, quaternion: _ }
-                  , rotationFromAxisAngle: \{ axis, angle } ->
-                      setRotationFromAxisAngle { id: me, axis, angle }
-                  , rotationFromEuler: setRotationFromEuler <<<
-                      { id: me, euler: _ }
-                  , rotationFromMatrix: setRotationFromMatrix <<<
-                      { id: me, matrix4: _ }
-                  , rotationFromQuaternion: setRotationFromQuaternion <<<
-                      { id: me, quaternion: _ }
-                  , rotateOnAxis: \{ axis, angle } -> setRotateOnAxis
-                      { id: me, axis, angle }
-                  , rotateOnWorldAxis: \{ axis, angle } -> setRotateOnWorldAxis
-                      { id: me, axis, angle }
-                  , rotateX: setRotateX <<< { id: me, rotateX: _ }
-                  , rotateY: setRotateY <<< { id: me, rotateY: _ }
-                  , rotateZ: setRotateZ <<< { id: me, rotateZ: _ }
-                  , translateOnAxis: \{ axis, distance } -> setTranslateOnAxis
-                      { id: me, axis, distance }
-                  , translateX: setTranslateX <<< { id: me, translateX: _ }
-                  , translateY: setTranslateY <<< { id: me, translateY: _ }
-                  , translateZ: setTranslateZ <<< { id: me, translateZ: _ }
-                  , positionX: setPositionX <<< { id: me, positionX: _ }
-                  , positionY: setPositionY <<< { id: me, positionY: _ }
-                  , positionZ: setPositionZ <<< { id: me, positionZ: _ }
-                  , scaleX: setScaleX <<< { id: me, scaleX: _ }
-                  , scaleY: setScaleY <<< { id: me, scaleY: _ }
-                  , scaleZ: setScaleZ <<< { id: me, scaleZ: _ }
-                  , lookAt: setLookAt <<< { id: me, v: _ }
-                  }
+                  } (object3D me di))
                   e
               )
               atts

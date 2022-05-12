@@ -100,6 +100,16 @@ export const makePerspectiveCamera_ = genericMake_(
 export const makeMesh_ = genericMake_(() => new THREE.Mesh())((x, y) => {
 	y.main.add(x.main);
 });
+export const makeAmbientLight_ = genericMake_(
+	({ color, intensity }) => new THREE.AmbientLight(color, intensity)
+)((x, y) => {
+	y.main.add(x.main);
+});
+export const makeDirectionalLight_ = genericMake_(
+	({ color, intensity }) => new THREE.DirectionalLight(color, intensity)
+)((x, y) => {
+	y.main.add(x.main);
+});
 export const makePointLight_ = genericMake_(
 	({ color, intensity, distance, decay }) =>
 		new THREE.PointLight(color, intensity, distance, decay)

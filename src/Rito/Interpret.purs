@@ -46,6 +46,8 @@ foreign import webGLRender_ :: Core.WebGLRender -> FFIThreeSnapshot -> Effect Un
 --
 foreign import makeWebGLRenderer_ :: Core.MakeWebGLRenderer' -> FFIThreeSnapshot -> Effect Unit
 foreign import makePointLight_ :: Core.MakePointLight Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makeAmbientLight_ :: Core.MakeAmbientLight Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makeDirectionalLight_ :: Core.MakeDirectionalLight Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeScene_ :: Core.MakeScene Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeGroup_ :: Core.MakeGroup Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeMesh_ :: Core.MakeMesh Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
@@ -277,6 +279,8 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeBox: lcmap ffiize makeBox_
   , makeTorus: lcmap ffiize makeTorus_
   , makePlane: lcmap ffiize makePlane_
+  , makeDirectionalLight: lcmap ffiize makeDirectionalLight_
+  , makeAmbientLight: lcmap ffiize makeAmbientLight_
   , makePointLight: lcmap ffiize makePointLight_
   , makePerspectiveCamera: lcmap ffiize makePerspectiveCamera_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_

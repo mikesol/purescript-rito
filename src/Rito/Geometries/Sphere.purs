@@ -16,15 +16,9 @@ import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults
 import Data.Newtype (class Newtype)
 import Data.Number (pi)
 import Data.Variant (Variant, match)
-import Effect (Effect)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
-import Rito.Box as Box
 import Rito.Core as C
-import Rito.Matrix4 (Matrix4)
-import Rito.Quaternion (Quaternion)
-import Rito.Sphere as Sphere
-import Rito.Vector3 (Vector3)
 
 twoPi = pi * 2.0 :: Number
 data SphereOptions = SphereOptions
@@ -123,17 +117,7 @@ type Sphere' = Variant
       , phiLength :: Number
       , thetaStart :: Number
       , thetaLength :: Number
-      , matrix4 :: Matrix4
-      , quaternion :: Quaternion
-      , rotateX :: Number
-      , rotateY :: Number
-      , rotateZ :: Number
-      , translate :: { x :: Number, y :: Number, z :: Number }
-      , scale :: { x :: Number, y :: Number, z :: Number }
-      , lookAt :: Vector3
-      , center :: Unit
-      , boundingBox :: Box.Box -> Effect Unit
-      , boundingSphere :: Sphere.Sphere -> Effect Unit
+      | C.BufferGeometry
       )
 newtype Sphere = Sphere Sphere'
 instance Newtype Sphere Sphere'
@@ -149,7 +133,7 @@ sphere i' atts = C.Geometry go
   C.InitializeSphere i = toInitializeSphere i'
   go
     parent
-    ( C.ThreeInterpret
+    di@( C.ThreeInterpret
         { ids
         , deleteFromCache
         , makeSphere
@@ -160,17 +144,6 @@ sphere i' atts = C.Geometry go
         , setPhiLength
         , setThetaStart
         , setThetaLength
-        , setMatrix4
-        , setQuaternion
-        , setRotateX
-        , setRotateY
-        , setRotateZ
-        , setTranslate
-        , setScale
-        , setLookAt
-        , setCenter
-        , getBoundingBox
-        , getBoundingSphere
         }
     ) = makeEvent \k -> do
     me <- ids
@@ -193,7 +166,7 @@ sphere i' atts = C.Geometry go
         <|>
           ( map
               ( \(Sphere e) -> match
-                  { radius: setRadius <<< { id: me, radius: _ }
+                  (union { radius: setRadius <<< { id: me, radius: _ }
                   , widthSegments: setWidthSegments <<<
                       { id: me, widthSegments: _ }
                   , heightSegments: setHeightSegments <<<
@@ -202,18 +175,7 @@ sphere i' atts = C.Geometry go
                   , phiLength: setPhiLength <<< { id: me, phiLength: _ }
                   , thetaStart: setThetaStart <<< { id: me, thetaStart: _ }
                   , thetaLength: setThetaLength <<< { id: me, thetaLength: _ }
-                  , matrix4: setMatrix4 <<< { id: me, matrix4: _ }
-                  , quaternion: setQuaternion <<< { id: me, quaternion: _ }
-                  , rotateX: setRotateX <<< { id: me, rotateX: _ }
-                  , rotateY: setRotateY <<< { id: me, rotateY: _ }
-                  , rotateZ: setRotateZ <<< { id: me, rotateZ: _ }
-                  , translate: setTranslate <<< union { id: me }
-                  , scale: setScale <<< union { id: me }
-                  , lookAt: setLookAt <<< { id: me, v: _ }
-                  , center: \_ -> setCenter { id: me }
-                  , boundingBox: getBoundingBox <<< { id: me, box: _ }
-                  , boundingSphere: getBoundingSphere <<< { id: me, sphere: _ }
-                  }
+                  } (C.bufferGeometry me di))
                   e
               )
               atts

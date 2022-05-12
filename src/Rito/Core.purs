@@ -7,6 +7,8 @@ import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
 import Effect (Effect)
 import FRP.Event (Event)
+import Record (union)
+import Rito.Box (Box)
 import Rito.Box as Box
 import Rito.Color (Color)
 import Rito.Euler (Euler)
@@ -15,6 +17,7 @@ import Rito.NormalMapTypes (NormalMapType)
 import Rito.Quaternion (Quaternion)
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
+import Rito.Sphere (Sphere)
 import Rito.Sphere as Sphere
 import Rito.Texture (Texture)
 import Rito.Undefinable (Undefinable)
@@ -24,10 +27,16 @@ import Unsafe.Coerce (unsafeCoerce)
 import Web.HTML (HTMLCanvasElement)
 
 class Sceneable ctor where
-  toScene :: forall lock payload. Entity Void (ctor lock payload) Effect lock -> Entity Void (Sceneful lock payload) Effect lock
+  toScene
+    :: forall lock payload
+     . Entity Void (ctor lock payload) Effect lock
+    -> Entity Void (Sceneful lock payload) Effect lock
 
 class Groupable ctor where
-  toGroup :: forall lock payload. Entity Void (ctor lock payload) Effect lock -> Entity Void (Groupful lock payload) Effect lock
+  toGroup
+    :: forall lock payload
+     . Entity Void (ctor lock payload) Effect lock
+    -> Entity Void (Groupful lock payload) Effect lock
 
 newtype Renderer (lock :: Type) payload = Renderer
   ( ThreeInterpret payload
@@ -156,6 +165,30 @@ type InitializePointLight' =
   , decay :: Number
   )
 newtype InitializePointLight = InitializePointLight { | InitializePointLight' }
+type MakeAmbientLight f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | InitializeAmbientLight'
+  }
+type InitializeAmbientLight' =
+  ( color :: Color
+  , intensity :: Number
+  )
+newtype InitializeAmbientLight = InitializeAmbientLight
+  { | InitializeAmbientLight' }
+type MakeDirectionalLight f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | InitializeDirectionalLight'
+  }
+type InitializeDirectionalLight' =
+  ( color :: Color
+  , intensity :: Number
+  )
+newtype InitializeDirectionalLight = InitializeDirectionalLight
+  { | InitializeDirectionalLight' }
 type MakeMeshStandardMaterial f s =
   { id :: String
   , scope :: s
@@ -377,6 +410,201 @@ type DeleteFromCache = { id :: String }
 
 derive instance Newtype (ThreeInterpret payload) _
 
+type BufferGeometry =
+  ( matrix4 :: Matrix4
+  , quaternion :: Quaternion
+  , rotateX :: Number
+  , rotateY :: Number
+  , rotateZ :: Number
+  , translate :: { x :: Number, y :: Number, z :: Number }
+  , scale :: { x :: Number, y :: Number, z :: Number }
+  , lookAt :: Vector3
+  , center :: Unit
+  , boundingBox :: Box.Box -> Effect Unit
+  , boundingSphere :: Sphere.Sphere -> Effect Unit
+  )
+
+type Object3D =
+  ( matrix4 :: Matrix4
+  , quaternion :: Quaternion
+  , rotationFromAxisAngle :: { axis :: Vector3, angle :: Number }
+  , rotationFromEuler :: Euler
+  , rotationFromMatrix :: Matrix4
+  , rotationFromQuaternion :: Quaternion
+  , rotateOnAxis :: { axis :: Vector3, angle :: Number }
+  , rotateOnWorldAxis :: { axis :: Vector3, angle :: Number }
+  , rotateX :: Number
+  , rotateY :: Number
+  , rotateZ :: Number
+  , translateOnAxis :: { axis :: Vector3, distance :: Number }
+  , translateX :: Number
+  , translateY :: Number
+  , translateZ :: Number
+  , positionX :: Number
+  , positionY :: Number
+  , positionZ :: Number
+  , scaleX :: Number
+  , scaleY :: Number
+  , scaleZ :: Number
+  , lookAt :: Vector3
+  )
+
+bufferGeometry
+  :: forall payload
+   . String
+  -> ThreeInterpret payload
+  -> { boundingBox :: (Box -> Effect Unit) -> payload
+     , boundingSphere :: (Sphere -> Effect Unit) -> payload
+     , center :: Unit -> payload
+     , lookAt :: Vector3 -> payload
+     , matrix4 :: Matrix4 -> payload
+     , quaternion :: Quaternion -> payload
+     , rotateX :: Number -> payload
+     , rotateY :: Number -> payload
+     , rotateZ :: Number -> payload
+     , scale ::
+         { x :: Number
+         , y :: Number
+         , z :: Number
+         }
+         -> payload
+     , translate ::
+         { x :: Number
+         , y :: Number
+         , z :: Number
+         }
+         -> payload
+     }
+bufferGeometry
+  me
+  ( ThreeInterpret
+      { setMatrix4
+      , setQuaternion
+      , setRotateX
+      , setRotateY
+      , setRotateZ
+      , setTranslate
+      , setScale
+      , setLookAt
+      , setCenter
+      , getBoundingBox
+      , getBoundingSphere
+      }
+  ) =
+  { matrix4: setMatrix4 <<< { id: me, matrix4: _ }
+  , quaternion: setQuaternion <<< { id: me, quaternion: _ }
+  , rotateX: setRotateX <<< { id: me, rotateX: _ }
+  , rotateY: setRotateY <<< { id: me, rotateY: _ }
+  , rotateZ: setRotateZ <<< { id: me, rotateZ: _ }
+  , translate: setTranslate <<< union { id: me }
+  , scale: setScale <<< union { id: me }
+  , lookAt: setLookAt <<< { id: me, v: _ }
+  , center: \_ -> setCenter { id: me }
+  , boundingBox: getBoundingBox <<< { id: me, box: _ }
+  , boundingSphere: getBoundingSphere <<< { id: me, sphere: _ }
+  }
+
+object3D
+  :: forall payload
+   . String
+  -> ThreeInterpret payload
+  -> { lookAt :: Vector3 -> payload
+     , matrix4 :: Matrix4 -> payload
+     , positionX :: Number -> payload
+     , positionY :: Number -> payload
+     , positionZ :: Number -> payload
+     , quaternion :: Quaternion -> payload
+     , rotateOnAxis ::
+         { angle :: Number
+         , axis :: Vector3
+         }
+         -> payload
+     , rotateOnWorldAxis ::
+         { angle :: Number
+         , axis :: Vector3
+         }
+         -> payload
+     , rotateX :: Number -> payload
+     , rotateY :: Number -> payload
+     , rotateZ :: Number -> payload
+     , rotationFromAxisAngle ::
+         { angle :: Number
+         , axis :: Vector3
+         }
+         -> payload
+     , rotationFromEuler :: Euler -> payload
+     , rotationFromMatrix :: Matrix4 -> payload
+     , rotationFromQuaternion :: Quaternion -> payload
+     , scaleX :: Number -> payload
+     , scaleY :: Number -> payload
+     , scaleZ :: Number -> payload
+     , translateOnAxis ::
+         { axis :: Vector3
+         , distance :: Number
+         }
+         -> payload
+     , translateX :: Number -> payload
+     , translateY :: Number -> payload
+     , translateZ :: Number -> payload
+     }
+object3D
+  me
+  ( ThreeInterpret
+      { setMatrix4
+      , setQuaternion
+      , setRotationFromAxisAngle
+      , setRotationFromEuler
+      , setRotationFromMatrix
+      , setRotationFromQuaternion
+      , setRotateOnAxis
+      , setRotateOnWorldAxis
+      , setRotateX
+      , setRotateY
+      , setRotateZ
+      , setTranslateOnAxis
+      , setTranslateX
+      , setTranslateY
+      , setTranslateZ
+      , setPositionX
+      , setPositionY
+      , setPositionZ
+      , setScaleX
+      , setScaleY
+      , setScaleZ
+      , setLookAt
+      }
+  ) =
+  { matrix4: setMatrix4 <<< { id: me, matrix4: _ }
+  , quaternion: setQuaternion <<< { id: me, quaternion: _ }
+  , rotationFromAxisAngle: \{ axis, angle } ->
+      setRotationFromAxisAngle { id: me, axis, angle }
+  , rotationFromEuler: setRotationFromEuler <<<
+      { id: me, euler: _ }
+  , rotationFromMatrix: setRotationFromMatrix <<<
+      { id: me, matrix4: _ }
+  , rotationFromQuaternion: setRotationFromQuaternion <<<
+      { id: me, quaternion: _ }
+  , rotateOnAxis: \{ axis, angle } -> setRotateOnAxis
+      { id: me, axis, angle }
+  , rotateOnWorldAxis: \{ axis, angle } -> setRotateOnWorldAxis
+      { id: me, axis, angle }
+  , rotateX: setRotateX <<< { id: me, rotateX: _ }
+  , rotateY: setRotateY <<< { id: me, rotateY: _ }
+  , rotateZ: setRotateZ <<< { id: me, rotateZ: _ }
+  , translateOnAxis: \{ axis, distance } -> setTranslateOnAxis
+      { id: me, axis, distance }
+  , translateX: setTranslateX <<< { id: me, translateX: _ }
+  , translateY: setTranslateY <<< { id: me, translateY: _ }
+  , translateZ: setTranslateZ <<< { id: me, translateZ: _ }
+  , positionX: setPositionX <<< { id: me, positionX: _ }
+  , positionY: setPositionY <<< { id: me, positionY: _ }
+  , positionZ: setPositionZ <<< { id: me, positionZ: _ }
+  , scaleX: setScaleX <<< { id: me, scaleX: _ }
+  , scaleY: setScaleY <<< { id: me, scaleY: _ }
+  , scaleZ: setScaleZ <<< { id: me, scaleZ: _ }
+  , lookAt: setLookAt <<< { id: me, v: _ }
+  }
+
 newtype ThreeInterpret payload = ThreeInterpret
   { ids :: Effect String
   --
@@ -390,6 +618,8 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeBox :: MakeBox Maybe Scope -> payload
   , makeTorus :: MakeTorus Maybe Scope -> payload
   , makePlane :: MakePlane Maybe Scope -> payload
+  , makeDirectionalLight :: MakeDirectionalLight Maybe Scope -> payload
+  , makeAmbientLight :: MakeAmbientLight Maybe Scope -> payload
   , makePointLight :: MakePointLight Maybe Scope -> payload
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
