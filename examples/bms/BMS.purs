@@ -43,6 +43,7 @@ import Effect.Aff (Aff, error, forkAff, launchAff_, throwError)
 import Effect.Class (liftEffect)
 import Effect.Class.Console as Log
 import Effect.Now (now)
+import Effect.Random as Random
 import Effect.Ref (new)
 import Effect.Ref as Ref
 import Effect.Timer (clearInterval, setInterval)
@@ -270,11 +271,10 @@ animate babB clengthB offsetMap afE = compact
                                 offsetMap
                             in
                               join $ Map.values $ mapWithIndex
-                                ( \(Offset offset) -> mapWithIndex
-                                    \i (Note n) ->
+                                ( \(Offset offset) -> map
+                                    \(Note n) ->
                                       { removeAt: (unwrap $ unInstant tnow)
-                                          + 10000.0
-                                          + Int.toNumber i
+                                          + 2500.0
                                       , buffer: Object.lookup n bab
                                       , time: calcSlope prevAJ prevAC adjTime
                                           acTime
@@ -408,8 +408,9 @@ main = launchAff_ do
       $ Map.values
       $ folded
   let
-    unsched k v = Ref.modify_ (Map.insert k v)
-      unschedule
+    unsched k v = do
+      n <- Random.random
+      Ref.modify_ (Map.insert (k + (n * 0.25)) v) unschedule
 
   Log.info $ JSON.writeJSON
     ( ( map

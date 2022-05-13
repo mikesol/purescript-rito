@@ -22,14 +22,14 @@ const genericMake_ = (ctor) => (conn) => (a) => (state) => () => {
 };
 
 export const stripUndefined_ = (a) => {
-	const out = {...a};
+	const out = { ...a };
 	for (const key in a) {
 		if (a[key] === undefined) {
 			delete out[key];
 		}
 	}
 	return out;
-}
+};
 
 export const connectToScene_ = (a) => (state) => () =>
 	state.units[a.parent].main.add(state.units[a.id].main);
@@ -100,9 +100,10 @@ export const makePerspectiveCamera_ = genericMake_(
 export const makeMesh_ = genericMake_(() => new THREE.Mesh())((x, y) => {
 	y.main.add(x.main);
 });
-export const makeAmbientLight_ = genericMake_(
-	({ color, intensity }) => {console.log(color,intensity);return new THREE.AmbientLight(color, intensity)}
-)((x, y) => {
+export const makeAmbientLight_ = genericMake_(({ color, intensity }) => {
+	console.log(color, intensity);
+	return new THREE.AmbientLight(color, intensity);
+})((x, y) => {
 	y.main.add(x.main);
 });
 export const makeDirectionalLight_ = genericMake_(
@@ -123,7 +124,7 @@ export const makeMeshStandardMaterial_ = genericMake_(
 });
 export const setSize_ = (a) => (state) => () => {
 	state.units[a.id].main.setSize(a.width, a.height);
-}
+};
 export const makeScene_ = genericMake_(() => new THREE.Scene())(() => {});
 export const makeGroup_ = genericMake_(() => new THREE.Group())((x, y) => {
 	y.main.add(x.main);
@@ -421,7 +422,14 @@ export function disconnect_(a) {
 			}
 			// check to make sure this actually works
 			state.units[ptr].main.remove();
-			if (a.scope !== GLOBAL_SCOPE) { state.units[ptr].main.destroy(); }
+			if (a.scope !== GLOBAL_SCOPE) {
+				if (
+					state.units[ptr].main instanceof THREE.BufferGeometry ||
+					state.units[ptr].main instanceof THREE.Material
+				) {
+					state.units[ptr].main.dispose();
+				}
+			}
 		};
 	};
 }
@@ -429,6 +437,12 @@ export function disconnect_(a) {
 export function deleteFromCache_(a) {
 	return function (state) {
 		return function () {
+			if (
+				state.units[a.id].main instanceof THREE.BufferGeometry ||
+				state.units[a.id].main instanceof THREE.Material
+			) {
+				state.units[a.id].main.dispose();
+			}
 			delete state.units[a.id];
 		};
 	};
