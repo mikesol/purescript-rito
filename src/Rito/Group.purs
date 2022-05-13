@@ -1,4 +1,4 @@
-module Rito.Group (group, Group) where
+module Rito.Group (group, Group(..)) where
 
 import Prelude
 
@@ -8,7 +8,7 @@ import Bolson.Core as Bolson
 import Control.Plus (empty)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
-import Data.Newtype (unwrap)
+import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Core as C
@@ -16,6 +16,8 @@ import Unsafe.Coerce (unsafeCoerce)
 
 newtype Group = Group
   (Variant (| C.Object3D))
+
+derive instance Newtype Group _
 
 group
   :: forall lock payload

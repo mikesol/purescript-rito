@@ -133,7 +133,7 @@ denv s e = bang
 
 ttap (o /\ n) = AudioNumeric { o: o + 0.04, n, t: _linear }
 
-runThree :: _ -> Number -> Number -> HTMLCanvasElement -> Effect Unit
+runThree :: Event (Array CanvasInfo) -> Number -> Number -> HTMLCanvasElement -> Effect Unit
 runThree canvas iw ih e = do
   _ <- Rito.Run.run
     ( webGLRenderer

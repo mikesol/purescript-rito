@@ -15,3 +15,5 @@ packages.json
 /test/test.js
 /test/.spago
 /test/output/
+/examples/**/*.bme
+/examples/**/*.ogg

@@ -16,7 +16,7 @@ let additions =
           , "now"
           ]
         , repo = "https://github.com/mikesol/purescript-event.git"
-        , version = "v1.6.5"
+        , version = "v1.6.6"
         }
       , variant =
         { dependencies =

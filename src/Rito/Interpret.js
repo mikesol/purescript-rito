@@ -101,7 +101,7 @@ export const makeMesh_ = genericMake_(() => new THREE.Mesh())((x, y) => {
 	y.main.add(x.main);
 });
 export const makeAmbientLight_ = genericMake_(
-	({ color, intensity }) => new THREE.AmbientLight(color, intensity)
+	({ color, intensity }) => {console.log(color,intensity);return new THREE.AmbientLight(color, intensity)}
 )((x, y) => {
 	y.main.add(x.main);
 });
@@ -125,7 +125,9 @@ export const setSize_ = (a) => (state) => () => {
 	state.units[a.id].main.setSize(a.width, a.height);
 }
 export const makeScene_ = genericMake_(() => new THREE.Scene())(() => {});
-export const makeGroup_ = genericMake_(() => new THREE.Group())(() => {});
+export const makeGroup_ = genericMake_(() => new THREE.Group())((x, y) => {
+	y.main.add(x.main);
+});
 export const webGLRender_ = (a) => (state) => () => {
 	state.units[a.id].main.render(
 		state.units[a.scene].main,

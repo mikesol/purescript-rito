@@ -6,6 +6,7 @@ import Data.Newtype (class Newtype, wrap)
 import Data.Variant (Variant, inj)
 import Effect (Effect)
 import Rito.Box as Box
+import Rito.Color as Color
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
 import Rito.Sphere as Sphere
@@ -116,6 +117,14 @@ lookAt
   => Vector3
   -> nt
 lookAt = wrap <<< inj (Proxy :: Proxy "lookAt")
+
+color
+  :: forall c nt r
+   . Newtype nt (Variant (color :: Color.Color | r))
+  => Color.ColorRepresentation c
+  => c
+  -> nt
+color = wrap <<< inj (Proxy :: Proxy "color") <<< Color.color
 
 center
   :: forall nt r
