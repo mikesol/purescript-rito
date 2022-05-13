@@ -117,6 +117,11 @@ export const makePointLight_ = genericMake_(
 )((x, y) => {
 	y.main.add(x.main);
 });
+export const makeMeshBasicMaterial_ = genericMake_(
+	(options) => new THREE.MeshBasicMaterial(options)
+)((x, y) => {
+	y.main.material = x.main;
+});
 export const makeMeshStandardMaterial_ = genericMake_(
 	(options) => new THREE.MeshStandardMaterial(options)
 )((x, y) => {

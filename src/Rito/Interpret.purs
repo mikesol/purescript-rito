@@ -57,6 +57,8 @@ foreign import makeTorus_ :: Core.MakeTorus Undefinable (Undefinable String) -> 
 foreign import makePlane_ :: Core.MakePlane Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeMeshStandardMaterial_
   :: Core.MakeMeshStandardMaterial' Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makeMeshBasicMaterial_
+  :: Core.MakeMeshBasicMaterial' Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 --
 foreign import deleteFromCache_
   :: Core.DeleteFromCache -> FFIThreeSnapshot -> Effect Unit
@@ -283,6 +285,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeAmbientLight: lcmap ffiize makeAmbientLight_
   , makePointLight: lcmap ffiize makePointLight_
   , makePerspectiveCamera: lcmap ffiize makePerspectiveCamera_
+  , makeMeshBasicMaterial: lcmap ffiize makeMeshBasicMaterial_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
   -- sphere geometry
   , setRadius: setRadius_

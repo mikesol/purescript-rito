@@ -232,6 +232,32 @@ type InitializeMeshStandardMaterial' (opt :: Type -> Type) normalMapType =
   )
 newtype InitializeMeshStandardMaterial = InitializeMeshStandardMaterial
   { | (InitializeMeshStandardMaterial' Maybe NormalMapType) }
+type MakeMeshBasicMaterial f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | (InitializeMeshBasicMaterial' Maybe)
+  }
+type MakeMeshBasicMaterial' f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | (InitializeMeshBasicMaterial' Undefinable)
+  }
+type InitializeMeshBasicMaterial' (opt :: Type -> Type) =
+  ( color :: opt Color
+  , map :: opt Texture
+  , lightMap :: opt Texture
+  , lightMapIntensity :: opt Number
+  , aoMap :: opt Texture
+  , aoMapIntensity :: opt Number
+  , alphaMap :: opt Texture
+  , envMap :: opt Texture
+  , wireframe :: opt Boolean
+  , wireframeLinewidth :: opt Number
+  )
+newtype InitializeMeshBasicMaterial = InitializeMeshBasicMaterial
+  { | (InitializeMeshBasicMaterial' Maybe) }
 type MakeBox f s =
   { id :: String
   , scope :: s
@@ -621,6 +647,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeDirectionalLight :: MakeDirectionalLight Maybe Scope -> payload
   , makeAmbientLight :: MakeAmbientLight Maybe Scope -> payload
   , makePointLight :: MakePointLight Maybe Scope -> payload
+  , makeMeshBasicMaterial :: MakeMeshBasicMaterial Maybe Scope -> payload
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
   -- SphereGeometry

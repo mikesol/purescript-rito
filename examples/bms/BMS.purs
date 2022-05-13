@@ -28,7 +28,7 @@ import Data.Map (SemigroupMap(..))
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
-import Data.Number (cos, pi, pow, sin)
+import Data.Number (abs, cos, pi, pow, sign, sin)
 import Data.String as String
 import Data.Traversable (sequence)
 import Data.Tuple (fst, snd)
@@ -61,6 +61,7 @@ import Rito.Core (toGroup, toScene)
 import Rito.Geometries.Sphere (sphere)
 import Rito.Group (group)
 import Rito.Lights.PointLight (pointLight)
+import Rito.Materials.MeshBasicMaterial (meshBasicMaterial)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Mesh (mesh)
 import Rito.Properties (color, positionX, positionY, positionZ, render, scaleX, scaleY, scaleZ, size)
@@ -144,42 +145,53 @@ runThree lps e afE iw ih canvas = do
                                                 empty
                                             )
                                             ( meshStandardMaterial
-                                                { color: RGB 0.0 0.0 0.0
-                                                , metalness: 0.0
+                                                { color: RGB 1.0 1.0 1.0
                                                 }
-                                                ( afE <#>
-                                                    ( \t ->
-                                                        let
-                                                          c = min 1.0 $ max 0.0
-                                                            $ calcSlope
-                                                              (itm.time - 1.0)
-                                                              0.0
-                                                              itm.time
-                                                              1.0
-                                                              t
-                                                        in
-                                                          color (RGB c c c)
-                                                    )
-                                                )
+                                                empty
+                                                -- ( afE <#>
+                                                --     ( \t ->
+                                                --         let
+                                                --           c = min 1.0 $ max 0.0
+                                                --             $ calcSlope
+                                                --               (itm.time - 3.0)
+                                                --               0.0
+                                                --               (itm.time - 2.0)
+                                                --               1.0
+                                                --               t
+                                                --         in
+                                                --           color (RGB c c c)
+                                                --     )
+                                                -- )
                                             )
                                             ( let
                                                 s =
                                                   if itm.time < 2.0 then 0.0
                                                   else 0.1
                                               in
-                                                oneOfMap
-                                                  bang
-                                                  [ positionX
+                                                oneOf
+                                                  [ bang $ positionX
                                                       (sin (324.124 * itm.time))
-                                                  , positionY
+                                                  , bang $ positionY
                                                       ( cos
                                                           (1928.532 * itm.time)
                                                       )
-                                                  , positionZ
-                                                      (-1.0 * speed * itm.time)
-                                                  , scaleX $ s
-                                                  , scaleY $ s
-                                                  , scaleZ $ s
+                                                  ,  afE <#>
+                                                    ( \t ->
+                                                        -- let
+                                                        --   c = min 1.0 $ max 0.0
+                                                        --     $ calcSlope
+                                                        --       (itm.time - 3.0)
+                                                        --       0.0
+                                                        --       (itm.time - 2.0)
+                                                        --       1.0
+                                                        --       t
+                                                        -- in
+                                                         let diff = (itm.time - t) in positionZ (-5.0 * (sign diff) * ( (abs diff) `pow` 0.5  ))
+                                                    )
+                                                     -- (-1.0 * speed * itm.time)
+                                                  , bang $ scaleX $ s
+                                                  , bang $ scaleY $ s
+                                                  , bang $ scaleZ $ s
                                                   ]
                                             )
                                         )
@@ -207,7 +219,7 @@ runThree lps e afE iw ih canvas = do
             ( oneOf
                 [ bang (positionX 0.0)
                 , bang (positionY 0.0)
-                , positionZ <$> (map (negate >>> mul speed >>> add 2.0) afE)
+                , bang (positionZ 0.0) -- , positionZ <$> (map (negate >>> mul speed >>> add 2.0) afE)
                 ]
             )
         )
@@ -254,7 +266,7 @@ animate babB clengthB offsetMap afE = compact
         let gap = acTime - prevAC
         let adjGap = gap / clength
         let adjTime = adjGap + prevAJ
-        let lookAhead = 0.3
+        let lookAhead = 4.0 -- 1 beat
         let
           f wa =
             if wa < adjTime + lookAhead then
@@ -274,9 +286,9 @@ animate babB clengthB offsetMap afE = compact
                                 ( \(Offset offset) -> map
                                     \(Note n) ->
                                       { removeAt: (unwrap $ unInstant tnow)
-                                          + 2500.0
+                                          + 10000.0
                                       , buffer: Object.lookup n bab
-                                      , time: calcSlope prevAJ prevAC adjTime
+                                      , time: if prevAJ == 0.0 then offset else calcSlope prevAJ prevAC adjTime
                                           acTime
                                           offset
                                       }
@@ -314,9 +326,9 @@ graph lps e =
                       ( sound
                           ( gain_ 1.0
                               ( NEA.toArray $ map
-                                  ( \{ time, buffer } -> playBuf
+                                  ( \{ time, buffer } -> gain_ 1.0 [playBuf
                                       buffer
-                                      (bang (P.onOff time))
+                                      (bang (P.onOff time))]
                                   )
                                   nea
                               )
