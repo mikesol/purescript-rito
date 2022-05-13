@@ -273,7 +273,7 @@ animate babB clengthB offsetMap afE = compact
                                 ( \(Offset offset) -> mapWithIndex
                                     \i (Note n) ->
                                       { removeAt: (unwrap $ unInstant tnow)
-                                          + 5000.0
+                                          + 10000.0
                                           + Int.toNumber i
                                       , buffer: Object.lookup n bab
                                       , time: calcSlope prevAJ prevAC adjTime
