@@ -8,7 +8,7 @@ import Affjax.Web as AX
 import BMS.Parser (bms)
 import BMS.Timing (gatherAll, noteOffsets)
 import BMS.Types (Note(..), Offset(..))
-import Bolson.Core (Child(..))
+import Bolson.Core (Child(..), envy)
 import Control.Alt ((<|>))
 import Control.Parallel (parTraverse)
 import Control.Plus (empty)
@@ -22,7 +22,7 @@ import Data.Foldable (fold, oneOf, oneOfMap, traverse_)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Int as Int
 import Data.Lens (_1, over)
-import Data.List (List(..), nub, null)
+import Data.List (List(..), drop, nub, null, take)
 import Data.List as DL
 import Data.Map (SemigroupMap(..))
 import Data.Map as Map
@@ -35,9 +35,9 @@ import Data.Tuple (fst, snd)
 import Data.Tuple.Nested (type (/\), (/\))
 import Data.Typelevel.Num (D2)
 import Deku.Attribute (attr, cb, (:=))
-import Deku.Control (text)
+import Deku.Control (switcher, text, text_)
 import Deku.DOM as D
-import Deku.Toplevel (runInBody1)
+import Deku.Toplevel (runInBody)
 import Effect (Effect, foreachE)
 import Effect.Aff (Aff, error, forkAff, launchAff_, throwError)
 import Effect.Class (liftEffect)
@@ -49,6 +49,7 @@ import Effect.Timer (clearInterval, setInterval)
 import FRP.Behavior (Behavior, behavior, sampleBy, step)
 import FRP.Behavior.Time (instant)
 import FRP.Event (Event, bang, filterMap, hot, makeEvent, mapAccum, subscribe)
+import FRP.Event as Event
 import FRP.Event.AnimationFrame (animationFrame)
 import FRP.Event.VBus (V, vbus)
 import Foreign (Foreign)
@@ -145,18 +146,40 @@ runThree lps e afE iw ih canvas = do
                                                 { color: RGB 0.0 0.0 0.0
                                                 , metalness: 0.0
                                                 }
-                                                (afE <#> (\t -> let c = min 1.0 $ max 0.0 $ calcSlope (itm.time - 1.0) 0.0 itm.time 1.0 t in color (RGB c c c)))
+                                                ( afE <#>
+                                                    ( \t ->
+                                                        let
+                                                          c = min 1.0 $ max 0.0
+                                                            $ calcSlope
+                                                              (itm.time - 1.0)
+                                                              0.0
+                                                              itm.time
+                                                              1.0
+                                                              t
+                                                        in
+                                                          color (RGB c c c)
+                                                    )
+                                                )
                                             )
-                                            ( let s = if itm.time < 2.0 then 0.0 else 0.1 in oneOfMap
-                                                bang
-                                                [ positionX (sin (324.124 * itm.time))
-                                                , positionY (cos (1928.532 * itm.time))
-                                                , positionZ
-                                                    (-1.0 * speed * itm.time)
-                                                , scaleX $ s
-                                                , scaleY $ s
-                                                , scaleZ $ s
-                                                ]
+                                            ( let
+                                                s =
+                                                  if itm.time < 2.0 then 0.0
+                                                  else 0.1
+                                              in
+                                                oneOfMap
+                                                  bang
+                                                  [ positionX
+                                                      (sin (324.124 * itm.time))
+                                                  , positionY
+                                                      ( cos
+                                                          (1928.532 * itm.time)
+                                                      )
+                                                  , positionZ
+                                                      (-1.0 * speed * itm.time)
+                                                  , scaleX $ s
+                                                  , scaleY $ s
+                                                  , scaleZ $ s
+                                                  ]
                                             )
                                         )
                                         (NEA.toArray nea)
@@ -359,6 +382,7 @@ main = launchAff_ do
   ih <- liftEffect $ Int.toNumber <$> innerHeight w
   soundObj <- liftEffect $ Ref.new Object.empty
   icid <- liftEffect $ new Nothing
+  loaded <- liftEffect $ Event.create
   unschedule <- liftEffect $ new Map.empty
   ctx' <- liftEffect $ context
   bmsRes <- AX.get string (slashSilentRoomSlash <> "01.bme") >>= case _ of
@@ -395,126 +419,144 @@ main = launchAff_ do
     )
   -- _ <- never
   -- we just let this run & never kill it
-  _ <- forkAff $ dlInChunks 25 n2o ctx' soundObj
-  liftEffect $ runInBody1
-    ( vbus (Proxy :: _ UIEvents) \push event -> -- here
-        do
-          let
-            startE = bang unit <|> event.startStop.start
-            stopE = event.startStop.stop
+  let n2oh = take 250 n2o
+  let n2ot = drop 250 n2o
+  _ <- forkAff do
+    dlInChunks 25 n2oh ctx' soundObj
+    liftEffect $ loaded.push true
+    dlInChunks 25 n2ot ctx' soundObj
+  liftEffect $ runInBody
+    ( (loaded.event <|> bang false) # switcher case _ of
+        false -> D.div_ [ D.h1_ [text_ "Loading (should take less than 10s)"] ]
+        true ->
+          (envy $ vbus (Proxy :: _ UIEvents) \push event ->
+              do
+                let
+                  startE = bang unit <|> event.startStop.start
+                  stopE = event.startStop.stop
 
-          D.div_
-            [ D.div
-                ( bang
-                    ( D.Style :=
-                        "position:absolute;"
-                    )
-                )
-                [ D.canvas
-                    ( oneOfMap bang
-                        [ D.Width := cvsxs
-                        , D.Height := cvsys
-                        , D.Style := "width: 100%;"
-                        , D.Self := HTMLCanvasElement.fromElement >>>
-                            traverse_
-                              ( runThree
-                                  unsched
-                                  event.toAnimate
-                                  event.animationFrame
-                                  iw
-                                  ih
-                              )
-                        ]
-                    )
-                    []
-                ]
-            , D.div
-                ( bang $ D.Style :=
-                    "position: absolute; width:100%; background-color: rgba(200,200,200,0.8);"
-                )
-                [ D.input
-                    ( oneOfMap bang
-                        [ D.Xtype := "range"
-                        , D.Min := "0"
-                        , D.Max := "100"
-                        , D.Step := "1"
-                        , D.Value := "50"
-                        , D.Style :=
-                            "width: 100%; margin-top: 15px; margin-bottom: 15px;"
-                        , D.OnInput := cb
-                            ( traverse_
-                                (valueAsNumber >=> push.slider)
-                                <<< (=<<) fromEventTarget
-                                <<< target
-                            )
-                        ]
-                    )
-                    []
-                , D.button
-                    ( oneOf
-                        [ bang $ D.Style :=
-                            "width:100%; padding:1.0rem;"
-                        , ( oneOfMap (map (attr D.OnClick <<< cb <<< const))
-                              [ stopE <#>
-                                  ( _ *> push.startStop.start unit
-                                  )
-                              , startE <#> \_ -> do
-                                  ctx <- context
-                                  hk <- constant0Hack ctx
-                                  ci <- setInterval 5000 do
-                                    Ref.read icid >>= traverse_
-                                      (flip cancelIdleCallback w)
-                                    requestIdleCallback { timeout: 0 }
-                                      ( do
-                                          n <- unwrap <<< unInstant <$> now
-                                          mp <- Map.toUnfoldable <$> Ref.read
-                                            unschedule
-                                          let lr = span (fst >>> (_ < n)) mp
-                                          foreachE lr.init snd
-                                          Ref.write (Map.fromFoldable lr.rest)
-                                            unschedule
-                                          pure unit
-                                      )
-                                      w <#> Just >>= flip Ref.write icid
-                                  afE <- hot
-                                    (withACTime ctx animationFrame <#> _.acTime)
-                                  animated <- hot
-                                    ( animate (r2b soundObj)
-                                        ( step 1.0
-                                            ( map
-                                                ( calcSlope 0.0 0.75 100.0
-                                                    1.25
-                                                )
-                                                event.slider
-                                            )
-                                        )
-                                        folded
-                                        afE.event
-                                    )
-                                  iu0 <- subscribe afE.event push.animationFrame
-                                  iu1 <- subscribe animated.event push.toAnimate
-                                  st <- run2 ctx
-                                    ( graph
+                D.div_
+                  [ D.div
+                      ( bang
+                          ( D.Style :=
+                              "position:absolute;"
+                          )
+                      )
+                      [ D.canvas
+                          ( oneOfMap bang
+                              [ D.Width := cvsxs
+                              , D.Height := cvsys
+                              , D.Style := "width: 100%;"
+                              , D.Self := HTMLCanvasElement.fromElement >>>
+                                  traverse_
+                                    ( runThree
                                         unsched
-                                        animated.event
-                                    )
-                                  push.startStop.stop
-                                    ( st *> hk *> clearInterval ci
-                                        *> afE.unsubscribe
-                                        *> iu0
-                                        *> iu1
-                                        *> animated.unsubscribe
-                                        *> close ctx
+                                        event.toAnimate
+                                        event.animationFrame
+                                        iw
+                                        ih
                                     )
                               ]
                           )
-                        ]
-                    )
-                    [ text $ oneOf
-                        [ map (const "Turn off") stopE
-                        , map (const "Turn on") startE
-                        ]
-                    ]
-                ]
-            ]
+                          []
+                      ]
+                  , D.div
+                      ( bang $ D.Style :=
+                          "position: absolute; width:100%; background-color: rgba(200,200,200,0.8);"
+                      )
+                      [ D.input
+                          ( oneOfMap bang
+                              [ D.Xtype := "range"
+                              , D.Min := "0"
+                              , D.Max := "100"
+                              , D.Step := "1"
+                              , D.Value := "50"
+                              , D.Style :=
+                                  "width: 100%; margin-top: 15px; margin-bottom: 15px;"
+                              , D.OnInput := cb
+                                  ( traverse_
+                                      (valueAsNumber >=> push.slider)
+                                      <<< (=<<) fromEventTarget
+                                      <<< target
+                                  )
+                              ]
+                          )
+                          []
+                      , D.button
+                          ( oneOf
+                              [ bang $ D.Style :=
+                                  "width:100%; padding:1.0rem;"
+                              , ( oneOfMap
+                                    (map (attr D.OnClick <<< cb <<< const))
+                                    [ stopE <#>
+                                        ( _ *> push.startStop.start unit
+                                        )
+                                    , startE <#> \_ -> do
+                                        ctx <- context
+                                        hk <- constant0Hack ctx
+                                        ci <- setInterval 5000 do
+                                          Ref.read icid >>= traverse_
+                                            (flip cancelIdleCallback w)
+                                          requestIdleCallback { timeout: 0 }
+                                            ( do
+                                                n <- unwrap <<< unInstant <$>
+                                                  now
+                                                mp <- Map.toUnfoldable <$>
+                                                  Ref.read
+                                                    unschedule
+                                                let
+                                                  lr = span (fst >>> (_ < n)) mp
+                                                foreachE lr.init snd
+                                                Ref.write
+                                                  (Map.fromFoldable lr.rest)
+                                                  unschedule
+                                                pure unit
+                                            )
+                                            w <#> Just >>= flip Ref.write icid
+                                        afE <- hot
+                                          ( withACTime ctx animationFrame <#>
+                                              _.acTime
+                                          )
+                                        animated <- hot
+                                          ( animate (r2b soundObj)
+                                              ( step 1.0
+                                                  ( map
+                                                      ( calcSlope 0.0 0.75 100.0
+                                                          1.25
+                                                      )
+                                                      event.slider
+                                                  )
+                                              )
+                                              folded
+                                              afE.event
+                                          )
+                                        iu0 <- subscribe afE.event
+                                          push.animationFrame
+                                        iu1 <- subscribe animated.event
+                                          push.toAnimate
+                                        st <- run2 ctx
+                                          ( graph
+                                              unsched
+                                              animated.event
+                                          )
+                                        push.startStop.stop
+                                          ( st *> hk *> clearInterval ci
+                                              *> afE.unsubscribe
+                                              *> iu0
+                                              *> iu1
+                                              *> animated.unsubscribe
+                                              *> close ctx
+                                          )
+                                    ]
+                                )
+                              ]
+                          )
+                          [ text $ oneOf
+                              [ map (const "Turn off") stopE
+                              , map (const "Turn on") startE
+                              ]
+                          ]
+                      ]
+                  ]
+          )
     )
