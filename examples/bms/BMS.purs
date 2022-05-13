@@ -28,7 +28,7 @@ import Data.Map (SemigroupMap(..))
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
-import Data.Number (abs, cos, pi, pow, sign, sin)
+import Data.Number (abs, cos, pi, pow, sign, sin, (%))
 import Data.String as String
 import Data.Traversable (sequence)
 import Data.Tuple (fst, snd)
@@ -171,10 +171,19 @@ runThree lps e afE iw ih canvas = do
                                                 oneOf
                                                   [ bang $ positionX
                                                       (sin (324.124 * itm.time))
-                                                  , bang $ positionY
-                                                      ( cos
-                                                          (1928.532 * itm.time)
-                                                      )
+                                                  , let
+                                                      m3 = itm.time % 4.0
+                                                      py
+                                                        | m3 < 1.0 = 0.25
+                                                        | m3 < 2.0 = -0.75
+                                                        | m3 < 3.0 = -0.25
+                                                        | otherwise = 0.75
+                                                    in
+                                                      bang $ positionY py
+                                                  -- , bang $ positionY
+                                                  --     ( cos
+                                                  --         (1928.532 * itm.time)
+                                                  --     )
                                                   -- ,  afE <#>
                                                   --   ( \t ->
                                                   --       -- let
