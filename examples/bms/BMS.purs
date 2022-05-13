@@ -175,20 +175,20 @@ runThree lps e afE iw ih canvas = do
                                                       ( cos
                                                           (1928.532 * itm.time)
                                                       )
-                                                  ,  afE <#>
-                                                    ( \t ->
-                                                        -- let
-                                                        --   c = min 1.0 $ max 0.0
-                                                        --     $ calcSlope
-                                                        --       (itm.time - 3.0)
-                                                        --       0.0
-                                                        --       (itm.time - 2.0)
-                                                        --       1.0
-                                                        --       t
-                                                        -- in
-                                                         let diff = (itm.time - t) in positionZ (-5.0 * (sign diff) * ( (abs diff) `pow` 0.5  ))
-                                                    )
-                                                     -- (-1.0 * speed * itm.time)
+                                                  -- ,  afE <#>
+                                                  --   ( \t ->
+                                                  --       -- let
+                                                  --       --   c = min 1.0 $ max 0.0
+                                                  --       --     $ calcSlope
+                                                  --       --       (itm.time - 3.0)
+                                                  --       --       0.0
+                                                  --       --       (itm.time - 2.0)
+                                                  --       --       1.0
+                                                  --       --       t
+                                                  --       -- in
+                                                  --        let diff = (itm.time - t) in positionZ (-5.0 * (sign diff) * ( (abs diff) `pow` 0.5  ))
+                                                  --   )
+                                                  , bang $ positionZ (-1.0 * speed * itm.time)
                                                   , bang $ scaleX $ s
                                                   , bang $ scaleY $ s
                                                   , bang $ scaleZ $ s
@@ -219,7 +219,7 @@ runThree lps e afE iw ih canvas = do
             ( oneOf
                 [ bang (positionX 0.0)
                 , bang (positionY 0.0)
-                , bang (positionZ 0.0) -- , positionZ <$> (map (negate >>> mul speed >>> add 2.0) afE)
+                , positionZ <$> (map (negate >>> mul speed >>> add 2.0) afE)
                 ]
             )
         )
