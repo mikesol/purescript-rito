@@ -10,6 +10,7 @@ import Rito.Color as Color
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
 import Rito.Sphere as Sphere
+import Rito.Texture (Texture)
 import Rito.Vector3 (Vector3)
 import Type.Proxy (Proxy(..))
 
@@ -117,6 +118,13 @@ lookAt
   => Vector3
   -> nt
 lookAt = wrap <<< inj (Proxy :: Proxy "lookAt")
+
+map
+  :: forall nt r
+   . Newtype nt (Variant (map :: Texture | r))
+  => Texture
+  -> nt
+map = wrap <<< inj (Proxy :: Proxy "map")
 
 color
   :: forall c nt r

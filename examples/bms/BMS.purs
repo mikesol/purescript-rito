@@ -28,7 +28,7 @@ import Data.Map (SemigroupMap(..))
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
-import Data.Number (abs, cos, pi, pow, sign, sin, (%))
+import Data.Number (pi, pow, sin, (%))
 import Data.String as String
 import Data.Traversable (sequence)
 import Data.Tuple (fst, snd)
@@ -62,13 +62,14 @@ import Rito.Geometries.Box (box)
 import Rito.Geometries.Sphere (sphere)
 import Rito.Group (group)
 import Rito.Lights.PointLight (pointLight)
-import Rito.Materials.MeshBasicMaterial (meshBasicMaterial)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Mesh (mesh)
-import Rito.Properties (color, positionX, positionY, positionZ, render, scaleX, scaleY, scaleZ, size)
+import Rito.Properties (positionX, positionY, positionZ, render, scaleX, scaleY, scaleZ, size)
+import Rito.Properties (map) as P
 import Rito.Renderers.WebGL (webGLRenderer)
 import Rito.Run as Rito.Run
 import Rito.Scene (scene)
+import Rito.Texture (Texture, loadAff)
 import Simple.JSON as JSON
 import Type.Proxy (Proxy(..))
 import WAGS.Clock (withACTime)
@@ -76,7 +77,7 @@ import WAGS.Control (gain_, playBuf)
 import WAGS.Core (Audible, dyn, silence, sound)
 import WAGS.Interpret (close, constant0Hack, context, decodeAudioDataFromUri)
 import WAGS.Math (calcSlope)
-import WAGS.Properties as P
+import WAGS.Properties (onOff) as P
 import WAGS.Run (run2)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
 import Web.Event.Event (target)
@@ -106,14 +107,15 @@ type UIEvents = V
 
 speed = 5.0 :: Number
 runThree
-  :: (Number -> Effect Unit -> Effect Unit)
+  :: { texture :: Texture }
+  -> (Number -> Effect Unit -> Effect Unit)
   -> Event Animated
   -> Event Number
   -> Number
   -> Number
   -> HTMLCanvasElement
   -> Effect Unit
-runThree lps e afE iw ih canvas = do
+runThree { texture } lps e afE iw ih canvas = do
   _ <- Rito.Run.run
     ( webGLRenderer
         ( scene empty
@@ -148,7 +150,7 @@ runThree lps e afE iw ih canvas = do
                                             ( meshStandardMaterial
                                                 { color: RGB 1.0 1.0 1.0
                                                 }
-                                                empty
+                                                if itm.time % 4.0 < 3.0 then empty else (bang (P.map texture))
                                                 -- ( afE <#>
                                                 --     ( \t ->
                                                 --         let
@@ -399,6 +401,7 @@ slashSilentRoomSlash = "/silentroom/" :: String
 
 main :: Effect Unit
 main = launchAff_ do
+  txtr <- loadAff $ slashSilentRoomSlash <> "benefits-of-art-abstract.png"
   w <- liftEffect $ window
   iw <- liftEffect $ Int.toNumber <$> innerWidth w
   ih <- liftEffect $ Int.toNumber <$> innerHeight w
@@ -473,6 +476,7 @@ main = launchAff_ do
                               , D.Self := HTMLCanvasElement.fromElement >>>
                                   traverse_
                                     ( runThree
+                                        { texture: txtr }
                                         unsched
                                         event.toAnimate
                                         event.animationFrame
