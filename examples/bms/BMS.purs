@@ -59,13 +59,14 @@ import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Color (RGB(..))
 import Rito.Core (toGroup, toScene)
 import Rito.Geometries.Box (box)
+import Rito.Geometries.Plane (plane)
 import Rito.Geometries.Sphere (sphere)
 import Rito.Group (group)
 import Rito.Lights.PointLight (pointLight)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Mesh (mesh)
-import Rito.Properties (positionX, positionY, positionZ, render, scaleX, scaleY, scaleZ, size)
 import Rito.Properties (map) as P
+import Rito.Properties (positionX, positionY, positionZ, render, scaleX, scaleY, scaleZ, size)
 import Rito.Renderers.WebGL (webGLRenderer)
 import Rito.Run as Rito.Run
 import Rito.Scene (scene)
@@ -141,30 +142,38 @@ runThree { texture } lps e afE iw ih canvas = do
                                     )
                                     ( map
                                         ( \itm -> toGroup $ mesh
-                                            ( if itm.time % 2.0 < 1.0 then sphere
-                                                { widthSegments: 32
-                                                , heightSegments: 32
-                                                }
-                                                empty else box {} empty
+                                            ( if itm.time % 3.0 < 1.0 then
+                                                sphere
+                                                  { widthSegments: 32
+                                                  , heightSegments: 32
+                                                  }
+                                                  empty
+                                              else if itm.time % 3.0 < 2.0 then
+                                                plane
+                                                  {}
+                                                  empty
+                                              else box {} empty
                                             )
                                             ( meshStandardMaterial
                                                 { color: RGB 1.0 1.0 1.0
                                                 }
-                                                if itm.time % 4.0 < 3.0 then empty else (bang (P.map texture))
-                                                -- ( afE <#>
-                                                --     ( \t ->
-                                                --         let
-                                                --           c = min 1.0 $ max 0.0
-                                                --             $ calcSlope
-                                                --               (itm.time - 3.0)
-                                                --               0.0
-                                                --               (itm.time - 2.0)
-                                                --               1.0
-                                                --               t
-                                                --         in
-                                                --           color (RGB c c c)
-                                                --     )
-                                                -- )
+                                                if itm.time % 4.0 < 3.0 then
+                                                  empty
+                                                else (bang (P.map texture))
+                                            -- ( afE <#>
+                                            --     ( \t ->
+                                            --         let
+                                            --           c = min 1.0 $ max 0.0
+                                            --             $ calcSlope
+                                            --               (itm.time - 3.0)
+                                            --               0.0
+                                            --               (itm.time - 2.0)
+                                            --               1.0
+                                            --               t
+                                            --         in
+                                            --           color (RGB c c c)
+                                            --     )
+                                            -- )
                                             )
                                             ( let
                                                 s =
@@ -200,7 +209,8 @@ runThree { texture } lps e afE iw ih canvas = do
                                                   --       -- in
                                                   --        let diff = (itm.time - t) in positionZ (-5.0 * (sign diff) * ( (abs diff) `pow` 0.5  ))
                                                   --   )
-                                                  , bang $ positionZ (-1.0 * speed * itm.time)
+                                                  , bang $ positionZ
+                                                      (-1.0 * speed * itm.time)
                                                   , bang $ scaleX $ s
                                                   , bang $ scaleY $ s
                                                   , bang $ scaleZ $ s
@@ -300,9 +310,11 @@ animate babB clengthB offsetMap afE = compact
                                       { removeAt: (unwrap $ unInstant tnow)
                                           + 10000.0
                                       , buffer: Object.lookup n bab
-                                      , time: if prevAJ == 0.0 then offset else calcSlope prevAJ prevAC adjTime
-                                          acTime
-                                          offset
+                                      , time:
+                                          if prevAJ == 0.0 then offset
+                                          else calcSlope prevAJ prevAC adjTime
+                                            acTime
+                                            offset
                                       }
                                 )
                                 haps
@@ -338,9 +350,11 @@ graph lps e =
                       ( sound
                           ( gain_ 1.0
                               ( NEA.toArray $ map
-                                  ( \{ time, buffer } -> gain_ 1.0 [playBuf
-                                      buffer
-                                      (bang (P.onOff time))]
+                                  ( \{ time, buffer } -> gain_ 1.0
+                                      [ playBuf
+                                          buffer
+                                          (bang (P.onOff time))
+                                      ]
                                   )
                                   nea
                               )
@@ -453,9 +467,10 @@ main = launchAff_ do
     dlInChunks 25 n2ot ctx' soundObj
   liftEffect $ runInBody
     ( (loaded.event <|> bang false) # switcher case _ of
-        false -> D.div_ [ D.h1_ [text_ "Loading (should take less than 10s)"] ]
+        false -> D.div_
+          [ D.h1_ [ text_ "Loading (should take less than 10s)" ] ]
         true ->
-          (envy $ vbus (Proxy :: _ UIEvents) \push event ->
+          ( envy $ vbus (Proxy :: _ UIEvents) \push event ->
               do
                 let
                   startE = bang unit <|> event.startStop.start

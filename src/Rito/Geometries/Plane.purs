@@ -1,11 +1,11 @@
-module Rito.Geometries.Box
-  ( box
-  , box_
-  , Box(..)
-  , Box'
-  , class InitialBox
-  , BoxOptions
-  , toInitializeBox
+module Rito.Geometries.Plane
+  ( plane
+  , plane_
+  , Plane(..)
+  , Plane'
+  , class InitialPlane
+  , PlaneOptions
+  , toInitializePlane
   ) where
 
 import Prelude
@@ -19,157 +19,130 @@ import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
 import Rito.Core as C
 
-data BoxOptions = BoxOptions
+data PlaneOptions = PlaneOptions
 
 instance
-  ConvertOption BoxOptions
+  ConvertOption PlaneOptions
     "width"
     Number
     Number where
   convertOption _ _ = identity
 
 instance
-  ConvertOption BoxOptions
+  ConvertOption PlaneOptions
     "height"
     Number
     Number where
   convertOption _ _ = identity
 
 instance
-  ConvertOption BoxOptions
-    "depth"
-    Number
-    Number where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption BoxOptions
+  ConvertOption PlaneOptions
     "widthSegments"
     Int
     Int where
   convertOption _ _ = identity
 
 instance
-  ConvertOption BoxOptions
+  ConvertOption PlaneOptions
     "heightSegments"
     Int
     Int where
   convertOption _ _ = identity
 
-instance
-  ConvertOption BoxOptions
-    "depthSegments"
-    Int
-    Int where
-  convertOption _ _ = identity
-
-type BoxOptional =
+type PlaneOptional =
   ( width :: Number
   , height :: Number
-  , depth :: Number
   , widthSegments :: Int
   , heightSegments :: Int
-  , depthSegments :: Int
   )
 
-type BoxAll =
-  (| BoxOptional)
+type PlaneAll =
+  (| PlaneOptional)
 
-defaultBox :: { | BoxOptional }
-defaultBox =
+defaultPlane :: { | PlaneOptional }
+defaultPlane =
   { width: 1.0
   , height: 1.0
-  , depth: 1.0
   , widthSegments: 1
   , heightSegments: 1
-  , depthSegments: 1
   }
 
-class InitialBox i where
-  toInitializeBox :: i -> C.InitializeBox
+class InitialPlane i where
+  toInitializePlane :: i -> C.InitializePlane
 
-instance InitialBox C.InitializeBox where
-  toInitializeBox = identity
+instance InitialPlane C.InitializePlane where
+  toInitializePlane = identity
 
 instance
-  ConvertOptionsWithDefaults BoxOptions { | BoxOptional } { | provided }
-    { | BoxAll } =>
-  InitialBox { | provided } where
-  toInitializeBox provided = C.InitializeBox
-    (convertOptionsWithDefaults BoxOptions defaultBox provided)
+  ConvertOptionsWithDefaults PlaneOptions { | PlaneOptional } { | provided }
+    { | PlaneAll } =>
+  InitialPlane { | provided } where
+  toInitializePlane provided = C.InitializePlane
+    (convertOptionsWithDefaults PlaneOptions defaultPlane provided)
 
-type Box' = Variant
+type Plane' = Variant
       ( width :: Number
       , height :: Number
-      , depth :: Number
       , widthSegments :: Int
       , heightSegments :: Int
-      , depthSegments :: Int
       | C.BufferGeometry
       )
-newtype Box = Box Box'
-instance Newtype Box Box'
+newtype Plane = Plane Plane'
+instance Newtype Plane Plane'
 
-box
+plane
   :: forall i lock payload
-   . InitialBox i
+   . InitialPlane i
   => i
-  -> Event Box
+  -> Event Plane
   -> C.Geometry lock payload
-box i' atts = C.Geometry go
+plane i' atts = C.Geometry go
   where
-  C.InitializeBox i = toInitializeBox i'
+  C.InitializePlane i = toInitializePlane i'
   go
     parent
     di@( C.ThreeInterpret
         { ids
         , deleteFromCache
-        , makeBox
+        , makePlane
         , setWidth
         , setHeight
-        , setDepth
         , setWidthSegments
         , setHeightSegments
-        , setDepthSegments
         }
     ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
       bang
-        ( makeBox
+        ( makePlane
             { id: me
             , parent: parent.parent
             , scope: parent.scope
             , width: i.width
             , height: i.height
-            , depth: i.depth
             , widthSegments: i.widthSegments
             , heightSegments: i.heightSegments
-            , depthSegments: i.depthSegments
             }
         )
         <|>
           ( map
-              ( \(Box e) -> match
+              ( \(Plane e) -> match
                   (union { width: setWidth <<< { id: me, width: _ }
                   , height: setHeight <<< { id: me, height: _ }
-                  , depth: setDepth <<< { id: me, depth: _ }
                   , widthSegments: setWidthSegments <<<
                       { id: me, widthSegments: _ }
                   , heightSegments: setHeightSegments <<<
                       { id: me, heightSegments: _ }
-                  , depthSegments: setDepthSegments <<<
-                      { id: me, depthSegments: _ }
                   } (C.bufferGeometry me di))
                   e
               )
               atts
           )
 
-box_
+plane_
   :: forall i lock payload
-   . InitialBox i
+   . InitialPlane i
   => i
   -> C.Geometry lock payload
-box_ i = box i empty
+plane_ i = plane i empty

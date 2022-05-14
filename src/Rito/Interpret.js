@@ -64,6 +64,12 @@ export const makePlane_ = genericMake_(
 )((x, y) => {
 	y.main.geometry = x.main;
 });
+export const makeCapsule_ = genericMake_(
+	({ radius, length, capSegments, radialSegments }) =>
+		new THREE.CapsuleGeometry(radius, length, capSegments, radialSegments)
+)((x, y) => {
+	y.main.geometry = x.main;
+});
 export const makeTorus_ = genericMake_(
 	({ radius, tube, radialSegments, tubularSegments, arc }) =>
 		new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc)
@@ -157,6 +163,9 @@ export const setHeight_ = (a) => (state) => () => {
 export const setDepth_ = (a) => (state) => () => {
 	state.units[a.id].main.depth = a.depth;
 };
+export const setLength_ = (a) => (state) => () => {
+	state.units[a.id].main.length = a.length;
+};
 // sphere
 export const setRadius_ = (a) => (state) => () => {
 	state.units[a.id].main.radius = a.radius;
@@ -169,6 +178,12 @@ export const setHeightSegments_ = (a) => (state) => () => {
 };
 export const setDepthSegments_ = (a) => (state) => () => {
 	state.units[a.id].main.depthSegments = a.depthSegments;
+};
+export const setCapSegments_ = (a) => (state) => () => {
+	state.units[a.id].main.capSegments = a.capSegments;
+};
+export const setRadialSegments_ = (a) => (state) => () => {
+	state.units[a.id].main.radialSegments = a.radialSegments;
 };
 export const setPhiStart_ = (a) => (state) => () => {
 	state.units[a.id].main.phiStart = a.phiStart;

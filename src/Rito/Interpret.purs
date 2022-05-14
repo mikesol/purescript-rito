@@ -51,6 +51,7 @@ foreign import makeDirectionalLight_ :: Core.MakeDirectionalLight Undefinable (U
 foreign import makeScene_ :: Core.MakeScene Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeGroup_ :: Core.MakeGroup Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeMesh_ :: Core.MakeMesh Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makeCapsule_ :: Core.MakeCapsule Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeSphere_ :: Core.MakeSphere Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeBox_ :: Core.MakeBox Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeTorus_ :: Core.MakeTorus Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
@@ -68,12 +69,17 @@ foreign import setHeight_ :: Core.SetHeight -> FFIThreeSnapshot -> Effect Unit
 foreign import setDepth_ :: Core.SetDepth -> FFIThreeSnapshot -> Effect Unit
 --
 foreign import setRadius_ :: Core.SetRadius -> FFIThreeSnapshot -> Effect Unit
+foreign import setLength_ :: Core.SetLength -> FFIThreeSnapshot -> Effect Unit
 foreign import setWidthSegments_
   :: Core.SetWidthSegments -> FFIThreeSnapshot -> Effect Unit
 foreign import setHeightSegments_
   :: Core.SetHeightSegments -> FFIThreeSnapshot -> Effect Unit
 foreign import setDepthSegments_
   :: Core.SetDepthSegments -> FFIThreeSnapshot -> Effect Unit
+foreign import setCapSegments_
+  :: Core.SetCapSegments -> FFIThreeSnapshot -> Effect Unit
+foreign import setRadialSegments_
+  :: Core.SetRadialSegments -> FFIThreeSnapshot -> Effect Unit
 foreign import setPhiStart_
   :: Core.SetPhiStart -> FFIThreeSnapshot -> Effect Unit
 foreign import setPhiLength_
@@ -283,6 +289,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeScene: lcmap ffiize makeScene_
   , makeGroup: lcmap ffiize makeGroup_
   , makeMesh: lcmap ffiize makeMesh_
+  , makeCapsule: lcmap ffiize makeCapsule_
   , makeSphere: lcmap ffiize makeSphere_
   , makeBox: lcmap ffiize makeBox_
   , makeTorus: lcmap ffiize makeTorus_
@@ -297,6 +304,10 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setWidth: setWidth_
   , setHeight: setHeight_
   , setDepth: setDepth_
+  -- capsule
+  , setLength: setLength_
+  , setCapSegments: setCapSegments_
+  , setRadialSegments: setRadialSegments_
   -- sphere geometry
   , setRadius: setRadius_
   , setWidthSegments: setWidthSegments_

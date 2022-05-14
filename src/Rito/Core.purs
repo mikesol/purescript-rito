@@ -287,6 +287,19 @@ type InitializeTorus' =
   , arc :: Number
   )
 newtype InitializeTorus = InitializeTorus { | InitializeTorus' }
+type MakeCapsule f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | InitializeCapsule'
+  }
+type InitializeCapsule' =
+  ( radius :: Number
+  , length :: Number
+  , capSegments :: Int
+  , radialSegments :: Int
+  )
+newtype InitializeCapsule = InitializeCapsule { | InitializeCapsule' }
 type MakePlane f s =
   { id :: String
   , scope :: s
@@ -320,9 +333,12 @@ type SetWidth = { id :: String, width :: Number }
 type SetHeight = { id :: String, height :: Number }
 type SetDepth = { id :: String, depth :: Number }
 type SetRadius = { id :: String, radius :: Number }
+type SetLength = { id :: String, length :: Number }
 type SetWidthSegments = { id :: String, widthSegments :: Int }
 type SetHeightSegments = { id :: String, heightSegments :: Int }
 type SetDepthSegments = { id :: String, depthSegments :: Int }
+type SetCapSegments = { id :: String, capSegments :: Int }
+type SetRadialSegments = { id :: String, radialSegments :: Int }
 type SetPhiStart = { id :: String, phiStart :: Number }
 type SetPhiLength = { id :: String, phiLength :: Number }
 type SetThetaStart = { id :: String, thetaStart :: Number }
@@ -646,6 +662,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeMesh :: MakeMesh Maybe Scope -> payload
   , makeSphere :: MakeSphere Maybe Scope -> payload
   , makeBox :: MakeBox Maybe Scope -> payload
+  , makeCapsule :: MakeCapsule Maybe Scope -> payload
   , makeTorus :: MakeTorus Maybe Scope -> payload
   , makePlane :: MakePlane Maybe Scope -> payload
   , makeDirectionalLight :: MakeDirectionalLight Maybe Scope -> payload
@@ -654,10 +671,14 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeMeshBasicMaterial :: MakeMeshBasicMaterial Maybe Scope -> payload
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
+  -- CapsuleGeometry
+  , setCapSegments :: SetCapSegments -> payload
+  , setRadialSegments :: SetRadialSegments -> payload
   -- BoxGeometry
   , setWidth :: SetWidth -> payload
   , setHeight :: SetHeight -> payload
   , setDepth :: SetDepth -> payload
+  , setLength :: SetLength -> payload
   -- SphereGeometry
   , setRadius :: SetRadius -> payload
   , setWidthSegments :: SetWidthSegments -> payload
