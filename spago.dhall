@@ -1,6 +1,7 @@
 { name = "purescript-deku"
 , dependencies =
-  [ "avar"
+  [ "aff"
+  , "avar"
   , "bolson"
   , "control"
   , "convertable-options"

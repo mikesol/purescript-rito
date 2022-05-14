@@ -147,6 +147,16 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 	renderer.setSize(parameters.canvas.width, parameters.canvas.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 };
+// box
+export const setWidth_ = (a) => (state) => () => {
+	state.units[a.id].main.width = a.width;
+};
+export const setHeight_ = (a) => (state) => () => {
+	state.units[a.id].main.height = a.height;
+};
+export const setDepth_ = (a) => (state) => () => {
+	state.units[a.id].main.depth = a.depth;
+};
 // sphere
 export const setRadius_ = (a) => (state) => () => {
 	state.units[a.id].main.radius = a.radius;
@@ -156,6 +166,9 @@ export const setWidthSegments_ = (a) => (state) => () => {
 };
 export const setHeightSegments_ = (a) => (state) => () => {
 	state.units[a.id].main.heightSegments = a.heightSegments;
+};
+export const setDepthSegments_ = (a) => (state) => () => {
+	state.units[a.id].main.depthSegments = a.depthSegments;
 };
 export const setPhiStart_ = (a) => (state) => () => {
 	state.units[a.id].main.phiStart = a.phiStart;

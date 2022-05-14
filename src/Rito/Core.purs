@@ -270,7 +270,7 @@ type InitializeBox' =
   , depth :: Number
   , widthSegments :: Int
   , heightSegments :: Int
-  , depthSegments :: Number
+  , depthSegments :: Int
   )
 newtype InitializeBox = InitializeBox { | InitializeBox' }
 type MakeTorus f s =
@@ -316,9 +316,13 @@ newtype InitializePerspectiveCamera = InitializePerspectiveCamera
   { | InitializePerspectiveCamera' }
 
 --
+type SetWidth = { id :: String, width :: Number }
+type SetHeight = { id :: String, height :: Number }
+type SetDepth = { id :: String, depth :: Number }
 type SetRadius = { id :: String, radius :: Number }
 type SetWidthSegments = { id :: String, widthSegments :: Int }
 type SetHeightSegments = { id :: String, heightSegments :: Int }
+type SetDepthSegments = { id :: String, depthSegments :: Int }
 type SetPhiStart = { id :: String, phiStart :: Number }
 type SetPhiLength = { id :: String, phiLength :: Number }
 type SetThetaStart = { id :: String, thetaStart :: Number }
@@ -650,10 +654,15 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeMeshBasicMaterial :: MakeMeshBasicMaterial Maybe Scope -> payload
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
+  -- BoxGeometry
+  , setWidth :: SetWidth -> payload
+  , setHeight :: SetHeight -> payload
+  , setDepth :: SetDepth -> payload
   -- SphereGeometry
   , setRadius :: SetRadius -> payload
   , setWidthSegments :: SetWidthSegments -> payload
   , setHeightSegments :: SetHeightSegments -> payload
+  , setDepthSegments :: SetDepthSegments -> payload
   , setPhiStart :: SetPhiStart -> payload
   , setPhiLength :: SetPhiLength -> payload
   , setThetaStart :: SetThetaStart -> payload

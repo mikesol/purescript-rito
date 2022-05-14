@@ -58,6 +58,7 @@ import Foreign.Object as Object
 import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Color (RGB(..))
 import Rito.Core (toGroup, toScene)
+import Rito.Geometries.Box (box)
 import Rito.Geometries.Sphere (sphere)
 import Rito.Group (group)
 import Rito.Lights.PointLight (pointLight)
@@ -138,11 +139,11 @@ runThree lps e afE iw ih canvas = do
                                     )
                                     ( map
                                         ( \itm -> toGroup $ mesh
-                                            ( sphere
+                                            ( if itm.time % 2.0 < 1.0 then sphere
                                                 { widthSegments: 32
                                                 , heightSegments: 32
                                                 }
-                                                empty
+                                                empty else box {} empty
                                             )
                                             ( meshStandardMaterial
                                                 { color: RGB 1.0 1.0 1.0
@@ -174,10 +175,10 @@ runThree lps e afE iw ih canvas = do
                                                   , let
                                                       m3 = itm.time % 4.0
                                                       py
-                                                        | m3 < 1.0 = 0.25
-                                                        | m3 < 2.0 = -0.75
-                                                        | m3 < 3.0 = -0.25
-                                                        | otherwise = 0.75
+                                                        | m3 < 1.0 = 0.125
+                                                        | m3 < 2.0 = -0.5
+                                                        | m3 < 3.0 = -0.125
+                                                        | otherwise = 0.5
                                                     in
                                                       bang $ positionY py
                                                   -- , bang $ positionY
@@ -204,7 +205,7 @@ runThree lps e afE iw ih canvas = do
                                                   ]
                                             )
                                         )
-                                        (NEA.toArray nea)
+                                        (NEA.toArray $ NEA.nub nea)
                                     )
                               )
                           )
@@ -275,7 +276,7 @@ animate babB clengthB offsetMap afE = compact
         let gap = acTime - prevAC
         let adjGap = gap / clength
         let adjTime = adjGap + prevAJ
-        let lookAhead = 4.0 -- 1 beat
+        let lookAhead = 0.3 -- 1 beat
         let
           f wa =
             if wa < adjTime + lookAhead then

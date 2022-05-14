@@ -63,11 +63,17 @@ foreign import makeMeshBasicMaterial_
 foreign import deleteFromCache_
   :: Core.DeleteFromCache -> FFIThreeSnapshot -> Effect Unit
 --
+foreign import setWidth_ :: Core.SetWidth -> FFIThreeSnapshot -> Effect Unit
+foreign import setHeight_ :: Core.SetHeight -> FFIThreeSnapshot -> Effect Unit
+foreign import setDepth_ :: Core.SetDepth -> FFIThreeSnapshot -> Effect Unit
+--
 foreign import setRadius_ :: Core.SetRadius -> FFIThreeSnapshot -> Effect Unit
 foreign import setWidthSegments_
   :: Core.SetWidthSegments -> FFIThreeSnapshot -> Effect Unit
 foreign import setHeightSegments_
   :: Core.SetHeightSegments -> FFIThreeSnapshot -> Effect Unit
+foreign import setDepthSegments_
+  :: Core.SetDepthSegments -> FFIThreeSnapshot -> Effect Unit
 foreign import setPhiStart_
   :: Core.SetPhiStart -> FFIThreeSnapshot -> Effect Unit
 foreign import setPhiLength_
@@ -287,10 +293,15 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makePerspectiveCamera: lcmap ffiize makePerspectiveCamera_
   , makeMeshBasicMaterial: lcmap ffiize makeMeshBasicMaterial_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
+  -- box geometry
+  , setWidth: setWidth_
+  , setHeight: setHeight_
+  , setDepth: setDepth_
   -- sphere geometry
   , setRadius: setRadius_
   , setWidthSegments: setWidthSegments_
   , setHeightSegments: setHeightSegments_
+  , setDepthSegments: setDepthSegments_
   , setPhiStart: setPhiStart_
   , setPhiLength: setPhiLength_
   , setThetaStart: setThetaStart_
