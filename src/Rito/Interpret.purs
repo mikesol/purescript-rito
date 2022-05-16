@@ -31,6 +31,8 @@ import Rito.Vector3 (Vector3)
 import Type.Proxy (Proxy(..))
 import Web.HTML (HTMLCanvasElement)
 
+type Payload = FFIThreeSnapshot -> Effect Unit
+
 -- foreign
 data FFIThreeSnapshot
 
@@ -42,169 +44,171 @@ export const ObjectSpaceNormalMap = 1;
 foreign import makeFFIThreeSnapshot :: Effect FFIThreeSnapshot
 
 --
-foreign import webGLRender_ :: Core.WebGLRender -> FFIThreeSnapshot -> Effect Unit
+foreign import webGLRender_ :: Core.WebGLRender -> Payload
 --
-foreign import makeWebGLRenderer_ :: Core.MakeWebGLRenderer' -> FFIThreeSnapshot -> Effect Unit
-foreign import makePointLight_ :: Core.MakePointLight Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
-foreign import makeAmbientLight_ :: Core.MakeAmbientLight Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
-foreign import makeDirectionalLight_ :: Core.MakeDirectionalLight Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
-foreign import makeScene_ :: Core.MakeScene Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
-foreign import makeGroup_ :: Core.MakeGroup Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
-foreign import makeMesh_ :: Core.MakeMesh Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
-foreign import makeInstancedMesh_ :: Core.MakeInstancedMesh Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
-foreign import makeCapsule_ :: Core.MakeCapsule Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
-foreign import makeSphere_ :: Core.MakeSphere Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
-foreign import makeBox_ :: Core.MakeBox Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
-foreign import makeTorus_ :: Core.MakeTorus Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
-foreign import makePlane_ :: Core.MakePlane Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makeWebGLRenderer_ :: Core.MakeWebGLRenderer' -> Payload
+foreign import makePointLight_ :: Core.MakePointLight Undefinable (Undefinable String) -> Payload
+foreign import makeAmbientLight_ :: Core.MakeAmbientLight Undefinable (Undefinable String) -> Payload
+foreign import makeDirectionalLight_ :: Core.MakeDirectionalLight Undefinable (Undefinable String) -> Payload
+foreign import makeScene_ :: Core.MakeScene Undefinable (Undefinable String) -> Payload
+foreign import makeGroup_ :: Core.MakeGroup Undefinable (Undefinable String) -> Payload
+foreign import makeMesh_ :: Core.MakeMesh Undefinable (Undefinable String) -> Payload
+foreign import makeInstancedMesh_ :: Core.MakeInstancedMesh Undefinable (Undefinable String) -> Payload
+foreign import makeCapsule_ :: Core.MakeCapsule Undefinable (Undefinable String) -> Payload
+foreign import makeSphere_ :: Core.MakeSphere Undefinable (Undefinable String) -> Payload
+foreign import makeBox_ :: Core.MakeBox Undefinable (Undefinable String) -> Payload
+foreign import makeTorus_ :: Core.MakeTorus Undefinable (Undefinable String) -> Payload
+foreign import makePlane_ :: Core.MakePlane Undefinable (Undefinable String) -> Payload
 foreign import makeMeshStandardMaterial_
-  :: Core.MakeMeshStandardMaterial' Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+  :: Core.MakeMeshStandardMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeMeshBasicMaterial_
-  :: Core.MakeMeshBasicMaterial' Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+  :: Core.MakeMeshBasicMaterial' Undefinable (Undefinable String) -> Payload
 --
 foreign import deleteFromCache_
-  :: Core.DeleteFromCache -> FFIThreeSnapshot -> Effect Unit
+  :: Core.DeleteFromCache -> Payload
 --
-foreign import setInstancedMeshMatrix4_ :: Core.SetInstancedMeshMatrix4 -> FFIThreeSnapshot -> Effect Unit
-foreign import setInstancedMeshColor_ :: Core.SetInstancedMeshColor -> FFIThreeSnapshot -> Effect Unit
+foreign import setInstancedMeshMatrix4_ :: Core.SetInstancedMeshMatrix4 -> Payload
+foreign import setInstancedMeshColor_ :: Core.SetInstancedMeshColor -> Payload
 --
-foreign import setWidth_ :: Core.SetWidth -> FFIThreeSnapshot -> Effect Unit
-foreign import setHeight_ :: Core.SetHeight -> FFIThreeSnapshot -> Effect Unit
-foreign import setDepth_ :: Core.SetDepth -> FFIThreeSnapshot -> Effect Unit
+foreign import setWidth_ :: Core.SetWidth -> Payload
+foreign import setHeight_ :: Core.SetHeight -> Payload
+foreign import setDepth_ :: Core.SetDepth -> Payload
 --
-foreign import setRadius_ :: Core.SetRadius -> FFIThreeSnapshot -> Effect Unit
-foreign import setLength_ :: Core.SetLength -> FFIThreeSnapshot -> Effect Unit
+foreign import setRadius_ :: Core.SetRadius -> Payload
+foreign import setLength_ :: Core.SetLength -> Payload
 foreign import setWidthSegments_
-  :: Core.SetWidthSegments -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetWidthSegments -> Payload
 foreign import setHeightSegments_
-  :: Core.SetHeightSegments -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetHeightSegments -> Payload
 foreign import setDepthSegments_
-  :: Core.SetDepthSegments -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetDepthSegments -> Payload
 foreign import setCapSegments_
-  :: Core.SetCapSegments -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetCapSegments -> Payload
 foreign import setRadialSegments_
-  :: Core.SetRadialSegments -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetRadialSegments -> Payload
 foreign import setPhiStart_
-  :: Core.SetPhiStart -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetPhiStart -> Payload
 foreign import setPhiLength_
-  :: Core.SetPhiLength -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetPhiLength -> Payload
 foreign import setThetaStart_
-  :: Core.SetThetaStart -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetThetaStart -> Payload
 foreign import setThetaLength_
-  :: Core.SetThetaLength -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetThetaLength -> Payload
 --
-foreign import setMatrix4_ :: Core.SetMatrix4 -> FFIThreeSnapshot -> Effect Unit
+foreign import setMatrix4_ :: Core.SetMatrix4 -> Payload
 foreign import setQuaternion_
-  :: Core.SetQuaternion -> FFIThreeSnapshot -> Effect Unit
-foreign import setRotateX_ :: Core.SetRotateX -> FFIThreeSnapshot -> Effect Unit
-foreign import setRotateY_ :: Core.SetRotateY -> FFIThreeSnapshot -> Effect Unit
-foreign import setRotateZ_ :: Core.SetRotateZ -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetQuaternion -> Payload
+foreign import setRotateX_ :: Core.SetRotateX -> Payload
+foreign import setRotateY_ :: Core.SetRotateY -> Payload
+foreign import setRotateZ_ :: Core.SetRotateZ -> Payload
 foreign import setTranslate_
-  :: Core.SetTranslate -> FFIThreeSnapshot -> Effect Unit
-foreign import setScale_ :: Core.SetScale -> FFIThreeSnapshot -> Effect Unit
-foreign import setLookAt_ :: Core.SetLookAt -> FFIThreeSnapshot -> Effect Unit
-foreign import setCenter_ :: Core.SetCenter -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetTranslate -> Payload
+foreign import setScale_ :: Core.SetScale -> Payload
+foreign import setLookAt_ :: Core.SetLookAt -> Payload
+foreign import setCenter_ :: Core.SetCenter -> Payload
 foreign import getBoundingBox_
-  :: Core.GetBoundingBox -> FFIThreeSnapshot -> Effect Unit
+  :: Core.GetBoundingBox -> Payload
 foreign import getBoundingSphere_
-  :: Core.GetBoundingSphere -> FFIThreeSnapshot -> Effect Unit
+  :: Core.GetBoundingSphere -> Payload
 -- point light
-foreign import setDecay_ :: Core.SetDecay -> FFIThreeSnapshot -> Effect Unit
-foreign import setIntensity_ :: Core.SetIntensity -> FFIThreeSnapshot -> Effect Unit
-foreign import setDistance_ :: Core.SetDistance -> FFIThreeSnapshot -> Effect Unit
+foreign import setDecay_ :: Core.SetDecay -> Payload
+foreign import setIntensity_ :: Core.SetIntensity -> Payload
+foreign import setDistance_ :: Core.SetDistance -> Payload
 -- mesh standard material
-foreign import setColor_ :: Core.SetColor -> FFIThreeSnapshot -> Effect Unit
+foreign import setColor_ :: Core.SetColor -> Payload
 foreign import setRoughness_
-  :: Core.SetRoughness -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetRoughness -> Payload
 foreign import setMetalness_
-  :: Core.SetMetalness -> FFIThreeSnapshot -> Effect Unit
-foreign import setMap_ :: Core.SetMap -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetMetalness -> Payload
+foreign import setMap_ :: Core.SetMap -> Payload
 foreign import setLightMap_
-  :: Core.SetLightMap -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetLightMap -> Payload
 foreign import setLightMapIntensity_
-  :: Core.SetLightMapIntensity -> FFIThreeSnapshot -> Effect Unit
-foreign import setAoMap_ :: Core.SetAoMap -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetLightMapIntensity -> Payload
+foreign import setAoMap_ :: Core.SetAoMap -> Payload
 foreign import setAoMapIntensity_
-  :: Core.SetAoMapIntensity -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetAoMapIntensity -> Payload
 foreign import setEmissive_
-  :: Core.SetEmissive -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetEmissive -> Payload
 foreign import setEmissiveIntensity_
-  :: Core.SetEmissiveIntensity -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetEmissiveIntensity -> Payload
 foreign import makePerspectiveCamera_
-  :: Core.MakePerspectiveCamera Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+  :: Core.MakePerspectiveCamera Undefinable (Undefinable String) -> Payload
 foreign import setEmissiveMap_
-  :: Core.SetEmissiveMap -> FFIThreeSnapshot -> Effect Unit
-foreign import setBumpMap_ :: Core.SetBumpMap -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetEmissiveMap -> Payload
+foreign import setBumpMap_ :: Core.SetBumpMap -> Payload
 foreign import setBumpScale_
-  :: Core.SetBumpScale -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetBumpScale -> Payload
 foreign import setNormalMap_
-  :: Core.SetNormalMap -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetNormalMap -> Payload
 foreign import setNormalMapType_
-  :: Core.SetNormalMapType' -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetNormalMapType' -> Payload
 foreign import setNormalScale_
-  :: Core.SetNormalScale -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetNormalScale -> Payload
 foreign import setDisplacementMap_
-  :: Core.SetDisplacementMap -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetDisplacementMap -> Payload
 foreign import setDisplacementScale_
-  :: Core.SetDisplacementScale -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetDisplacementScale -> Payload
 foreign import setDisplacementBias_
-  :: Core.SetDisplacementBias -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetDisplacementBias -> Payload
 foreign import setRoughnessMap_
-  :: Core.SetRoughnessMap -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetRoughnessMap -> Payload
 foreign import setMetalnessMap_
-  :: Core.SetMetalnessMap -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetMetalnessMap -> Payload
 foreign import setAlphaMap_
-  :: Core.SetAlphaMap -> FFIThreeSnapshot -> Effect Unit
-foreign import setEnvMap_ :: Core.SetEnvMap -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetAlphaMap -> Payload
+foreign import setEnvMap_ :: Core.SetEnvMap -> Payload
 foreign import setEnvMapIntensity_
-  :: Core.SetEnvMapIntensity -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetEnvMapIntensity -> Payload
 foreign import setWireframe_
-  :: Core.SetWireframe -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetWireframe -> Payload
 foreign import setWireframeLinewidth_
-  :: Core.SetWireframeLinewidth -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetWireframeLinewidth -> Payload
 foreign import setFlatShading_
-  :: Core.SetFlatShading -> FFIThreeSnapshot -> Effect Unit
+  :: Core.SetFlatShading -> Payload
 -- mesh
-foreign import setRotationFromAxisAngle_ :: Core.SetRotationFromAxisAngle -> FFIThreeSnapshot -> Effect Unit
-foreign import setRotationFromEuler_ :: Core.SetRotationFromEuler -> FFIThreeSnapshot -> Effect Unit
-foreign import setRotationFromMatrix_ :: Core.SetRotationFromMatrix -> FFIThreeSnapshot -> Effect Unit
-foreign import setRotationFromQuaternion_ :: Core.SetRotationFromQuaternion -> FFIThreeSnapshot -> Effect Unit
-foreign import setRotateOnAxis_ :: Core.SetRotateOnAxis -> FFIThreeSnapshot -> Effect Unit
-foreign import setRotateOnWorldAxis_ :: Core.SetRotateOnWorldAxis -> FFIThreeSnapshot -> Effect Unit
-foreign import setTranslateOnAxis_ :: Core.SetTranslateOnAxis -> FFIThreeSnapshot -> Effect Unit
-foreign import setTranslateX_ :: Core.SetTranslateX -> FFIThreeSnapshot -> Effect Unit
-foreign import setTranslateY_ :: Core.SetTranslateY -> FFIThreeSnapshot -> Effect Unit
-foreign import setTranslateZ_ :: Core.SetTranslateZ -> FFIThreeSnapshot -> Effect Unit
-foreign import setPositionX_ :: Core.SetPositionX -> FFIThreeSnapshot -> Effect Unit
-foreign import setPositionY_ :: Core.SetPositionY -> FFIThreeSnapshot -> Effect Unit
-foreign import setPositionZ_ :: Core.SetPositionZ -> FFIThreeSnapshot -> Effect Unit
-foreign import setScaleX_ :: Core.SetScaleX -> FFIThreeSnapshot -> Effect Unit
-foreign import setScaleY_ :: Core.SetScaleY -> FFIThreeSnapshot -> Effect Unit
-foreign import setScaleZ_ :: Core.SetScaleZ -> FFIThreeSnapshot -> Effect Unit
+foreign import setRotationFromAxisAngle_ :: Core.SetRotationFromAxisAngle -> Payload
+foreign import setRotationFromEuler_ :: Core.SetRotationFromEuler -> Payload
+foreign import setRotationFromMatrix_ :: Core.SetRotationFromMatrix -> Payload
+foreign import setRotationFromQuaternion_ :: Core.SetRotationFromQuaternion -> Payload
+foreign import setRotateOnAxis_ :: Core.SetRotateOnAxis -> Payload
+foreign import setRotateOnWorldAxis_ :: Core.SetRotateOnWorldAxis -> Payload
+foreign import setTranslateOnAxis_ :: Core.SetTranslateOnAxis -> Payload
+foreign import setTranslateX_ :: Core.SetTranslateX -> Payload
+foreign import setTranslateY_ :: Core.SetTranslateY -> Payload
+foreign import setTranslateZ_ :: Core.SetTranslateZ -> Payload
+foreign import setPositionX_ :: Core.SetPositionX -> Payload
+foreign import setPositionY_ :: Core.SetPositionY -> Payload
+foreign import setPositionZ_ :: Core.SetPositionZ -> Payload
+foreign import setScaleX_ :: Core.SetScaleX -> Payload
+foreign import setScaleY_ :: Core.SetScaleY -> Payload
+foreign import setScaleZ_ :: Core.SetScaleZ -> Payload
 -- renderer
-foreign import setSize_ :: Core.SetSize -> FFIThreeSnapshot -> Effect Unit
+foreign import setSize_ :: Core.SetSize -> Payload
+-- camera
+foreign import withWorldDirection_ :: Core.WithWorldDirection Payload -> Payload
 -- perspective camera
-foreign import setAspect_ :: Core.SetAspect -> FFIThreeSnapshot -> Effect Unit
-foreign import setFar_ :: Core.SetFar -> FFIThreeSnapshot -> Effect Unit
-foreign import setFilmGauge_ :: Core.SetFilmGauge -> FFIThreeSnapshot -> Effect Unit
-foreign import setFilmOffset_ :: Core.SetFilmOffset -> FFIThreeSnapshot -> Effect Unit
-foreign import setFocus_ :: Core.SetFocus -> FFIThreeSnapshot -> Effect Unit
-foreign import setFov_ :: Core.SetFov -> FFIThreeSnapshot -> Effect Unit
-foreign import setNear_ :: Core.SetNear -> FFIThreeSnapshot -> Effect Unit
-foreign import setZoom_ :: Core.SetZoom -> FFIThreeSnapshot -> Effect Unit
-foreign import setFocalLength_ :: Core.SetFocalLength -> FFIThreeSnapshot -> Effect Unit
-foreign import setViewOffset_ :: Core.SetViewOffset -> FFIThreeSnapshot -> Effect Unit
+foreign import setAspect_ :: Core.SetAspect -> Payload
+foreign import setFar_ :: Core.SetFar -> Payload
+foreign import setFilmGauge_ :: Core.SetFilmGauge -> Payload
+foreign import setFilmOffset_ :: Core.SetFilmOffset -> Payload
+foreign import setFocus_ :: Core.SetFocus -> Payload
+foreign import setFov_ :: Core.SetFov -> Payload
+foreign import setNear_ :: Core.SetNear -> Payload
+foreign import setZoom_ :: Core.SetZoom -> Payload
+foreign import setFocalLength_ :: Core.SetFocalLength -> Payload
+foreign import setViewOffset_ :: Core.SetViewOffset -> Payload
 --
 foreign import connectToScene_
-  :: Core.ConnectToScene -> FFIThreeSnapshot -> Effect Unit
+  :: Core.ConnectToScene -> Payload
 foreign import connectMesh_
-  :: Core.ConnectMesh -> FFIThreeSnapshot -> Effect Unit
+  :: Core.ConnectMesh -> Payload
 foreign import connectGeometry_
-  :: Core.ConnectGeometry -> FFIThreeSnapshot -> Effect Unit
+  :: Core.ConnectGeometry -> Payload
 foreign import connectMaterial_
-  :: Core.ConnectMaterial -> FFIThreeSnapshot -> Effect Unit
+  :: Core.ConnectMaterial -> Payload
 foreign import disconnect_
-  :: Core.Disconnect -> FFIThreeSnapshot -> Effect Unit
+  :: Core.Disconnect -> Payload
 
 class FFIMe i o | i -> o where
   ffiMe :: i -> o
@@ -283,7 +287,7 @@ foreign import stripUndefined_ :: forall a. a -> a
 ffiize :: forall ri i o. RowToList i ri => FFIIze ri i o => { | i } -> { | o }
 ffiize i = stripUndefined_ (build (ffiize' (Proxy :: _ ri) i) {})
 
-effectfulThreeInterpret :: Core.ThreeInterpret (FFIThreeSnapshot -> Effect Unit)
+effectfulThreeInterpret :: Core.ThreeInterpret (Payload)
 effectfulThreeInterpret = Core.ThreeInterpret
   { ids: map show R.random
   -- render
@@ -387,6 +391,8 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setDecay: setDecay_
   , setDistance: setDistance_
   , setIntensity: setIntensity_
+  -- camera
+  , withWorldDirection: withWorldDirection_
   -- perspective camera
   , setAspect: setAspect_
   , setFar: setFar_

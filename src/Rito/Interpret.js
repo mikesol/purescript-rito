@@ -415,6 +415,12 @@ export const setPositionY_ = (a) => (state) => () => {
 export const setPositionZ_ = (a) => (state) => () => {
 	state.units[a.id].main.position.z = a.positionZ;
 };
+// camera
+export const withWorldDirection_ = (a) => (state) => () => {
+	const v3 = new THREE.Vector3();
+	state.units[a.id].main.getWorldDirection(v3);
+	a.withWorldDirection(v3)(state)();
+};
 // perspective camera
 export const setAspect_ = (a) => (state) => () => {
 	state.units[a.id].main.aspect = a.aspect;

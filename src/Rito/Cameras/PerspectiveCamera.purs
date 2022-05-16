@@ -20,6 +20,7 @@ import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
 import Rito.Core (object3D)
 import Rito.Core as C
+import Rito.Vector3 (Vector3)
 
 data PerspectiveCameraOptions = PerspectiveCameraOptions
 
@@ -105,7 +106,8 @@ type PerspectiveCamera' = Variant
       , width :: Number
       , height :: Number
       }
-    | C.Object3D
+  , withWorldDirection :: Vector3 -> PerspectiveCamera
+  | C.Object3D
   )
 newtype PerspectiveCamera = PerspectiveCamera PerspectiveCamera'
 instance Newtype PerspectiveCamera PerspectiveCamera'
@@ -121,22 +123,24 @@ perspectiveCamera i' atts = Element' $ C.Camera go
   C.InitializePerspectiveCamera i = toInitializePerspectiveCamera i'
   go
     parent
-    di@( C.ThreeInterpret
-        { ids
-        , deleteFromCache
-        , makePerspectiveCamera
-        , setAspect
-        , setFar
-        , setFilmGauge
-        , setFilmOffset
-        , setFocus
-        , setFov
-        , setNear
-        , setZoom
-        , setFocalLength
-        , setViewOffset
-        }
-    ) = makeEvent \k -> do
+    di@
+      ( C.ThreeInterpret
+          { ids
+          , deleteFromCache
+          , makePerspectiveCamera
+          , setAspect
+          , setFar
+          , setFilmGauge
+          , setFilmOffset
+          , setFocus
+          , setFov
+          , setNear
+          , setZoom
+          , setFocalLength
+          , setViewOffset
+          , withWorldDirection
+          }
+      ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
@@ -153,34 +157,45 @@ perspectiveCamera i' atts = Element' $ C.Camera go
         )
         <|>
           ( map
-              ( \(PerspectiveCamera e) -> match
-                  (union { aspect: setAspect <<< { id: me, aspect: _ }
-                  , far: setFar <<< { id: me, far: _ }
-                  , filmGauge: setFilmGauge <<< { id: me, filmGauge: _ }
-                  , filmOffset: setFilmOffset <<< { id: me, filmOffset: _ }
-                  , focus: setFocus <<< { id: me, focus: _ }
-                  , fov: setFov <<< { id: me, fov: _ }
-                  , near: setNear <<< { id: me, near: _ }
-                  , zoom: setZoom <<< { id: me, zoom: _ }
-                  , focalLength: setFocalLength <<< { id: me, focalLength: _ }
-                  , viewOffset:
-                      \{ fullWidth
-                       , fullHeight
-                       , x
-                       , y
-                       , width
-                       , height
-                       } -> setViewOffset
-                        { id: me
-                        , fullWidth
-                        , fullHeight
-                        , x
-                        , y
-                        , width
-                        , height
+              ( let
+                  fn = \(PerspectiveCamera e) -> match
+                    ( union
+                        { aspect: setAspect <<< { id: me, aspect: _ }
+                        , far: setFar <<< { id: me, far: _ }
+                        , filmGauge: setFilmGauge <<< { id: me, filmGauge: _ }
+                        , filmOffset: setFilmOffset <<<
+                            { id: me, filmOffset: _ }
+                        , focus: setFocus <<< { id: me, focus: _ }
+                        , fov: setFov <<< { id: me, fov: _ }
+                        , near: setNear <<< { id: me, near: _ }
+                        , zoom: setZoom <<< { id: me, zoom: _ }
+                        , focalLength: setFocalLength <<<
+                            { id: me, focalLength: _ }
+                        , viewOffset:
+                            \{ fullWidth
+                             , fullHeight
+                             , x
+                             , y
+                             , width
+                             , height
+                             } -> setViewOffset
+                              { id: me
+                              , fullWidth
+                              , fullHeight
+                              , x
+                              , y
+                              , width
+                              , height
+                              }
+                        , withWorldDirection: withWorldDirection
+                            <<< { id: me, withWorldDirection: _ }
+                            <<< map fn
                         }
-                  } (object3D me di))
-                  e
+                        (object3D me di)
+                    )
+                    e
+                in
+                  fn
               )
               atts
           )

@@ -413,6 +413,8 @@ type SetScaleZ = { id :: String, scaleZ :: Number }
 type SetTranslateX = { id :: String, translateX :: Number }
 type SetTranslateY = { id :: String, translateY :: Number }
 type SetTranslateZ = { id :: String, translateZ :: Number }
+-- camera
+type WithWorldDirection payload = { id :: String, withWorldDirection :: Vector3 -> payload }
 -- perspective camera
 type SetAspect = { id :: String, aspect :: Number }
 type SetFar = { id :: String, far :: Number }
@@ -761,6 +763,8 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setScaleX :: SetScaleX -> payload
   , setScaleY :: SetScaleY -> payload
   , setScaleZ :: SetScaleZ -> payload
+  -- camera
+  , withWorldDirection :: WithWorldDirection payload -> payload
   -- perspective camera
   , setAspect :: SetAspect -> payload
   , setFar :: SetFar -> payload

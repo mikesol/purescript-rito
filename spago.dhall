@@ -10,6 +10,7 @@
   , "event"
   , "exceptions"
   , "exists"
+  , "fast-vect"
   , "foldable-traversable"
   , "integers"
   , "maybe"
