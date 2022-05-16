@@ -17,7 +17,6 @@ import Data.Homogeneous.Record as Rc
 import Data.Int as Int
 import Data.Lens (over)
 import Data.Lens.Record (prop)
-import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
 import Data.Number (cos, pi, sin, (%))
@@ -46,7 +45,7 @@ import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Color (RGB(..))
 import Rito.Core (toScene)
 import Rito.Geometries.Sphere (sphere)
-import Rito.InstancedMesh (instancedMesh', setter)
+import Rito.InstancedMesh (instancedMesh, setter)
 import Rito.Lights.PointLight (pointLight)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Matrix4 (ctor, scale, setPosition)
@@ -156,7 +155,7 @@ runThree canvas iw ih e = do
                     , positionZ 1.0
                     ]
                 )
-            , toScene $ instancedMesh' (Proxy :: _ 40)
+            , toScene $ instancedMesh
                 ( sphere { widthSegments: 32, heightSegments: 32 }
                     empty
                 )
@@ -215,7 +214,7 @@ runThree canvas iw ih e = do
                                       , z: (n * 0.1)
                                       }
                                   )
-                        if time % 1.0 < 0.25 then setMatrixAt $ (setter :: FV.Vect 40 _ -> _) $ mapWithIndex (#) $ pure f else setMatrixAt $ (setter :: FVR.Vect 40 _ -> _) $ mapWithIndex (#)
+                        if time % 1.0 < 0.25 then setMatrixAt $ (setter :: FV.Vect 40 _ -> _) $ mapWithIndex (#) $ pure f else setMatrixAt $ setter $ mapWithIndex (#)
                           $ FVR.set (Proxy :: _ 0) f
                           $ FVR.set (Proxy :: _ 2) f
                           $ FVR.set (Proxy :: _ 3) f

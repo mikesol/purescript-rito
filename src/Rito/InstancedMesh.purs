@@ -13,11 +13,12 @@ import Prelude
 import Bolson.Core as Bolson
 import Control.Plus (empty)
 import Data.Exists (Exists, mkExists, runExists)
+import Data.FastVect.Common (class IsVect)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Reflectable (class Reflectable, reflectType)
-import Data.TraversableWithIndex (class TraversableWithIndex, traverseWithIndex)
+import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Variant (Variant, match)
 import Effect.Ref as Ref
 import FRP.Event (Event, bang, makeEvent, subscribe)
@@ -37,7 +38,7 @@ type InstancedMesh' (n :: Int) = Variant
 newtype InstancedMesh (n :: Int) = InstancedMesh (InstancedMesh' n)
 instance Newtype (InstancedMesh n) (InstancedMesh' n)
 
-setter :: forall n f x. TraversableWithIndex Int f => f x -> Setter n x
+setter :: forall n f x. IsVect (f n) => f n x -> Setter n x
 setter f = Setter $ mkExists
   ( SetterF
       { f
