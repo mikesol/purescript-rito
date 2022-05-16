@@ -181,7 +181,13 @@ runThree canvas iw ih e = do
                               fromMaybe ({ x: 0.0, y: 0.0 } /\ 0.0)
                                 (a !! i) # \({ x, y } /\ n) -> do
                                 scale
-                                  ( setPosition ctor
+                                  ( vector3
+                                      { x: (n * 0.1)
+                                      , y: (n * 0.1)
+                                      , z: (n * 0.1)
+                                      }
+                                  )
+                                  ( setPosition
                                       ( vector3
                                           { x:
                                               sin
@@ -207,12 +213,7 @@ runThree canvas iw ih e = do
                                                 * 1.0
                                           }
                                       )
-                                  )
-                                  ( vector3
-                                      { x: (n * 0.1)
-                                      , y: (n * 0.1)
-                                      , z: (n * 0.1)
-                                      }
+                                      ctor
                                   )
                         if time % 1.0 < 0.25 then setMatrixAt $ (setter :: FV.Vect 40 _ -> _) $ mapWithIndex (#) $ pure f else setMatrixAt $ setter $ mapWithIndex (#)
                           $ FVR.set (Proxy :: _ 0) f

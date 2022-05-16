@@ -60,13 +60,13 @@ foreign import compose_
 foreign import determinant_ :: Matrix4 -> Number
 foreign import invert_ :: Matrix4 -> Matrix4
 foreign import identity_ :: Matrix4
-foreign import lookAt_ :: Matrix4 -> Vector3 -> Vector3 -> Vector3 -> Matrix4
-foreign import makeRotationAxis_ :: Matrix4 -> Vector3 -> Number -> Matrix4
-foreign import makeRotationFromEuler_ :: Matrix4 -> Euler -> Matrix4
-foreign import makeRotationFromQuaternion_ :: Matrix4 -> Quaternion -> Matrix4
-foreign import makeRotationX_ :: Matrix4 -> Number -> Matrix4
-foreign import makeRotationY_ :: Matrix4 -> Number -> Matrix4
-foreign import makeRotationZ_ :: Matrix4 -> Number -> Matrix4
+foreign import lookAt_ :: Vector3 -> Vector3 -> Vector3 -> Matrix4 -> Matrix4
+foreign import makeRotationAxis_ :: Vector3 -> Number -> Matrix4 -> Matrix4
+foreign import makeRotationFromEuler_ :: Euler -> Matrix4 -> Matrix4
+foreign import makeRotationFromQuaternion_ :: Quaternion -> Matrix4 -> Matrix4
+foreign import makeRotationX_ :: Number -> Matrix4 ->Matrix4
+foreign import makeRotationY_ :: Number -> Matrix4 -> Matrix4
+foreign import makeRotationZ_ :: Number -> Matrix4 -> Matrix4
 foreign import makeScale_ :: Matrix4 -> Number -> Number -> Number -> Matrix4
 foreign import makeShear_
   :: Matrix4
@@ -81,10 +81,10 @@ foreign import makeTranslation_
   :: Matrix4 -> Number -> Number -> Number -> Matrix4
 foreign import multiply_ :: Matrix4 -> Matrix4 -> Matrix4
 foreign import multiplyMatrices_ :: Matrix4 -> Matrix4 -> Matrix4
-foreign import multiplyScalar_ :: Matrix4 -> Number -> Matrix4
+foreign import multiplyScalar_ :: Number -> Matrix4 -> Matrix4
 foreign import premultiply_ :: Matrix4 -> Matrix4 -> Matrix4
-foreign import scale_ :: Matrix4 -> Vector3 -> Matrix4
-foreign import setPosition_ :: Matrix4 -> Vector3 -> Matrix4
+foreign import scale_ :: Vector3 -> Matrix4 -> Matrix4
+foreign import setPosition_ :: Vector3 -> Matrix4 -> Matrix4
 foreign import transpose_ :: Matrix4 -> Matrix4
 
 matrix4 :: Matrix4' -> Matrix4
@@ -121,25 +121,25 @@ invert = invert_
 identity :: Matrix4
 identity = identity_
 
-lookAt :: Matrix4 -> Vector3 -> Vector3 -> Vector3 -> Matrix4
+lookAt :: Vector3 -> Vector3 -> Vector3 -> Matrix4 -> Matrix4
 lookAt = lookAt_
 
-makeRotationAxis :: Matrix4 -> Vector3 -> Number -> Matrix4
+makeRotationAxis :: Vector3 -> Number -> Matrix4 -> Matrix4
 makeRotationAxis = makeRotationAxis_
 
-makeRotationFromEuler :: Matrix4 -> Euler -> Matrix4
+makeRotationFromEuler :: Euler -> Matrix4 -> Matrix4
 makeRotationFromEuler = makeRotationFromEuler_
 
-makeRotationFromQuaternion :: Matrix4 -> Quaternion -> Matrix4
+makeRotationFromQuaternion :: Quaternion -> Matrix4 -> Matrix4
 makeRotationFromQuaternion = makeRotationFromQuaternion_
 
-makeRotationX :: Matrix4 -> Number -> Matrix4
+makeRotationX :: Number -> Matrix4 -> Matrix4
 makeRotationX = makeRotationX_
 
-makeRotationY :: Matrix4 -> Number -> Matrix4
+makeRotationY :: Number -> Matrix4 -> Matrix4
 makeRotationY = makeRotationY_
 
-makeRotationZ :: Matrix4 -> Number -> Matrix4
+makeRotationZ :: Number -> Matrix4 -> Matrix4
 makeRotationZ = makeRotationZ_
 
 makeScale :: Matrix4 -> Number -> Number -> Number -> Matrix4
@@ -165,16 +165,16 @@ multiply = multiply_
 multiplyMatrices :: Matrix4 -> Matrix4 -> Matrix4
 multiplyMatrices = multiplyMatrices_
 
-multiplyScalar :: Matrix4 -> Number -> Matrix4
+multiplyScalar :: Number -> Matrix4 -> Matrix4
 multiplyScalar = multiplyScalar_
 
 premultiply :: Matrix4 -> Matrix4 -> Matrix4
 premultiply = premultiply_
 
-scale :: Matrix4 -> Vector3 -> Matrix4
+scale :: Vector3 -> Matrix4 -> Matrix4
 scale = scale_
 
-setPosition :: Matrix4 -> Vector3 -> Matrix4
+setPosition :: Vector3 -> Matrix4 -> Matrix4
 setPosition = setPosition_
 
 transpose :: Matrix4 -> Matrix4
