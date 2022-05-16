@@ -332,6 +332,7 @@ type InitializePerspectiveCamera' =
   , aspect :: Number
   , near :: Number
   , far :: Number
+  , orbitControls :: Maybe HTMLCanvasElement
   )
 newtype InitializePerspectiveCamera = InitializePerspectiveCamera
   { | InitializePerspectiveCamera' }

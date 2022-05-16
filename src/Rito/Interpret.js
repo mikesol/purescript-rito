@@ -98,10 +98,15 @@ export const makeSphere_ = genericMake_(
 )((x, y) => {
 	y.main.geometry = x.main;
 });
-export const makePerspectiveCamera_ = genericMake_(
-	({ fov, aspect, near, far }) =>
-		new THREE.PerspectiveCamera(fov, aspect, near, far)
-)(() => {});
+export const makePerspectiveCamera_ = (a) => (state) => () => {
+	genericMake_(
+		({ fov, aspect, near, far }) =>
+			new THREE.PerspectiveCamera(fov, aspect, near, far)
+	)(() => {})(a)(state)();
+	if (a.orbitControls) {
+		state.orbitControls = a.orbitControls(state.units[a.id].main);
+	}
+};
 // COPY of generic make, needed because indexed mesh is a bit different
 export const makeInstancedMesh_ = (a) => (state) => () => {
 	const { id, scope, parent, geometry, material, count } = a;
@@ -163,6 +168,9 @@ export const makeGroup_ = genericMake_(() => new THREE.Group())((x, y) => {
 	y.main.add(x.main);
 });
 export const webGLRender_ = (a) => (state) => () => {
+	if (state.orbitControls) {
+		state.orbitControls.update();
+	}
 	state.units[a.id].main.render(
 		state.units[a.scene].main,
 		state.units[a.camera].main

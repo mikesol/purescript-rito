@@ -14,6 +14,7 @@ import Bolson.Core (Entity(..))
 import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
@@ -21,6 +22,7 @@ import Record (union)
 import Rito.Core (object3D)
 import Rito.Core as C
 import Rito.Vector3 (Vector3)
+import Web.HTML (HTMLCanvasElement)
 
 data PerspectiveCameraOptions = PerspectiveCameraOptions
 
@@ -52,11 +54,19 @@ instance
     Number where
   convertOption _ _ = identity
 
+instance
+  ConvertOption PerspectiveCameraOptions
+    "orbitControls"
+    HTMLCanvasElement
+    (Maybe HTMLCanvasElement) where
+  convertOption _ _ = Just
+
 type PerspectiveCameraOptional =
   ( fov :: Number
   , aspect :: Number
   , near :: Number
   , far :: Number
+  , orbitControls :: Maybe HTMLCanvasElement
   )
 
 type PerspectiveCameraAll =
@@ -68,6 +78,7 @@ defaultPerspectiveCamera =
   , aspect: 1.0
   , near: 0.1
   , far: 2000.0
+  , orbitControls: Nothing
   }
 
 class InitialPerspectiveCamera i where
@@ -153,6 +164,7 @@ perspectiveCamera i' atts = Element' $ C.Camera go
             , far: i.far
             , fov: i.fov
             , near: i.near
+            , orbitControls: i.orbitControls
             }
         )
         <|>
