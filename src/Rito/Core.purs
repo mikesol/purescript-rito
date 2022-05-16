@@ -327,7 +327,7 @@ type MakePerspectiveCamera f s =
   , parent :: f String
   | InitializePerspectiveCamera'
   }
-newtype OrbitControls = OrbitControls
+type OrbitControls' =
   { canvas :: HTMLCanvasElement
   , autoRotate :: Boolean
   , autoRotateSpeed :: Number
@@ -341,6 +341,7 @@ newtype OrbitControls = OrbitControls
   , rotateSpeed :: Number
   , zoomSpeed :: Number
   }
+newtype OrbitControls = OrbitControls OrbitControls'
 derive instance Newtype OrbitControls _
 
 type InitializePerspectiveCamera' =

@@ -20,6 +20,7 @@ import Prim.RowList as RL
 import Record (get)
 import Record.Builder (Builder, insert, build)
 import Rito.Color (Color)
+import Rito.Core (OrbitControls)
 import Rito.Core as Core
 import Rito.NormalMapTypes (NormalMapType(..))
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
@@ -214,6 +215,9 @@ class FFIMe i o | i -> o where
   ffiMe :: i -> o
 
 instance FFIMe Int Int where
+  ffiMe = identity
+
+instance FFIMe OrbitControls OrbitControls where
   ffiMe = identity
 
 instance (RowToList i ri, FFIIze ri i o) => FFIMe { | i } { | o } where

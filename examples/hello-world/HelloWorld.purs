@@ -236,7 +236,7 @@ runThree canvas iw ih e = do
             , aspect: iw / ih
             , near: 0.1
             , far: 100.0
-            , orbitControls: OrbitControls (defaultOrbitControls e)
+            , orbitControls: OrbitControls ((defaultOrbitControls e) { enabled = true })
             }
             ( oneOf
                 [ bang (positionX 0.0)

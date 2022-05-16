@@ -177,7 +177,7 @@ type OrbitControlsAll =
 type PerspectiveCameraAll =
   (orbitControls :: C.OrbitControls | PerspectiveCameraOptional)
 
-defaultOrbitControls :: HTMLCanvasElement -> { | OrbitControlsAll}
+defaultOrbitControls :: HTMLCanvasElement -> { | OrbitControlsAll }
 defaultOrbitControls canvas =
   { autoRotate: false
   , canvas
