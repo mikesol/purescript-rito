@@ -42,7 +42,7 @@ export const compose_ = (position) => (quaternion) => (scale) =>
 	new THREE.Matrix4().compose(position, quaternion, scale);
 export const determinant_ = (a) => a.determinant();
 export const invert_ = (a) => a.clone().invert();
-export const identity_ = (a) => new THREE.Matrix4().identity();
+export const identity_ = new THREE.Matrix4().identity();
 export const lookAt_ = (a) => (eye) => (target) => (up) =>
 	a.clone().lookAt(eye, target, up);
 export const makeRotationAxis_ = (a) => (axis) => (theta) =>
