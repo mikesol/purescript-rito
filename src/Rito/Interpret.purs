@@ -216,6 +216,9 @@ class FFIMe i o | i -> o where
 instance FFIMe Int Int where
   ffiMe = identity
 
+instance (RowToList i ri, FFIIze ri i o) => FFIMe { | i } { | o } where
+  ffiMe = ffiize
+
 instance FFIMe Boolean Boolean where
   ffiMe = identity
 

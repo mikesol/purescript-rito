@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 const GLOBAL_SCOPE = "@global@";
 
@@ -103,9 +104,20 @@ export const makePerspectiveCamera_ = (a) => (state) => () => {
 		({ fov, aspect, near, far }) =>
 			new THREE.PerspectiveCamera(fov, aspect, near, far)
 	)(() => {})(a)(state)();
-	if (a.orbitControls) {
-		state.orbitControls = a.orbitControls(state.units[a.id].main);
-	}
+	const orbitControls = new OrbitControls(
+		state.units[a.id].main,
+		a.orbitControls.canvas
+	);
+	orbitControls.autoRotate = a.orbitControls.autoRotate;
+	orbitControls.autoRotateSpeed = a.orbitControls.autoRotateSpeed;
+  orbitControls.dampingFactor = a.orbitControls.dampingFactor;
+  orbitControls.enableDamping = a.orbitControls.enableDamping;
+	orbitControls.enableZoom = a.orbitControls.enableZoom;
+	orbitControls.enablePan = a.orbitControls.enablePan;
+	orbitControls.panSpeed = a.orbitControls.panSpeed;
+	orbitControls.rotateSpeed = a.orbitControls.rotateSpeed;
+	orbitControls.zoomSpeed = a.orbitControls.zoomSpeed;
+	state.orbitControls = orbitControls;
 };
 // COPY of generic make, needed because indexed mesh is a bit different
 export const makeInstancedMesh_ = (a) => (state) => () => {
@@ -168,7 +180,7 @@ export const makeGroup_ = genericMake_(() => new THREE.Group())((x, y) => {
 	y.main.add(x.main);
 });
 export const webGLRender_ = (a) => (state) => () => {
-	if (state.orbitControls) {
+	if (state.orbitControls && state.orbitControls.enabled) {
 		state.orbitControls.update();
 	}
 	state.units[a.id].main.render(

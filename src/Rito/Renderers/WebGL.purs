@@ -15,7 +15,6 @@ import Effect.AVar as AVar
 import Effect.Exception (throwException)
 import Effect.Ref as Ref
 import FRP.Event (Event, bang, makeEvent, subscribe)
-import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Core as C
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
@@ -206,9 +205,7 @@ webGLRenderer sne cam i' props = C.Renderer go
                 }
                 di
               _ -> f (scene empty [ coerce sne ])
-        , cam #
-            fix \f ->
-              case _ of
+        , cam # case _ of
                 Element' (C.Camera gooo) -> gooo
                   { parent: Just me
                   , scope: Local scope
@@ -218,12 +215,7 @@ webGLRenderer sne cam i' props = C.Renderer go
                 -- todo: this is a bug and means we've rigged
                 -- our smart constructors wrong
                 -- watch for it?
-                _ -> f $ perspectiveCamera
-                  { fov: 75.0
-                  , aspect: 1.0
-                  , near: 0.1
-                  , far: 100.0
-                  }  empty
+                _ -> empty
         , makeEvent \k -> do
             usuRef <- Ref.new mempty
             -- ugh, there's got to be a better way...

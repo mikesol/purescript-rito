@@ -55,9 +55,9 @@ import FRP.Event.AnimationFrame (animationFrame)
 import FRP.Event.VBus (V, vbus)
 import Foreign (Foreign)
 import Foreign.Object as Object
-import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
+import Rito.Cameras.PerspectiveCamera (defaultOrbitControls, perspectiveCamera)
 import Rito.Color (RGB(..))
-import Rito.Core (toGroup, toScene)
+import Rito.Core (OrbitControls(..), toGroup, toScene)
 import Rito.Geometries.Box (box)
 import Rito.Geometries.Capsule (capsule)
 import Rito.Geometries.Plane (plane)
@@ -242,6 +242,7 @@ runThree { texture } lps e afE iw ih canvas = do
             , aspect: iw / ih
             , near: 0.1
             , far: 100.0
+            , orbitControls: OrbitControls (defaultOrbitControls canvas)
             }
             ( oneOf
                 [ bang (positionX 0.0)
