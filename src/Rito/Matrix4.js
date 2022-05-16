@@ -38,8 +38,8 @@ export const set_ = ({
 		n44
 	);
 export const equals_ = (a) => (b) => a.equals(b);
-export const compose_ = (a) => (position) => (quaternion) => (scale) =>
-	a.clone().compose(position, quaternion, scale);
+export const compose_ = (position) => (quaternion) => (scale) =>
+	new THREE.Matrix4().compose(position, quaternion, scale);
 export const determinant_ = (a) => a.determinant();
 export const invert_ = (a) => a.clone().invert();
 export const identity_ = (a) => new THREE.Matrix4().identity();

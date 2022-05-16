@@ -56,7 +56,7 @@ foreign import ctor_ :: Matrix4
 foreign import equals_ :: Matrix4 -> Matrix4 -> Boolean
 foreign import set_ :: Matrix4' -> Matrix4
 foreign import compose_
-  :: Matrix4 -> Vector3 -> Quaternion -> Vector3 -> Matrix4
+  :: Vector3 -> Quaternion -> Vector3 -> Matrix4
 foreign import determinant_ :: Matrix4 -> Number
 foreign import invert_ :: Matrix4 -> Matrix4
 foreign import identity_ :: Matrix4
@@ -109,7 +109,7 @@ equals = equals_
 set :: Matrix4' -> Matrix4
 set = set_
 
-compose :: Matrix4 -> Vector3 -> Quaternion -> Vector3 -> Matrix4
+compose :: Vector3 -> Quaternion -> Vector3 -> Matrix4
 compose = compose_
 
 determinant :: Matrix4 -> Number
