@@ -9,16 +9,18 @@ import Data.Array (zip, (!!), (..))
 import Data.Array.NonEmpty (fromArray, singleton)
 import Data.ArrayBuffer.Typed (toArray)
 import Data.DateTime.Instant (unInstant)
-import Data.FastVect.FastVect (Vect)
+import Data.FastVect.FastVect as FV
+import Data.FastVect.Sparse.Read as FVR
 import Data.Foldable (for_, oneOf, oneOfMap, traverse_)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Homogeneous.Record as Rc
 import Data.Int as Int
 import Data.Lens (over)
 import Data.Lens.Record (prop)
+import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
-import Data.Number (cos, pi, sin)
+import Data.Number (cos, pi, sin, (%))
 import Data.Profunctor.Strong (second)
 import Data.Traversable (traverse)
 import Data.Tuple.Nested (type (/\), (/\))
@@ -173,9 +175,8 @@ runThree canvas iw ih e = do
                     <#>
                       \{ time
                        , value: a
-                       } ->
-                        setMatrixAt $ (setter :: Vect 40 _ -> _) $ mapWithIndex (#) $ pure
-                          ( \i -> do
+                       } -> do
+                        let f i = do
                               let tni = Int.toNumber i
                               let tni40 = tni / 40.0
                               fromMaybe ({ x: 0.0, y: 0.0 } /\ 0.0)
@@ -214,7 +215,19 @@ runThree canvas iw ih e = do
                                       , z: (n * 0.1)
                                       }
                                   )
-                          )
+                        if time % 1.0 < 0.25 then setMatrixAt $ (setter :: FV.Vect 40 _ -> _) $ mapWithIndex (#) $ pure f else setMatrixAt $ (setter :: FVR.Vect 40 _ -> _) $ mapWithIndex (#)
+                          $ FVR.set (Proxy :: _ 0) f
+                          $ FVR.set (Proxy :: _ 2) f
+                          $ FVR.set (Proxy :: _ 3) f
+                          $ FVR.set (Proxy :: _ 11) f
+                          $ FVR.set (Proxy :: _ 12) f
+                          $ FVR.set (Proxy :: _ 19) f
+                          $ FVR.set (Proxy :: _ 20) f
+                          $ FVR.set (Proxy :: _ 21) f
+                          $ FVR.set (Proxy :: _ 27) f
+                          $ FVR.set (Proxy :: _ 28) f
+                          $ FVR.set (Proxy :: _ 36) f
+                          $ FVR.sparse
                 ))
             ]
         )
