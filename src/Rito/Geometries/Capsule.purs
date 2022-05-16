@@ -63,8 +63,8 @@ defaultCapsule :: { | CapsuleOptional }
 defaultCapsule =
   { radius: 1.0
   , length: 1.0
-  , radialSegments: 1
-  , capSegments: 1
+  , radialSegments: 4
+  , capSegments: 8
   }
 
 class InitialCapsule i where

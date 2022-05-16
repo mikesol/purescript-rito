@@ -9,6 +9,7 @@
   , "either"
   , "event"
   , "exceptions"
+  , "exists"
   , "foldable-traversable"
   , "integers"
   , "maybe"

@@ -9,14 +9,16 @@ import Data.Array (zip, (!!), (..))
 import Data.Array.NonEmpty (fromArray, singleton)
 import Data.ArrayBuffer.Typed (toArray)
 import Data.DateTime.Instant (unInstant)
+import Data.FastVect.FastVect (Vect)
 import Data.Foldable (for_, oneOf, oneOfMap, traverse_)
+import Data.FunctorWithIndex (mapWithIndex)
 import Data.Homogeneous.Record as Rc
 import Data.Int as Int
 import Data.Lens (over)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
-import Data.Number (cos, pi, sin, (%))
+import Data.Number (cos, pi, sin)
 import Data.Profunctor.Strong (second)
 import Data.Traversable (traverse)
 import Data.Tuple.Nested (type (/\), (/\))
@@ -32,7 +34,7 @@ import Effect.Random (randomInt)
 import Effect.Random as Random
 import Effect.Ref (new, read, write)
 import FRP.Behavior (behavior)
-import FRP.Event (Event, bang, keepLatest, makeEvent, memoize, subscribe)
+import FRP.Event (Event, bang, makeEvent, subscribe)
 import FRP.Event.Animate (animationFrameEvent)
 import FRP.Event.Time (withTime)
 import FRP.Event.VBus (V, vbus)
@@ -42,13 +44,15 @@ import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Color (RGB(..))
 import Rito.Core (toScene)
 import Rito.Geometries.Sphere (sphere)
+import Rito.InstancedMesh (instancedMesh', setter)
 import Rito.Lights.PointLight (pointLight)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
-import Rito.Mesh (mesh)
-import Rito.Properties (positionX, positionY, positionZ, render, scaleX, scaleY, scaleZ, size)
+import Rito.Matrix4 (ctor, scale, setPosition)
+import Rito.Properties (positionX, positionY, positionZ, render, setMatrixAt, size)
 import Rito.Renderers.WebGL (webGLRenderer)
 import Rito.Run as Rito.Run
 import Rito.Scene (scene)
+import Rito.Vector3 (vector3)
 import Test.QuickCheck.Gen (elements, evalGen)
 import Type.Proxy (Proxy(..))
 import WAGS.Clock (withACTime)
@@ -133,90 +137,86 @@ denv s e = bang
 
 ttap (o /\ n) = AudioNumeric { o: o + 0.04, n, t: _linear }
 
-runThree :: Event (Array CanvasInfo) -> Number -> Number -> HTMLCanvasElement -> Effect Unit
+runThree
+  :: Event (Array CanvasInfo)
+  -> Number
+  -> Number
+  -> HTMLCanvasElement
+  -> Effect Unit
 runThree canvas iw ih e = do
   _ <- Rito.Run.run
     ( webGLRenderer
         ( scene empty
-            ( [ toScene $ pointLight {}
-                  ( oneOfMap bang
-                      [ positionX 1.0
-                      , positionY (-0.5)
-                      , positionZ 1.0
-                      ]
-                  )
-              ]
-                <>
-                  ( 0 .. 40 <#> \i -> do
-                      let tni = Int.toNumber i
-                      let tni40 = tni / 40.0
-                      toScene
-                        $ mesh
-                          ( sphere { widthSegments: 32, heightSegments: 32 }
-                              empty
-                          )
-                          ( meshStandardMaterial
-                              { color: RGB ((tni + 0.1) * 420.85 % 1.0)
-                                  ((tni + 0.6) * 3852.34 % 1.0)
-                                  ((tni + 0.32) * 12341.123 % 1.0)
-                              , metalness: if i `mod` 6 == 0 then 1.0 else 0.0
-                              }
-                              empty
-                          )
-                          ( keepLatest $ keepLatest
-                              ( memoize
-                                  ( over
-                                      (prop (Proxy :: Proxy "time"))
-                                      ( (_ / 1000.0)
-                                          <<< unwrap
-                                          <<< unInstant
-                                      ) <$> withTime (canvas <|> bang [])
+            [ toScene $ pointLight {}
+                ( oneOfMap bang
+                    [ positionX 1.0
+                    , positionY (-0.5)
+                    , positionZ 1.0
+                    ]
+                )
+            , toScene $ instancedMesh' (Proxy :: _ 40)
+                ( sphere { widthSegments: 32, heightSegments: 32 }
+                    empty
+                )
+                ( meshStandardMaterial
+                    { color: RGB 1.0 1.0 1.0
+                    , metalness: 1.0
+                    }
+                    empty
+                )
+                (( over
+                    (prop (Proxy :: Proxy "time"))
+                    ( (_ / 1000.0)
+                        <<< unwrap
+                        <<< unInstant
+                    ) <$> withTime (canvas <|> bang [])
+                    <#>
+                      \{ time
+                       , value: a
+                       } ->
+                        setMatrixAt $ (setter :: Vect 40 _ -> _) $ mapWithIndex (#) $ pure
+                          ( \i -> do
+                              let tni = Int.toNumber i
+                              let tni40 = tni / 40.0
+                              fromMaybe ({ x: 0.0, y: 0.0 } /\ 0.0)
+                                (a !! i) # \({ x, y } /\ n) -> do
+                                scale
+                                  ( setPosition ctor
+                                      ( vector3
+                                          { x:
+                                              sin
+                                                ( 0.2 * tni40 * time *
+                                                    twoPi
+                                                )
+                                                + x * 2.0
+                                                - 1.0
+                                          , y:
+                                              cos
+                                                ( 0.2 * tni40 * time *
+                                                    twoPi
+                                                )
+                                                + y * 2.0
+                                                - 1.0
+                                          , z:
+                                              ( if i `mod` 2 == 0 then cos
+                                                else sin
+                                              )
+                                                ( 0.2 * tni40 * time *
+                                                    twoPi
+                                                )
+                                                * 1.0
+                                          }
+                                      )
                                   )
-                                  ( \ev -> ev <#>
-                                      \{ time
-                                       , value: a
-                                       } ->
-                                        fromMaybe ({ x: 0.0, y: 0.0 } /\ 0.0)
-                                          (a !! i) # \({ x, y } /\ n) -> do
-                                          oneOfMap
-                                            bang
-                                            [ positionX
-                                                ( sin
-                                                    ( 0.2 * tni40 * time *
-                                                        twoPi
-                                                    )
-                                                    + x * 2.0
-                                                    - 1.0
-                                                )
-                                            , positionY
-                                                ( cos
-                                                    ( 0.2 * tni40 * time *
-                                                        twoPi
-                                                    )
-                                                    + y * 2.0
-                                                    - 1.0
-                                                )
-                                            , positionZ
-                                                ( ( if i `mod` 2 == 0 then cos
-                                                    else sin
-                                                  )
-                                                    ( 0.2 * tni40 * time *
-                                                        twoPi
-                                                    )
-                                                    * 1.0
-                                                )
-                                            , scaleX
-                                                (n * 0.1)
-                                            , scaleY
-                                                (n * 0.1)
-                                            , scaleZ
-                                                (n * 0.1)
-                                            ]
+                                  ( vector3
+                                      { x: (n * 0.1)
+                                      , y: (n * 0.1)
+                                      , z: (n * 0.1)
+                                      }
                                   )
-                              )
                           )
-                  )
-            )
+                ))
+            ]
         )
         ( perspectiveCamera
             { fov: 75.0
@@ -232,7 +232,9 @@ runThree canvas iw ih e = do
             )
         )
         { canvas: e }
-        (bang (size { width: iw, height: ih}) <|> bang render <|> (canvas $> render))
+        ( bang (size { width: iw, height: ih }) <|> bang render <|>
+            (canvas $> render)
+        )
     )
   pure unit
 
@@ -269,85 +271,87 @@ main = launchAff_ do
                           )
                       )
                   , fftSize: TTT7
-                  } [fan1
-                  ( playBuf buffer
-                      ( bangOn <|>
-                          ( P.playbackRate <<< ttap <<< second
-                              (calcSlope 0.0 0.96 100.0 1.04)
-                          ) <$> sliderE
-                      )
-                  )
-                  \b _ -> fix
-                    \g0 -> gain_ 1.0
-                      [ b
-                      , delay { maxDelayTime: 2.5, delayTime: 1.0 }
-                          ( ( P.delayTime <<< ttap <<< second
-                                (calcSlope 0.0 0.5 100.0 2.45)
-                            ) <$> sliderE
+                  }
+                  [ fan1
+                      ( playBuf buffer
+                          ( bangOn <|>
+                              ( P.playbackRate <<< ttap <<< second
+                                  (calcSlope 0.0 0.96 100.0 1.04)
+                              ) <$> sliderE
                           )
-                          [ gain 0.4
-                              ( ( P.gain <<< ttap <<< second
-                                    (calcSlope 0.0 0.6 100.0 0.9)
+                      )
+                      \b _ -> fix
+                        \g0 -> gain_ 1.0
+                          [ b
+                          , delay { maxDelayTime: 2.5, delayTime: 1.0 }
+                              ( ( P.delayTime <<< ttap <<< second
+                                    (calcSlope 0.0 0.5 100.0 2.45)
                                 ) <$> sliderE
                               )
-                              [ b ]
-                          ]
-                      , dgh 0.15 empty 0.7 empty 1500.0 (fenv 1500.0 3000.0)
-                          [ fix
-                              \g1 -> gain 1.0 fade1
-                                [ dgh 0.4 empty 0.5 empty 3000.0
-                                    (fenv 3000.0 100.0)
-                                    [ g0, g1 ]
-                                ]
-                          ]
-                      , dgh 0.29
-                          ( ( P.delayTime <<< ttap <<< second
-                                (calcSlope 0.0 0.1 100.0 0.4)
-                            ) <$> sliderE
-                          ) {-(denv 0.29 0.9)-}
-                          0.85
-                          empty
-                          2000.0
-                          (fenv 2000.0 5000.0)
-                          [ fix
-                              \g1 -> gain_ 1.0
-                                [ dgh 0.6
-                                    ( ( P.delayTime <<< ttap <<< second
-                                          (calcSlope 0.0 0.8 100.0 0.3)
-                                      ) <$> sliderE
-                                    ) {-(denv 0.6 0.2)-}
-                                    0.6
-                                    empty
-                                    3500.0
-                                    (fenv 3500.0 100.0)
-                                    [ g0
-                                    , ( fix
-                                          \g2 -> gain 1.0 fade0
-                                            [ dgb 0.75
-                                                ( ( P.delayTime <<< ttap <<<
-                                                      second
-                                                        ( calcSlope 0.0 0.9
-                                                            100.0
-                                                            0.1
-                                                        )
-                                                  ) <$> sliderE
-                                                )
-                                                0.6
-                                                empty
-                                                4000.0
-                                                (fenv 4000.0 200.0)
-                                                [ g1, g2 ]
-                                            , dgb 0.75 (denv 0.75 0.2) 0.55
-                                                empty
-                                                200.0
-                                                (fenv 200.0 4000.0)
-                                                [ b ]
-                                            ]
-                                      )
+                              [ gain 0.4
+                                  ( ( P.gain <<< ttap <<< second
+                                        (calcSlope 0.0 0.6 100.0 0.9)
+                                    ) <$> sliderE
+                                  )
+                                  [ b ]
+                              ]
+                          , dgh 0.15 empty 0.7 empty 1500.0 (fenv 1500.0 3000.0)
+                              [ fix
+                                  \g1 -> gain 1.0 fade1
+                                    [ dgh 0.4 empty 0.5 empty 3000.0
+                                        (fenv 3000.0 100.0)
+                                        [ g0, g1 ]
                                     ]
-                                ]
+                              ]
+                          , dgh 0.29
+                              ( ( P.delayTime <<< ttap <<< second
+                                    (calcSlope 0.0 0.1 100.0 0.4)
+                                ) <$> sliderE
+                              ) {-(denv 0.29 0.9)-}
+                              0.85
+                              empty
+                              2000.0
+                              (fenv 2000.0 5000.0)
+                              [ fix
+                                  \g1 -> gain_ 1.0
+                                    [ dgh 0.6
+                                        ( ( P.delayTime <<< ttap <<< second
+                                              (calcSlope 0.0 0.8 100.0 0.3)
+                                          ) <$> sliderE
+                                        ) {-(denv 0.6 0.2)-}
+                                        0.6
+                                        empty
+                                        3500.0
+                                        (fenv 3500.0 100.0)
+                                        [ g0
+                                        , ( fix
+                                              \g2 -> gain 1.0 fade0
+                                                [ dgb 0.75
+                                                    ( ( P.delayTime <<< ttap <<<
+                                                          second
+                                                            ( calcSlope 0.0 0.9
+                                                                100.0
+                                                                0.1
+                                                            )
+                                                      ) <$> sliderE
+                                                    )
+                                                    0.6
+                                                    empty
+                                                    4000.0
+                                                    (fenv 4000.0 200.0)
+                                                    [ g1, g2 ]
+                                                , dgb 0.75 (denv 0.75 0.2) 0.55
+                                                    empty
+                                                    200.0
+                                                    (fenv 200.0 4000.0)
+                                                    [ b ]
+                                                ]
+                                          )
+                                        ]
+                                    ]
+                              ]
                           ]
-                      ]]
+                  ]
               ]
           D.div_
             [ D.div
@@ -379,7 +383,8 @@ main = launchAff_ do
                         , D.Max := "100"
                         , D.Step := "1"
                         , D.Value := "50"
-                        , D.Style := "width: 100%; margin-top: 15px; margin-bottom: 15px;"
+                        , D.Style :=
+                            "width: 100%; margin-top: 15px; margin-bottom: 15px;"
                         , D.OnInput := cb
                             ( traverse_
                                 (valueAsNumber >=> push.slider)

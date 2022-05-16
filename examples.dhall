@@ -9,6 +9,7 @@ in      conf
               , "debug"
               , "canvas"
               , "filterable"
+              , "fast-vect"
               , "lists"
               , "affjax-web"
               , "foreign"

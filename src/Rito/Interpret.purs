@@ -51,6 +51,7 @@ foreign import makeDirectionalLight_ :: Core.MakeDirectionalLight Undefinable (U
 foreign import makeScene_ :: Core.MakeScene Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeGroup_ :: Core.MakeGroup Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeMesh_ :: Core.MakeMesh Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
+foreign import makeInstancedMesh_ :: Core.MakeInstancedMesh Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeCapsule_ :: Core.MakeCapsule Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeSphere_ :: Core.MakeSphere Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
 foreign import makeBox_ :: Core.MakeBox Undefinable (Undefinable String) -> FFIThreeSnapshot -> Effect Unit
@@ -63,6 +64,9 @@ foreign import makeMeshBasicMaterial_
 --
 foreign import deleteFromCache_
   :: Core.DeleteFromCache -> FFIThreeSnapshot -> Effect Unit
+--
+foreign import setInstancedMeshMatrix4_ :: Core.SetInstancedMeshMatrix4 -> FFIThreeSnapshot -> Effect Unit
+foreign import setInstancedMeshColor_ :: Core.SetInstancedMeshColor -> FFIThreeSnapshot -> Effect Unit
 --
 foreign import setWidth_ :: Core.SetWidth -> FFIThreeSnapshot -> Effect Unit
 foreign import setHeight_ :: Core.SetHeight -> FFIThreeSnapshot -> Effect Unit
@@ -289,6 +293,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeScene: lcmap ffiize makeScene_
   , makeGroup: lcmap ffiize makeGroup_
   , makeMesh: lcmap ffiize makeMesh_
+  , makeInstancedMesh: lcmap ffiize makeInstancedMesh_
   , makeCapsule: lcmap ffiize makeCapsule_
   , makeSphere: lcmap ffiize makeSphere_
   , makeBox: lcmap ffiize makeBox_
@@ -329,6 +334,9 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setCenter: setCenter_
   , getBoundingBox: getBoundingBox_
   , getBoundingSphere: getBoundingSphere_
+  -- instancedMesh
+  , setInstancedMeshMatrix4: setInstancedMeshMatrix4_
+  , setInstancedMeshColor: setInstancedMeshColor_
   -- material
   , setColor: setColor_
   , setRoughness: setRoughness_

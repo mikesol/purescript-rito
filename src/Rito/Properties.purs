@@ -6,7 +6,9 @@ import Data.Newtype (class Newtype, wrap)
 import Data.Variant (Variant, inj)
 import Effect (Effect)
 import Rito.Box as Box
+import Rito.Color (Color)
 import Rito.Color as Color
+import Rito.InstancedMesh (InstancedMesh, Setter)
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
 import Rito.Sphere as Sphere
@@ -126,6 +128,7 @@ map
   -> nt
 map = wrap <<< inj (Proxy :: Proxy "map")
 
+
 color
   :: forall c nt r
    . Newtype nt (Variant (color :: Color.Color | r))
@@ -236,3 +239,16 @@ size
   => { width :: Number, height :: Number }
   -> nt
 size = wrap <<< (inj (Proxy :: Proxy "size"))
+
+--
+setColorAt
+  :: forall n
+   . Setter n Color
+  -> InstancedMesh n
+setColorAt = wrap <<< inj (Proxy :: Proxy "setColor")
+
+setMatrixAt
+  :: forall n
+   . Setter n Matrix4
+  -> InstancedMesh n
+setMatrixAt = wrap <<< inj (Proxy :: Proxy "setMatrix4")

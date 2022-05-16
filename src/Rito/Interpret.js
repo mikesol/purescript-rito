@@ -102,7 +102,29 @@ export const makePerspectiveCamera_ = genericMake_(
 	({ fov, aspect, near, far }) =>
 		new THREE.PerspectiveCamera(fov, aspect, near, far)
 )(() => {});
-
+// COPY of generic make, needed because indexed mesh is a bit different
+export const makeInstancedMesh_ = (a) => (state) => () => {
+	const { id, scope, parent, geometry, material, count } = a;
+	const $scope = scope ? scope : GLOBAL_SCOPE;
+	if (!state.scopes[$scope]) {
+		state.scopes[$scope] = [];
+	}
+	state.scopes[$scope].push(id);
+	state.units[id] = {
+		listeners: {},
+		parent: parent,
+		scope: $scope,
+		main: new THREE.InstancedMesh(
+			state.units[geometry].main,
+			state.units[material].main,
+			count
+		),
+	};
+	if (parent === undefined) {
+		return;
+	}
+	state.units[parent].main.add(state.units[id].main);
+};
 export const makeMesh_ = genericMake_(() => new THREE.Mesh())((x, y) => {
 	y.main.add(x.main);
 });
@@ -241,6 +263,25 @@ export const getBoundingBox_ = (a) => (state) => () => {
 export const getBoundingSphere_ = (a) => (state) => () => {
 	state.units[a.id].main.computeBoundingSphere();
 	a.box(state.units[a.id].main.boundingSphere)();
+};
+// instanced mesh
+export const setInstancedMeshMatrix4_ = (a) => (state) => () => {
+	const u = state.units[a.id].main;
+	let updated = false;
+	a.setMatrix4((i) => (m) => () => {
+		updated = true;
+		u.setMatrixAt(i, m);
+	})();
+	u.instanceMatrix.needsUpdate = updated;
+};
+export const setInstancedMeshColor_ = (a) => (state) => () => {
+	const u = state.units[a.id].main;
+	let updated = false;
+	a.setColor((i) => (c) => () => {
+		updated = true;
+		u.setColorAt(i, c);
+	})();
+	u.instanceColor.needsUpdate = updated;
 };
 // mesh standard material
 export const setColor_ = (a) => (state) => () => {

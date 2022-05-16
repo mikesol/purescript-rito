@@ -59,6 +59,7 @@ import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Color (RGB(..))
 import Rito.Core (toGroup, toScene)
 import Rito.Geometries.Box (box)
+import Rito.Geometries.Capsule (capsule)
 import Rito.Geometries.Plane (plane)
 import Rito.Geometries.Sphere (sphere)
 import Rito.Group (group)
@@ -142,14 +143,18 @@ runThree { texture } lps e afE iw ih canvas = do
                                     )
                                     ( map
                                         ( \itm -> toGroup $ mesh
-                                            ( if itm.time % 3.0 < 1.0 then
+                                            (let lim = 4.0 in if itm.time % lim < 1.0 then
                                                 sphere
                                                   { widthSegments: 32
                                                   , heightSegments: 32
                                                   }
                                                   empty
-                                              else if itm.time % 3.0 < 2.0 then
+                                              else if itm.time % lim < 2.0 then
                                                 plane
+                                                  {}
+                                                  empty
+                                              else if itm.time % lim < 3.0 then
+                                                capsule
                                                   {}
                                                   empty
                                               else box {} empty

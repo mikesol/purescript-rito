@@ -136,6 +136,14 @@ type MakeMesh f s =
   , scope :: s
   , parent :: f String
   }
+type MakeInstancedMesh f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  , geometry :: String
+  , material :: String
+  , count :: Int
+  }
 type MakeSphere f s =
   { id :: String
   , scope :: s
@@ -355,6 +363,10 @@ type SetCenter = { id :: String }
 type GetBoundingBox = { id :: String, box :: Box.Box -> Effect Unit }
 type GetBoundingSphere =
   { id :: String, sphere :: Sphere.Sphere -> Effect Unit }
+type SetInstancedMeshMatrix4 =
+  { id :: String, setMatrix4 :: (Int -> Matrix4 -> Effect Unit) -> Effect Unit }
+type SetInstancedMeshColor =
+  { id :: String, setColor :: (Int -> Color -> Effect Unit) -> Effect Unit }
 type SetColor = { id :: String, color :: Color }
 type SetRoughness = { id :: String, roughness :: Number }
 type SetMetalness = { id :: String, metalness :: Number }
@@ -660,6 +672,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeGroup :: MakeGroup Maybe Scope -> payload
   , makeScene :: MakeScene Maybe Scope -> payload
   , makeMesh :: MakeMesh Maybe Scope -> payload
+  , makeInstancedMesh :: MakeInstancedMesh Maybe Scope -> payload
   , makeSphere :: MakeSphere Maybe Scope -> payload
   , makeBox :: MakeBox Maybe Scope -> payload
   , makeCapsule :: MakeCapsule Maybe Scope -> payload
@@ -700,6 +713,9 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setCenter :: SetCenter -> payload
   , getBoundingBox :: GetBoundingBox -> payload
   , getBoundingSphere :: GetBoundingSphere -> payload
+  -- InstancedMesh
+  , setInstancedMeshMatrix4 :: SetInstancedMeshMatrix4 -> payload
+  , setInstancedMeshColor :: SetInstancedMeshColor -> payload
   -- MeshStandardMaterial
   , setColor :: SetColor -> payload
   , setRoughness :: SetRoughness -> payload

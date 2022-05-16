@@ -5,7 +5,20 @@ let upstream =
 let overrides = {=}
 
 let additions =
-      { event =
+      { fast-vect =
+        { dependencies =
+          [ "console"
+          , "effect"
+          , "filterable"
+          , "nullable"
+          , "unsafe-reference"
+          , "js-timers"
+          , "now"
+          ]
+        , repo = "https://github.com/mikesol/purescript-fast-vect.git"
+        , version = "head-impl"
+        }
+      , event =
         { dependencies =
           [ "console"
           , "effect"
