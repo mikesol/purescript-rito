@@ -41,9 +41,9 @@ import FRP.Event.Time (withTime)
 import FRP.Event.VBus (V, vbus)
 import Foreign.Object (fromHomogeneous, values)
 import Random.LCG (mkSeed)
-import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
+import Rito.Cameras.PerspectiveCamera (defaultOrbitControls, perspectiveCamera)
 import Rito.Color (RGB(..))
-import Rito.Core (toScene)
+import Rito.Core (OrbitControls(..), toScene)
 import Rito.Geometries.Sphere (sphere)
 import Rito.InstancedMesh (instancedMesh, setter)
 import Rito.Lights.PointLight (pointLight)
@@ -236,6 +236,7 @@ runThree canvas iw ih e = do
             , aspect: iw / ih
             , near: 0.1
             , far: 100.0
+            , orbitControls: OrbitControls ((defaultOrbitControls e) { enabled = true })
             }
             ( oneOf
                 [ bang (positionX 0.0)
