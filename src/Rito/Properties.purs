@@ -15,6 +15,7 @@ import Rito.Sphere as Sphere
 import Rito.Texture (Texture)
 import Rito.Vector3 (Vector3)
 import Type.Proxy (Proxy(..))
+import Web.UIEvent.MouseEvent (MouseEvent)
 
 radius
   :: forall nt r
@@ -102,14 +103,16 @@ rotateZ = wrap <<< inj (Proxy :: Proxy "rotateZ")
 
 translate
   :: forall nt r
-   . Newtype nt (Variant (translate :: { x :: Number, y :: Number, z :: Number } | r))
+   . Newtype nt
+       (Variant (translate :: { x :: Number, y :: Number, z :: Number } | r))
   => { x :: Number, y :: Number, z :: Number }
   -> nt
 translate = wrap <<< inj (Proxy :: Proxy "translate")
 
 scale
   :: forall nt r
-   . Newtype nt (Variant (scale :: { x :: Number, y :: Number, z :: Number } | r))
+   . Newtype nt
+       (Variant (scale :: { x :: Number, y :: Number, z :: Number } | r))
   => { x :: Number, y :: Number, z :: Number }
   -> nt
 scale = wrap <<< inj (Proxy :: Proxy "scale")
@@ -127,7 +130,6 @@ map
   => Texture
   -> nt
 map = wrap <<< inj (Proxy :: Proxy "map")
-
 
 color
   :: forall c nt r
@@ -241,6 +243,16 @@ size
 size = wrap <<< (inj (Proxy :: Proxy "size"))
 
 --
+target
+  :: forall nt r r1
+   . Newtype nt
+       (Variant (orbitControls :: Variant (target :: Vector3 | r1) | r))
+  => Vector3
+  -> nt
+target = wrap <<< (inj (Proxy :: Proxy "orbitControls")) <<<
+  (inj (Proxy :: Proxy "target"))
+
+--
 setColorAt
   :: forall n
    . Setter n Color
@@ -252,3 +264,11 @@ setMatrixAt
    . Setter n Matrix4
   -> InstancedMesh n
 setMatrixAt = wrap <<< inj (Proxy :: Proxy "setMatrix4")
+
+-- listeners
+onClick
+  :: forall nt r
+   . Newtype nt (Variant (onClick :: MouseEvent -> Effect Unit | r))
+  => (MouseEvent -> Effect Unit)
+  -> nt
+onClick = wrap <<< inj (Proxy :: Proxy "onClick")

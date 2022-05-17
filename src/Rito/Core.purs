@@ -25,6 +25,8 @@ import Rito.Vector2 (Vector2)
 import Rito.Vector3 (Vector3)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.HTML (HTMLCanvasElement)
+import Web.TouchEvent (TouchEvent)
+import Web.UIEvent.MouseEvent (MouseEvent)
 
 class Sceneable ctor where
   toScene
@@ -95,11 +97,13 @@ instance Groupable Group where
 type WebGLRender = { id :: String, scene :: String, camera :: String }
 type MakeWebGLRenderer =
   { id :: String
+  , camera :: String
   | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
       WPP.WebGLRenderingPowerPreference
   }
 type MakeWebGLRenderer' =
   { id :: String
+  , camera :: String
   | InitializeWebGLRenderer' String String
   }
 type InitializeWebGLRenderer' precision powerPreference =
@@ -414,6 +418,31 @@ type SetEnvMapIntensity = { id :: String, envMapIntensity :: Number }
 type SetWireframe = { id :: String, wireframe :: Boolean }
 type SetWireframeLinewidth = { id :: String, wireframeLinewidth :: Number }
 type SetFlatShading = { id :: String, flatShading :: Boolean }
+-- listeners
+type SetOnClick = { id :: String, onClick :: MouseEvent -> Effect Unit }
+type SetOnMouseDown = { id :: String, onMouseDown :: MouseEvent -> Effect Unit }
+type SetOnMouseUp = { id :: String, onMouseUp :: MouseEvent -> Effect Unit }
+type SetOnMouseMove = { id :: String, onMouseMove :: MouseEvent -> Effect Unit }
+type SetOnTouchStart =
+  { id :: String, onTouchStart :: TouchEvent -> Effect Unit }
+type SetOnTouchEnd = { id :: String, onTouchEnd :: TouchEvent -> Effect Unit }
+type SetOnTouchMove = { id :: String, onTouchMove :: TouchEvent -> Effect Unit }
+type SetOnTouchCancel =
+  { id :: String, onTouchCancel :: TouchEvent -> Effect Unit }
+type RemoveOnClick = { id :: String, onClick :: MouseEvent -> Effect Unit }
+type RemoveOnMouseDown =
+  { id :: String, onMouseDown :: MouseEvent -> Effect Unit }
+type RemoveOnMouseUp = { id :: String, onMouseUp :: MouseEvent -> Effect Unit }
+type RemoveOnMouseMove =
+  { id :: String, onMouseMove :: MouseEvent -> Effect Unit }
+type RemoveOnTouchStart =
+  { id :: String, onTouchStart :: TouchEvent -> Effect Unit }
+type RemoveOnTouchEnd =
+  { id :: String, onTouchEnd :: TouchEvent -> Effect Unit }
+type RemoveOnTouchMove =
+  { id :: String, onTouchMove :: TouchEvent -> Effect Unit }
+type RemoveOnTouchCancel =
+  { id :: String, onTouchCancel :: TouchEvent -> Effect Unit }
 -- mesh
 type SetRotationFromAxisAngle =
   { id :: String, axis :: Vector3, angle :: Number }
@@ -435,6 +464,8 @@ type SetTranslateZ = { id :: String, translateZ :: Number }
 -- camera
 type WithWorldDirection payload =
   { id :: String, withWorldDirection :: Vector3 -> payload }
+-- orbit controls
+type SetTarget = { id :: String, target :: Vector3 }
 -- perspective camera
 type SetAspect = { id :: String, aspect :: Number }
 type SetFar = { id :: String, far :: Number }
@@ -706,6 +737,23 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeMeshBasicMaterial :: MakeMeshBasicMaterial Maybe Scope -> payload
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
+  -- (faux) Listeners
+  , setOnClick :: SetOnClick -> payload
+  , setOnMouseDown :: SetOnMouseDown -> payload
+  , setOnMouseUp :: SetOnMouseUp -> payload
+  , setOnMouseMove :: SetOnMouseMove -> payload
+  , setOnTouchStart :: SetOnTouchStart -> payload
+  , setOnTouchEnd :: SetOnTouchEnd -> payload
+  , setOnTouchMove :: SetOnTouchMove -> payload
+  , setOnTouchCancel :: SetOnTouchCancel -> payload
+  , removeOnClick :: RemoveOnClick -> payload
+  , removeOnMouseDown :: RemoveOnMouseDown -> payload
+  , removeOnMouseUp :: RemoveOnMouseUp -> payload
+  , removeOnMouseMove :: RemoveOnMouseMove -> payload
+  , removeOnTouchStart :: RemoveOnTouchStart -> payload
+  , removeOnTouchEnd :: RemoveOnTouchEnd -> payload
+  , removeOnTouchMove :: RemoveOnTouchMove -> payload
+  , removeOnTouchCancel :: RemoveOnTouchCancel -> payload
   -- CapsuleGeometry
   , setCapSegments :: SetCapSegments -> payload
   , setRadialSegments :: SetRadialSegments -> payload
@@ -785,6 +833,8 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setScaleZ :: SetScaleZ -> payload
   -- camera
   , withWorldDirection :: WithWorldDirection payload -> payload
+  -- orbit controls
+  , setTarget :: SetTarget -> payload
   -- perspective camera
   , setAspect :: SetAspect -> payload
   , setFar :: SetFar -> payload

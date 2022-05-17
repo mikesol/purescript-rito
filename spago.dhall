@@ -1,7 +1,6 @@
 { name = "purescript-deku"
 , dependencies =
   [ "aff"
-  , "avar"
   , "bolson"
   , "control"
   , "convertable-options"
@@ -12,6 +11,7 @@
   , "exists"
   , "fast-vect"
   , "foldable-traversable"
+  , "heterogeneous"
   , "integers"
   , "maybe"
   , "newtype"
@@ -26,6 +26,8 @@
   , "unsafe-coerce"
   , "variant"
   , "web-html"
+  , "web-touchevents"
+  , "web-uievents"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]

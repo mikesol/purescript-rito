@@ -191,6 +191,7 @@ let additions =
           [ "arrays"
           , "behaviors"
           , "control"
+          , "avar"
           , "aff-promise"
           , "homogeneous"
           , "everythings-better-with-variants"

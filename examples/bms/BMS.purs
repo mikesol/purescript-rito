@@ -49,7 +49,7 @@ import Effect.Ref as Ref
 import Effect.Timer (clearInterval, setInterval)
 import FRP.Behavior (Behavior, behavior, sampleBy, step)
 import FRP.Behavior.Time (instant)
-import FRP.Event (Event, bang, filterMap, hot, makeEvent, mapAccum, subscribe)
+import FRP.Event (Event, bang, bus, filterMap, hot, keepLatest, makeEvent, mapAccum, subscribe)
 import FRP.Event as Event
 import FRP.Event.AnimationFrame (animationFrame)
 import FRP.Event.VBus (V, vbus)
@@ -57,21 +57,21 @@ import Foreign (Foreign)
 import Foreign.Object as Object
 import Rito.Cameras.PerspectiveCamera (defaultOrbitControls, perspectiveCamera)
 import Rito.Color (RGB(..))
-import Rito.Core (OrbitControls(..), toGroup, toScene)
+import Rito.Core (OrbitControls(..), toScene)
 import Rito.Geometries.Box (box)
 import Rito.Geometries.Capsule (capsule)
 import Rito.Geometries.Plane (plane)
 import Rito.Geometries.Sphere (sphere)
-import Rito.Group (group)
 import Rito.Lights.PointLight (pointLight)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Mesh (mesh)
-import Rito.Properties (map) as P
 import Rito.Properties (positionX, positionY, positionZ, render, scaleX, scaleY, scaleZ, size)
+import Rito.Properties (color, map, onClick, target) as P
 import Rito.Renderers.WebGL (webGLRenderer)
 import Rito.Run as Rito.Run
 import Rito.Scene (scene)
 import Rito.Texture (Texture, loadAff)
+import Rito.Vector3 (vector3)
 import Simple.JSON as JSON
 import Type.Proxy (Proxy(..))
 import WAGS.Clock (withACTime)
@@ -111,7 +111,7 @@ speed = 5.0 :: Number
 runThree
   :: { texture :: Texture }
   -> (Number -> Effect Unit -> Effect Unit)
-  -> Event Animated
+  -> Event AnimatedS
   -> Event Number
   -> Number
   -> Number
@@ -122,115 +122,78 @@ runThree { texture } lps e afE iw ih canvas = do
     ( webGLRenderer
         ( scene empty
             ( [ toScene $ pointLight { intensity: 1.0 }
-                  ( oneOfMap bang
-                      [ positionX 1.0
-                      , positionY (-0.5)
-                      , positionZ 1.0
+                  ( oneOf
+                      [ bang $ positionX 1.0
+                      , bang $ positionY (-0.5)
+                      , positionZ <$>
+                          (map (negate >>> mul speed >>> add 1.0) afE)
                       ]
                   )
               , toScene $ dyn $
                   map
-                    ( \nea ->
-                        ( ( bang
-                              ( Insert
-                                  $ group
-                                    ( oneOfMap
-                                        bang
-                                        [ positionX 0.0
-                                        , positionY 0.0
-                                        , positionZ 0.0
+                    ( \itm ->
+                        ( bang
+                            ( Insert
+                                $ envy
+                                $ bus \setCol col -> mesh
+                                  ( let
+                                      lim = 4.0
+                                    in
+                                      if itm.time % lim < 1.0 then
+                                        sphere
+                                          { widthSegments: 32
+                                          , heightSegments: 32
+                                          }
+                                          empty
+                                      else if itm.time % lim < 2.0 then
+                                        plane
+                                          {}
+                                          empty
+                                      else if itm.time % lim < 3.0 then
+                                        capsule
+                                          {}
+                                          empty
+                                      else box {} empty
+                                  )
+                                  ( meshStandardMaterial
+                                      { color: RGB 1.0 1.0 1.0
+                                      }
+                                      if itm.time % 4.0 < 3.0 then
+                                        (col <#> P.color)
+                                      else (bang (P.map texture))
+                                  )
+                                  ( let
+                                      s =
+                                        if itm.time < 2.0 then 0.0
+                                        else 0.1
+                                    in
+                                      oneOfMap bang
+                                        [ positionX
+                                            (sin (324.124 * itm.time))
+                                        , let
+                                            m3 = itm.time % 4.0
+                                            py
+                                              | m3 < 1.0 = 0.125
+                                              | m3 < 2.0 = -0.5
+                                              | m3 < 3.0 = -0.125
+                                              | otherwise = 0.5
+                                          in
+                                            positionY py
+                                        , positionZ
+                                            (-1.0 * speed * itm.time)
+                                        , scaleX $ s
+                                        , scaleY $ s
+                                        , scaleZ $ s
+                                        , P.onClick \_ -> setCol (RGB 0.1 0.8 0.6)
                                         ]
-                                    )
-                                    ( map
-                                        ( \itm -> toGroup $ mesh
-                                            (let lim = 4.0 in if itm.time % lim < 1.0 then
-                                                sphere
-                                                  { widthSegments: 32
-                                                  , heightSegments: 32
-                                                  }
-                                                  empty
-                                              else if itm.time % lim < 2.0 then
-                                                plane
-                                                  {}
-                                                  empty
-                                              else if itm.time % lim < 3.0 then
-                                                capsule
-                                                  {}
-                                                  empty
-                                              else box {} empty
-                                            )
-                                            ( meshStandardMaterial
-                                                { color: RGB 1.0 1.0 1.0
-                                                }
-                                                if itm.time % 4.0 < 3.0 then
-                                                  empty
-                                                else (bang (P.map texture))
-                                            -- ( afE <#>
-                                            --     ( \t ->
-                                            --         let
-                                            --           c = min 1.0 $ max 0.0
-                                            --             $ calcSlope
-                                            --               (itm.time - 3.0)
-                                            --               0.0
-                                            --               (itm.time - 2.0)
-                                            --               1.0
-                                            --               t
-                                            --         in
-                                            --           color (RGB c c c)
-                                            --     )
-                                            -- )
-                                            )
-                                            ( let
-                                                s =
-                                                  if itm.time < 2.0 then 0.0
-                                                  else 0.1
-                                              in
-                                                oneOf
-                                                  [ bang $ positionX
-                                                      (sin (324.124 * itm.time))
-                                                  , let
-                                                      m3 = itm.time % 4.0
-                                                      py
-                                                        | m3 < 1.0 = 0.125
-                                                        | m3 < 2.0 = -0.5
-                                                        | m3 < 3.0 = -0.125
-                                                        | otherwise = 0.5
-                                                    in
-                                                      bang $ positionY py
-                                                  -- , bang $ positionY
-                                                  --     ( cos
-                                                  --         (1928.532 * itm.time)
-                                                  --     )
-                                                  -- ,  afE <#>
-                                                  --   ( \t ->
-                                                  --       -- let
-                                                  --       --   c = min 1.0 $ max 0.0
-                                                  --       --     $ calcSlope
-                                                  --       --       (itm.time - 3.0)
-                                                  --       --       0.0
-                                                  --       --       (itm.time - 2.0)
-                                                  --       --       1.0
-                                                  --       --       t
-                                                  --       -- in
-                                                  --        let diff = (itm.time - t) in positionZ (-5.0 * (sign diff) * ( (abs diff) `pow` 0.5  ))
-                                                  --   )
-                                                  , bang $ positionZ
-                                                      (-1.0 * speed * itm.time)
-                                                  , bang $ scaleX $ s
-                                                  , bang $ scaleY $ s
-                                                  , bang $ scaleZ $ s
-                                                  ]
-                                            )
-                                        )
-                                        (NEA.toArray $ NEA.nub nea)
-                                    )
-                              )
-                          )
-                        ) <|>
-                          ( lowPrioritySchedule lps
-                              ((NEA.last nea).removeAt)
-                              (bang Remove)
-                          )
+                                  )
+                            )
+                        )
+                          <|>
+                            ( lowPrioritySchedule lps
+                                (itm.startsAt + 1000.0)
+                                (bang Remove)
+                            )
                     )
                     e
               ]
@@ -248,6 +211,8 @@ runThree { texture } lps e afE iw ih canvas = do
                 [ bang (positionX 0.0)
                 , bang (positionY 0.0)
                 , positionZ <$> (map (negate >>> mul speed >>> add 2.0) afE)
+                , afE <#> \t -> P.target $ vector3
+                    { x: 0.0, y: 0.0, z: t * -1.0 * speed - 2.0 }
                 ]
             )
         )
@@ -266,7 +231,13 @@ lowPrioritySchedule f n e = makeEvent \k -> do
   pure (pure unit)
 
 type Animated = NEA.NonEmptyArray
-  { removeAt :: Number
+  { startsAt :: Number
+  , time :: Number
+  , buffer :: BrowserAudioBuffer
+  }
+
+type AnimatedS =
+  { startsAt :: Number
   , time :: Number
   , buffer :: BrowserAudioBuffer
   }
@@ -281,8 +252,8 @@ animate babB clengthB offsetMap afE = compact
   $ map (NEA.fromArray <<< Array.fromFoldable)
   $
     ( (map <<< filterMap)
-        ( \{ time, buffer, removeAt } -> case buffer of
-            Just bf -> Just $ { time, buffer: bf, removeAt }
+        ( \{ time, buffer, startsAt } -> case buffer of
+            Just bf -> Just $ { time, buffer: bf, startsAt }
             Nothing -> Nothing
         )
     )
@@ -313,8 +284,7 @@ animate babB clengthB offsetMap afE = compact
                               join $ Map.values $ mapWithIndex
                                 ( \(Offset offset) -> map
                                     \(Note n) ->
-                                      { removeAt: (unwrap $ unInstant tnow)
-                                          + 10000.0
+                                      { startsAt: unwrap $ unInstant tnow
                                       , buffer: Object.lookup n bab
                                       , time:
                                           if prevAJ == 0.0 then offset
@@ -368,7 +338,8 @@ graph lps e =
                       )
                   )
                     <|>
-                      ( lowPrioritySchedule lps ((NEA.last nea).removeAt)
+                      ( lowPrioritySchedule lps
+                          ((NEA.last nea).startsAt + 10000.0)
                           (bang silence)
                       )
                 )
@@ -499,7 +470,9 @@ main = launchAff_ do
                                     ( runThree
                                         { texture: txtr }
                                         unsched
-                                        event.toAnimate
+                                        ( keepLatest $ map (oneOfMap bang)
+                                            event.toAnimate
+                                        )
                                         event.animationFrame
                                         iw
                                         ih

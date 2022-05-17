@@ -238,6 +238,7 @@ type PerspectiveCamera' = Variant
       , height :: Number
       }
   , withWorldDirection :: Vector3 -> PerspectiveCamera
+  , orbitControls :: Variant ( target :: Vector3 )
   | C.Object3D
   )
 newtype PerspectiveCamera = PerspectiveCamera PerspectiveCamera'
@@ -270,6 +271,7 @@ perspectiveCamera i' atts = Element' $ C.Camera go
           , setFocalLength
           , setViewOffset
           , withWorldDirection
+          , setTarget
           }
       ) = makeEvent \k -> do
     me <- ids
@@ -322,6 +324,7 @@ perspectiveCamera i' atts = Element' $ C.Camera go
                         , withWorldDirection: withWorldDirection
                             <<< { id: me, withWorldDirection: _ }
                             <<< map fn
+                        , orbitControls: match { target: setTarget <<< { id: me, target: _ }}
                         }
                         (object3D me di)
                     )

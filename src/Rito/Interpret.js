@@ -108,10 +108,11 @@ export const makePerspectiveCamera_ = (a) => (state) => () => {
 		state.units[a.id].main,
 		a.orbitControls.canvas
 	);
+	orbitControls.enabled = a.orbitControls.enabled;
 	orbitControls.autoRotate = a.orbitControls.autoRotate;
 	orbitControls.autoRotateSpeed = a.orbitControls.autoRotateSpeed;
-  orbitControls.dampingFactor = a.orbitControls.dampingFactor;
-  orbitControls.enableDamping = a.orbitControls.enableDamping;
+	orbitControls.dampingFactor = a.orbitControls.dampingFactor;
+	orbitControls.enableDamping = a.orbitControls.enableDamping;
 	orbitControls.enableZoom = a.orbitControls.enableZoom;
 	orbitControls.enablePan = a.orbitControls.enablePan;
 	orbitControls.panSpeed = a.orbitControls.panSpeed;
@@ -180,9 +181,7 @@ export const makeGroup_ = genericMake_(() => new THREE.Group())((x, y) => {
 	y.main.add(x.main);
 });
 export const webGLRender_ = (a) => (state) => () => {
-	if (state.orbitControls && state.orbitControls.enabled) {
-		state.orbitControls.update();
-	}
+	state.orbitControls.update();
 	state.units[a.id].main.render(
 		state.units[a.scene].main,
 		state.units[a.camera].main
@@ -190,10 +189,99 @@ export const webGLRender_ = (a) => (state) => () => {
 };
 export const makeWebGLRenderer_ = (a) => (state) => () => {
 	const { id, ...parameters } = a;
+	const canvas = parameters.canvas;
 	const renderer = new THREE.WebGLRenderer(parameters);
 	state.units[a.id] = { main: renderer };
-	renderer.setSize(parameters.canvas.width, parameters.canvas.height);
+	renderer.setSize(canvas.width, canvas.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+	// it's a bit hackish
+	// no, not a bit, it's mega hackish
+	// but we hook up our listeners here
+	state.listeners = {};
+	state.listeners.click = {};
+	state.listeners.mousemove = {};
+	state.listeners.mouseup = {};
+	state.listeners.mousedown = {};
+	state.listeners.touchstart = {};
+	state.listeners.touchend = {};
+	state.listeners.touchmove = {};
+	state.listeners.touchcancel = {};
+	const raycaster = new THREE.Raycaster();
+	const camera = state.units[parameters.camera].main;
+
+	const makeListener = (eventName) => {
+		canvas.addEventListener(eventName, (e) => {
+			const entries = Object.entries(state.listeners[eventName]);
+			if (entries.length > 0) {
+				const x = (e.clientX / window.innerWidth) * 2 - 1;
+				const y = -(e.clientY / window.innerHeight) * 2 + 1;
+				raycaster.setFromCamera({ x, y }, camera);
+				entries.forEach(([k, v]) => {
+					const u = state.units[k].main;
+					const intersects = raycaster.intersectObject(u);
+					if (intersects.length > 0) {
+						v(e)();
+					}
+				});
+			}
+		});
+	};
+	makeListener("click");
+	makeListener("mousedown");
+	makeListener("mouseup");
+	makeListener("mousemove");
+	makeListener("touchstart");
+	makeListener("touchend");
+	makeListener("touchmove");
+	makeListener("touchcancel");
+};
+export const setOnClick_ = (a) => (state) => () => {
+	state.listeners.click[a.id] = a.onClick;
+};
+export const setOnMouseDown_ = (a) => (state) => () => {
+	state.listeners.mousedown[a.id] = a.onMouseDown;
+};
+export const setOnMouseUp_ = (a) => (state) => () => {
+	state.listeners.mouseup[a.id] = a.onMouseUp;
+};
+export const setOnMouseMove_ = (a) => (state) => () => {
+	state.listeners.mousemove[a.id] = a.onMouseMove;
+};
+export const setOnTouchStart_ = (a) => (state) => () => {
+	state.listeners.touchstart[a.id] = a.onTouchStart;
+};
+export const setOnTouchEnd_ = (a) => (state) => () => {
+	state.listeners.touchend[a.id] = a.onTouchEnd;
+};
+export const setOnTouchMove_ = (a) => (state) => () => {
+	state.listeners.touchmove[a.id] = a.onTouchMove;
+};
+export const setOnTouchCancel_ = (a) => (state) => () => {
+	state.listeners.touchcancel[a.id] = a.onTouchCancel;
+};
+export const removeOnClick_ = (a) => (state) => () => {
+	delete state.listeners.click[a.id];
+};
+export const removeOnMouseDown_ = (a) => (state) => () => {
+	delete state.listeners.mousedown[a.id];
+};
+export const removeOnMouseUp_ = (a) => (state) => () => {
+	delete state.listeners.mouseup[a.id];
+};
+export const removeOnMouseMove_ = (a) => (state) => () => {
+	delete state.listeners.mousemove[a.id];
+};
+export const removeOnTouchStart_ = (a) => (state) => () => {
+	delete state.listeners.touchstart[a.id];
+};
+export const removeOnTouchEnd_ = (a) => (state) => () => {
+	delete state.listeners.touchend[a.id];
+};
+export const removeOnTouchMove_ = (a) => (state) => () => {
+	delete state.listeners.touchmove[a.id];
+};
+export const removeOnTouchCancel_ = (a) => (state) => () => {
+	delete state.listeners.touchcancel[a.id];
 };
 // box
 export const setWidth_ = (a) => (state) => () => {
@@ -248,30 +336,39 @@ export const setQuaternion_ = (a) => (state) => () => {
 };
 export const setRotateX_ = (a) => (state) => () => {
 	state.units[a.id].main.rotateX(a.rotateX);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotateY_ = (a) => (state) => () => {
 	state.units[a.id].main.rotateY(a.rotateY);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotateZ_ = (a) => (state) => () => {
 	state.units[a.id].main.rotateZ(a.rotateZ);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setTranslate_ = (a) => (state) => () => {
 	state.units[a.id].main.translate(a.x, a.y, a.z);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setScale_ = (a) => (state) => () => {
 	state.units[a.id].main.scale(a.x, a.y, a.z);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setScaleX_ = (a) => (state) => () => {
 	state.units[a.id].main.scale.x = a.scaleX;
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setScaleY_ = (a) => (state) => () => {
 	state.units[a.id].main.scale.y = a.scaleY;
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setScaleZ_ = (a) => (state) => () => {
 	state.units[a.id].main.scale.z = a.scaleZ;
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setLookAt_ = (a) => (state) => () => {
 	state.units[a.id].main.lookAt(a.v);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setCenter_ = (a) => (state) => () => {
 	state.units[a.id].main.center();
@@ -396,44 +493,58 @@ export const setIntensity_ = (a) => (state) => () => {
 	state.units[a.id].main.intensity = a.intensity;
 };
 // mesh
+const updateIfCamera = (u,o) => (u instanceof THREE.Camera) && o.update();
 export const setRotationFromAxisAngle_ = (a) => (state) => () => {
 	state.units[a.id].main.setRotationFromAxisAngle(a.axis, a.angle);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotationFromEuler_ = (a) => (state) => () => {
 	state.units[a.id].main.setRotationFromEuler(a.euler);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotationFromMatrix_ = (a) => (state) => () => {
 	state.units[a.id].main.setRotationFromMatrix(a.matrix4);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotationFromQuaternion_ = (a) => (state) => () => {
 	state.units[a.id].main.setRotationFromQuaternion(a.quaternion);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotateOnAxis_ = (a) => (state) => () => {
 	state.units[a.id].main.rotateOnAxis(a.axis, a.angle);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotateOnWorldAxis_ = (a) => (state) => () => {
 	state.units[a.id].main.rotateOnWorldAxis(a.axis, a.angle);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setTranslateOnAxis_ = (a) => (state) => () => {
 	state.units[a.id].main.translateOnAxis(a.axis, a.distance);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setTranslateX_ = (a) => (state) => () => {
 	state.units[a.id].main.translateX(a.translateX);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setTranslateY_ = (a) => (state) => () => {
 	state.units[a.id].main.translateY(a.translateY);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setTranslateZ_ = (a) => (state) => () => {
 	state.units[a.id].main.translateZ(a.translateZ);
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setPositionX_ = (a) => (state) => () => {
 	state.units[a.id].main.position.x = a.positionX;
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setPositionY_ = (a) => (state) => () => {
 	state.units[a.id].main.position.y = a.positionY;
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setPositionZ_ = (a) => (state) => () => {
 	state.units[a.id].main.position.z = a.positionZ;
+  // updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 // camera
 export const withWorldDirection_ = (a) => (state) => () => {
@@ -441,6 +552,11 @@ export const withWorldDirection_ = (a) => (state) => () => {
 	state.units[a.id].main.getWorldDirection(v3);
 	a.withWorldDirection(v3)(state)();
 };
+// orbit controls
+export const setTarget_ = (a) => (state) => () => {
+	state.orbitControls.target = a.target;
+};
+
 // perspective camera
 export const setAspect_ = (a) => (state) => () => {
 	state.units[a.id].main.aspect = a.aspect;
@@ -521,7 +637,7 @@ export function disconnect_(a) {
 				return;
 			}
 			// check to make sure this actually works
-			state.units[ptr].main.remove();
+			state.units[ptr].main.removeFromParent();
 			if (a.scope !== GLOBAL_SCOPE) {
 				if (
 					state.units[ptr].main instanceof THREE.BufferGeometry ||
@@ -537,11 +653,11 @@ export function disconnect_(a) {
 export function deleteFromCache_(a) {
 	return function (state) {
 		return function () {
-			if (
-				state.units[a.id].main instanceof THREE.BufferGeometry ||
-				state.units[a.id].main instanceof THREE.Material
-			) {
+			if (state.units[a.id].main.dispose) {
 				state.units[a.id].main.dispose();
+			}
+			if (state.units[a.id].main.removeFromParent) {
+				state.units[a.id].main.removeFromParent();
 			}
 			delete state.units[a.id];
 		};

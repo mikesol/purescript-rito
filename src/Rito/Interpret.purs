@@ -48,27 +48,39 @@ foreign import makeFFIThreeSnapshot :: Effect FFIThreeSnapshot
 foreign import webGLRender_ :: Core.WebGLRender -> Payload
 --
 foreign import makeWebGLRenderer_ :: Core.MakeWebGLRenderer' -> Payload
-foreign import makePointLight_ :: Core.MakePointLight Undefinable (Undefinable String) -> Payload
-foreign import makeAmbientLight_ :: Core.MakeAmbientLight Undefinable (Undefinable String) -> Payload
-foreign import makeDirectionalLight_ :: Core.MakeDirectionalLight Undefinable (Undefinable String) -> Payload
-foreign import makeScene_ :: Core.MakeScene Undefinable (Undefinable String) -> Payload
-foreign import makeGroup_ :: Core.MakeGroup Undefinable (Undefinable String) -> Payload
-foreign import makeMesh_ :: Core.MakeMesh Undefinable (Undefinable String) -> Payload
-foreign import makeInstancedMesh_ :: Core.MakeInstancedMesh Undefinable (Undefinable String) -> Payload
-foreign import makeCapsule_ :: Core.MakeCapsule Undefinable (Undefinable String) -> Payload
-foreign import makeSphere_ :: Core.MakeSphere Undefinable (Undefinable String) -> Payload
-foreign import makeBox_ :: Core.MakeBox Undefinable (Undefinable String) -> Payload
-foreign import makeTorus_ :: Core.MakeTorus Undefinable (Undefinable String) -> Payload
-foreign import makePlane_ :: Core.MakePlane Undefinable (Undefinable String) -> Payload
+foreign import makePointLight_
+  :: Core.MakePointLight Undefinable (Undefinable String) -> Payload
+foreign import makeAmbientLight_
+  :: Core.MakeAmbientLight Undefinable (Undefinable String) -> Payload
+foreign import makeDirectionalLight_
+  :: Core.MakeDirectionalLight Undefinable (Undefinable String) -> Payload
+foreign import makeScene_
+  :: Core.MakeScene Undefinable (Undefinable String) -> Payload
+foreign import makeGroup_
+  :: Core.MakeGroup Undefinable (Undefinable String) -> Payload
+foreign import makeMesh_
+  :: Core.MakeMesh Undefinable (Undefinable String) -> Payload
+foreign import makeInstancedMesh_
+  :: Core.MakeInstancedMesh Undefinable (Undefinable String) -> Payload
+foreign import makeCapsule_
+  :: Core.MakeCapsule Undefinable (Undefinable String) -> Payload
+foreign import makeSphere_
+  :: Core.MakeSphere Undefinable (Undefinable String) -> Payload
+foreign import makeBox_
+  :: Core.MakeBox Undefinable (Undefinable String) -> Payload
+foreign import makeTorus_
+  :: Core.MakeTorus Undefinable (Undefinable String) -> Payload
+foreign import makePlane_
+  :: Core.MakePlane Undefinable (Undefinable String) -> Payload
 foreign import makeMeshStandardMaterial_
   :: Core.MakeMeshStandardMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeMeshBasicMaterial_
   :: Core.MakeMeshBasicMaterial' Undefinable (Undefinable String) -> Payload
 --
-foreign import deleteFromCache_
-  :: Core.DeleteFromCache -> Payload
+foreign import deleteFromCache_ :: Core.DeleteFromCache -> Payload
 --
-foreign import setInstancedMeshMatrix4_ :: Core.SetInstancedMeshMatrix4 -> Payload
+foreign import setInstancedMeshMatrix4_
+  :: Core.SetInstancedMeshMatrix4 -> Payload
 foreign import setInstancedMeshColor_ :: Core.SetInstancedMeshColor -> Payload
 --
 foreign import setWidth_ :: Core.SetWidth -> Payload
@@ -77,101 +89,85 @@ foreign import setDepth_ :: Core.SetDepth -> Payload
 --
 foreign import setRadius_ :: Core.SetRadius -> Payload
 foreign import setLength_ :: Core.SetLength -> Payload
-foreign import setWidthSegments_
-  :: Core.SetWidthSegments -> Payload
-foreign import setHeightSegments_
-  :: Core.SetHeightSegments -> Payload
-foreign import setDepthSegments_
-  :: Core.SetDepthSegments -> Payload
-foreign import setCapSegments_
-  :: Core.SetCapSegments -> Payload
-foreign import setRadialSegments_
-  :: Core.SetRadialSegments -> Payload
-foreign import setPhiStart_
-  :: Core.SetPhiStart -> Payload
-foreign import setPhiLength_
-  :: Core.SetPhiLength -> Payload
-foreign import setThetaStart_
-  :: Core.SetThetaStart -> Payload
-foreign import setThetaLength_
-  :: Core.SetThetaLength -> Payload
+foreign import setWidthSegments_ :: Core.SetWidthSegments -> Payload
+foreign import setHeightSegments_ :: Core.SetHeightSegments -> Payload
+foreign import setDepthSegments_ :: Core.SetDepthSegments -> Payload
+foreign import setCapSegments_ :: Core.SetCapSegments -> Payload
+foreign import setRadialSegments_ :: Core.SetRadialSegments -> Payload
+foreign import setPhiStart_ :: Core.SetPhiStart -> Payload
+foreign import setPhiLength_ :: Core.SetPhiLength -> Payload
+foreign import setThetaStart_ :: Core.SetThetaStart -> Payload
+foreign import setThetaLength_ :: Core.SetThetaLength -> Payload
 --
 foreign import setMatrix4_ :: Core.SetMatrix4 -> Payload
-foreign import setQuaternion_
-  :: Core.SetQuaternion -> Payload
+foreign import setQuaternion_ :: Core.SetQuaternion -> Payload
 foreign import setRotateX_ :: Core.SetRotateX -> Payload
 foreign import setRotateY_ :: Core.SetRotateY -> Payload
 foreign import setRotateZ_ :: Core.SetRotateZ -> Payload
-foreign import setTranslate_
-  :: Core.SetTranslate -> Payload
+foreign import setTranslate_ :: Core.SetTranslate -> Payload
 foreign import setScale_ :: Core.SetScale -> Payload
 foreign import setLookAt_ :: Core.SetLookAt -> Payload
 foreign import setCenter_ :: Core.SetCenter -> Payload
-foreign import getBoundingBox_
-  :: Core.GetBoundingBox -> Payload
-foreign import getBoundingSphere_
-  :: Core.GetBoundingSphere -> Payload
+foreign import getBoundingBox_ :: Core.GetBoundingBox -> Payload
+foreign import getBoundingSphere_ :: Core.GetBoundingSphere -> Payload
 -- point light
 foreign import setDecay_ :: Core.SetDecay -> Payload
 foreign import setIntensity_ :: Core.SetIntensity -> Payload
 foreign import setDistance_ :: Core.SetDistance -> Payload
 -- mesh standard material
 foreign import setColor_ :: Core.SetColor -> Payload
-foreign import setRoughness_
-  :: Core.SetRoughness -> Payload
-foreign import setMetalness_
-  :: Core.SetMetalness -> Payload
+foreign import setRoughness_ :: Core.SetRoughness -> Payload
+foreign import setMetalness_ :: Core.SetMetalness -> Payload
 foreign import setMap_ :: Core.SetMap -> Payload
-foreign import setLightMap_
-  :: Core.SetLightMap -> Payload
-foreign import setLightMapIntensity_
-  :: Core.SetLightMapIntensity -> Payload
+foreign import setLightMap_ :: Core.SetLightMap -> Payload
+foreign import setLightMapIntensity_ :: Core.SetLightMapIntensity -> Payload
 foreign import setAoMap_ :: Core.SetAoMap -> Payload
-foreign import setAoMapIntensity_
-  :: Core.SetAoMapIntensity -> Payload
-foreign import setEmissive_
-  :: Core.SetEmissive -> Payload
-foreign import setEmissiveIntensity_
-  :: Core.SetEmissiveIntensity -> Payload
+foreign import setAoMapIntensity_ :: Core.SetAoMapIntensity -> Payload
+foreign import setEmissive_ :: Core.SetEmissive -> Payload
+foreign import setEmissiveIntensity_ :: Core.SetEmissiveIntensity -> Payload
 foreign import makePerspectiveCamera_
   :: Core.MakePerspectiveCamera Undefinable (Undefinable String) -> Payload
-foreign import setEmissiveMap_
-  :: Core.SetEmissiveMap -> Payload
+foreign import setEmissiveMap_ :: Core.SetEmissiveMap -> Payload
 foreign import setBumpMap_ :: Core.SetBumpMap -> Payload
-foreign import setBumpScale_
-  :: Core.SetBumpScale -> Payload
-foreign import setNormalMap_
-  :: Core.SetNormalMap -> Payload
-foreign import setNormalMapType_
-  :: Core.SetNormalMapType' -> Payload
-foreign import setNormalScale_
-  :: Core.SetNormalScale -> Payload
-foreign import setDisplacementMap_
-  :: Core.SetDisplacementMap -> Payload
-foreign import setDisplacementScale_
-  :: Core.SetDisplacementScale -> Payload
-foreign import setDisplacementBias_
-  :: Core.SetDisplacementBias -> Payload
-foreign import setRoughnessMap_
-  :: Core.SetRoughnessMap -> Payload
-foreign import setMetalnessMap_
-  :: Core.SetMetalnessMap -> Payload
-foreign import setAlphaMap_
-  :: Core.SetAlphaMap -> Payload
+foreign import setBumpScale_ :: Core.SetBumpScale -> Payload
+foreign import setNormalMap_ :: Core.SetNormalMap -> Payload
+foreign import setNormalMapType_ :: Core.SetNormalMapType' -> Payload
+foreign import setNormalScale_ :: Core.SetNormalScale -> Payload
+foreign import setDisplacementMap_ :: Core.SetDisplacementMap -> Payload
+foreign import setDisplacementScale_ :: Core.SetDisplacementScale -> Payload
+foreign import setDisplacementBias_ :: Core.SetDisplacementBias -> Payload
+foreign import setRoughnessMap_ :: Core.SetRoughnessMap -> Payload
+foreign import setMetalnessMap_ :: Core.SetMetalnessMap -> Payload
+foreign import setAlphaMap_ :: Core.SetAlphaMap -> Payload
 foreign import setEnvMap_ :: Core.SetEnvMap -> Payload
-foreign import setEnvMapIntensity_
-  :: Core.SetEnvMapIntensity -> Payload
-foreign import setWireframe_
-  :: Core.SetWireframe -> Payload
-foreign import setWireframeLinewidth_
-  :: Core.SetWireframeLinewidth -> Payload
-foreign import setFlatShading_
-  :: Core.SetFlatShading -> Payload
+foreign import setEnvMapIntensity_ :: Core.SetEnvMapIntensity -> Payload
+foreign import setWireframe_ :: Core.SetWireframe -> Payload
+foreign import setWireframeLinewidth_ :: Core.SetWireframeLinewidth -> Payload
+foreign import setFlatShading_ :: Core.SetFlatShading -> Payload
+-- (faux) listeners
+foreign import setOnClick_ :: Core.SetOnClick -> Payload
+foreign import setOnMouseDown_ :: Core.SetOnMouseDown -> Payload
+foreign import setOnMouseUp_ :: Core.SetOnMouseUp -> Payload
+foreign import setOnMouseMove_ :: Core.SetOnMouseMove -> Payload
+foreign import setOnTouchStart_ :: Core.SetOnTouchStart -> Payload
+foreign import setOnTouchEnd_ :: Core.SetOnTouchEnd -> Payload
+foreign import setOnTouchMove_ :: Core.SetOnTouchMove -> Payload
+foreign import setOnTouchCancel_ :: Core.SetOnTouchCancel -> Payload
+foreign import removeOnClick_ :: Core.RemoveOnClick -> Payload
+foreign import removeOnMouseDown_ :: Core.RemoveOnMouseDown -> Payload
+foreign import removeOnMouseUp_ :: Core.RemoveOnMouseUp -> Payload
+foreign import removeOnMouseMove_ :: Core.RemoveOnMouseMove -> Payload
+foreign import removeOnTouchStart_ :: Core.RemoveOnTouchStart -> Payload
+foreign import removeOnTouchEnd_ :: Core.RemoveOnTouchEnd -> Payload
+foreign import removeOnTouchMove_ :: Core.RemoveOnTouchMove -> Payload
+foreign import removeOnTouchCancel_ :: Core.RemoveOnTouchCancel -> Payload
 -- mesh
-foreign import setRotationFromAxisAngle_ :: Core.SetRotationFromAxisAngle -> Payload
+foreign import setRotationFromAxisAngle_
+  :: Core.SetRotationFromAxisAngle -> Payload
 foreign import setRotationFromEuler_ :: Core.SetRotationFromEuler -> Payload
 foreign import setRotationFromMatrix_ :: Core.SetRotationFromMatrix -> Payload
-foreign import setRotationFromQuaternion_ :: Core.SetRotationFromQuaternion -> Payload
+foreign import setRotationFromQuaternion_
+  :: Core.SetRotationFromQuaternion -> Payload
 foreign import setRotateOnAxis_ :: Core.SetRotateOnAxis -> Payload
 foreign import setRotateOnWorldAxis_ :: Core.SetRotateOnWorldAxis -> Payload
 foreign import setTranslateOnAxis_ :: Core.SetTranslateOnAxis -> Payload
@@ -188,6 +184,8 @@ foreign import setScaleZ_ :: Core.SetScaleZ -> Payload
 foreign import setSize_ :: Core.SetSize -> Payload
 -- camera
 foreign import withWorldDirection_ :: Core.WithWorldDirection Payload -> Payload
+-- orbit controls
+foreign import setTarget_ :: Core.SetTarget -> Payload
 -- perspective camera
 foreign import setAspect_ :: Core.SetAspect -> Payload
 foreign import setFar_ :: Core.SetFar -> Payload
@@ -200,16 +198,11 @@ foreign import setZoom_ :: Core.SetZoom -> Payload
 foreign import setFocalLength_ :: Core.SetFocalLength -> Payload
 foreign import setViewOffset_ :: Core.SetViewOffset -> Payload
 --
-foreign import connectToScene_
-  :: Core.ConnectToScene -> Payload
-foreign import connectMesh_
-  :: Core.ConnectMesh -> Payload
-foreign import connectGeometry_
-  :: Core.ConnectGeometry -> Payload
-foreign import connectMaterial_
-  :: Core.ConnectMaterial -> Payload
-foreign import disconnect_
-  :: Core.Disconnect -> Payload
+foreign import connectToScene_ :: Core.ConnectToScene -> Payload
+foreign import connectMesh_ :: Core.ConnectMesh -> Payload
+foreign import connectGeometry_ :: Core.ConnectGeometry -> Payload
+foreign import connectMaterial_ :: Core.ConnectMaterial -> Payload
+foreign import disconnect_ :: Core.Disconnect -> Payload
 
 class FFIMe i o | i -> o where
   ffiMe :: i -> o
@@ -316,6 +309,23 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makePerspectiveCamera: lcmap ffiize makePerspectiveCamera_
   , makeMeshBasicMaterial: lcmap ffiize makeMeshBasicMaterial_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
+  -- (faux) listeners
+  , setOnClick: setOnClick_
+  , setOnMouseDown: setOnMouseDown_
+  , setOnMouseUp: setOnMouseUp_
+  , setOnMouseMove: setOnMouseMove_
+  , setOnTouchStart: setOnTouchStart_
+  , setOnTouchEnd: setOnTouchEnd_
+  , setOnTouchMove: setOnTouchMove_
+  , setOnTouchCancel: setOnTouchCancel_
+  , removeOnClick: removeOnClick_
+  , removeOnMouseDown: removeOnMouseDown_
+  , removeOnMouseUp: removeOnMouseUp_
+  , removeOnMouseMove: removeOnMouseMove_
+  , removeOnTouchStart: removeOnTouchStart_
+  , removeOnTouchEnd: removeOnTouchEnd_
+  , removeOnTouchMove: removeOnTouchMove_
+  , removeOnTouchCancel: removeOnTouchCancel_
   -- box geometry
   , setWidth: setWidth_
   , setHeight: setHeight_
@@ -400,6 +410,8 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setIntensity: setIntensity_
   -- camera
   , withWorldDirection: withWorldDirection_
+  -- orbit controls
+  , setTarget: setTarget_
   -- perspective camera
   , setAspect: setAspect_
   , setFar: setFar_
