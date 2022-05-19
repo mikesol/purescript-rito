@@ -17,3 +17,5 @@ packages.json
 /test/output/
 /examples/**/*.bme
 /examples/**/*.ogg
+/examples/**/*.mp3
+/examples/bms/silentroom/*.py
