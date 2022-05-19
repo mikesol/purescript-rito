@@ -364,7 +364,7 @@ dlInChunks i l ac rf = go i ixd
     o <- parTraverse
       ( sequence <<< map
           ( decodeAudioDataFromUri ac <<< (slashSilentRoomSlash <> _) <<<
-              String.replace (String.Pattern ".wav") (String.Replacement ".ogg")
+              String.replace (String.Pattern ".wav") (String.Replacement ".mp3")
           )
       )
       (map (over _1 unwrap <<< snd) init)
