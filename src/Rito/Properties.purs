@@ -15,6 +15,7 @@ import Rito.Sphere as Sphere
 import Rito.Texture (Texture)
 import Rito.Vector3 (Vector3)
 import Type.Proxy (Proxy(..))
+import Web.TouchEvent (TouchEvent)
 import Web.UIEvent.MouseEvent (MouseEvent)
 
 radius
@@ -272,3 +273,17 @@ onClick
   => (MouseEvent -> Effect Unit)
   -> nt
 onClick = wrap <<< inj (Proxy :: Proxy "onClick")
+
+onMouseDown
+  :: forall nt r
+   . Newtype nt (Variant (onMouseDown :: MouseEvent -> Effect Unit | r))
+  => (MouseEvent -> Effect Unit)
+  -> nt
+onMouseDown = wrap <<< inj (Proxy :: Proxy "onMouseDown")
+
+onTouchStart
+  :: forall nt r
+   . Newtype nt (Variant (onTouchStart :: TouchEvent -> Effect Unit | r))
+  => (TouchEvent -> Effect Unit)
+  -> nt
+onTouchStart = wrap <<< inj (Proxy :: Proxy "onTouchStart")

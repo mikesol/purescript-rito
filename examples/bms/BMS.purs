@@ -7,7 +7,7 @@ import Affjax.StatusCode (StatusCode(..))
 import Affjax.Web as AX
 import BMS.Parser (bms)
 import BMS.Timing (gatherAll, noteOffsets)
-import BMS.Types (Note(..), Offset(..))
+import BMS.Types (Column(..), Note(..), Offset(..))
 import Bolson.Core (Child(..), envy)
 import Control.Alt ((<|>))
 import Control.Parallel (parTraverse)
@@ -18,7 +18,7 @@ import Data.Array.NonEmpty as NEA
 import Data.Compactable (compact)
 import Data.DateTime.Instant (unInstant)
 import Data.Either (Either(..))
-import Data.Foldable (fold, oneOf, oneOfMap, traverse_)
+import Data.Foldable (fold, foldl, oneOf, oneOfMap, traverse_)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Int as Int
 import Data.Lens (_1, over)
@@ -28,7 +28,7 @@ import Data.Map (SemigroupMap(..))
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
-import Data.Number (pi, pow, sin, (%))
+import Data.Number (pi, pow)
 import Data.String as String
 import Data.Traversable (sequence)
 import Data.Tuple (fst, snd)
@@ -59,14 +59,10 @@ import Rito.Cameras.PerspectiveCamera (defaultOrbitControls, perspectiveCamera)
 import Rito.Color (RGB(..))
 import Rito.Core (OrbitControls(..), toScene)
 import Rito.Geometries.Box (box)
-import Rito.Geometries.Capsule (capsule)
-import Rito.Geometries.Plane (plane)
-import Rito.Geometries.Sphere (sphere)
-import Rito.Lights.PointLight (pointLight)
-import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
+import Rito.Materials.MeshBasicMaterial (meshBasicMaterial)
 import Rito.Mesh (mesh)
+import Rito.Properties as P
 import Rito.Properties (positionX, positionY, positionZ, render, scaleX, scaleY, scaleZ, size)
-import Rito.Properties (color, map, onClick, target) as P
 import Rito.Renderers.WebGL (webGLRenderer)
 import Rito.Run as Rito.Run
 import Rito.Scene (scene)
@@ -107,93 +103,83 @@ type UIEvents = V
   , toAnimate :: Animated
   )
 
-speed = 5.0 :: Number
+speed = 4.0 :: Number
 runThree
   :: { texture :: Texture }
   -> (Number -> Effect Unit -> Effect Unit)
+  -> Int
   -> Event AnimatedS
   -> Event Number
   -> Number
   -> Number
   -> HTMLCanvasElement
   -> Effect Unit
-runThree { texture } lps e afE iw ih canvas = do
+runThree _ lps pcMax e afE iw ih canvas = do
   _ <- Rito.Run.run
     ( webGLRenderer
         ( scene empty
-            ( [ toScene $ pointLight { intensity: 1.0 }
+            ( [ toScene $ mesh (box {} empty)
+                  ( meshBasicMaterial
+                      { color: RGB 1.0 1.0 1.0
+                      }
+                      empty
+                  )
                   ( oneOf
-                      [ bang $ positionX 1.0
-                      , bang $ positionY (-0.5)
+                      [ bang (positionX 0.0)
+                      , bang (positionY (-1.0))
                       , positionZ <$>
-                          (map (negate >>> mul speed >>> add 1.0) afE)
+                          (map (negate >>> mul speed >>> add 0.1) afE)
+                      , bang (scaleX 4.0)
+                      , bang (scaleY 0.02)
+                      , bang (scaleZ 0.03)
                       ]
                   )
               , toScene $ dyn $
                   map
-                    ( \itm ->
-                        ( bang
-                            ( Insert
-                                $ envy
-                                $ bus \setCol col -> mesh
-                                  ( let
-                                      lim = 4.0
-                                    in
-                                      if itm.time % lim < 1.0 then
-                                        sphere
-                                          { widthSegments: 32
-                                          , heightSegments: 32
+                    ( \itm -> case itm.column of
+                        BGMColumn _ -> empty
+
+                        PlayColumn x ->
+                          ( ( bang
+                                ( Insert
+                                    $ envy
+                                    $ bus \setCol col -> mesh
+                                      (box {} empty)
+                                      ( meshBasicMaterial
+                                          { color: RGB 1.0 1.0 1.0
                                           }
-                                          empty
-                                      else if itm.time % lim < 2.0 then
-                                        plane
-                                          {}
-                                          empty
-                                      else if itm.time % lim < 3.0 then
-                                        capsule
-                                          {}
-                                          empty
-                                      else box {} empty
-                                  )
-                                  ( meshStandardMaterial
-                                      { color: RGB 1.0 1.0 1.0
-                                      }
-                                      if itm.time % 4.0 < 3.0 then
-                                        (col <#> P.color)
-                                      else (bang (P.map texture))
-                                  )
-                                  ( let
-                                      s =
-                                        if itm.time < 2.0 then 0.0
-                                        else 0.1
-                                    in
-                                      oneOfMap bang
-                                        [ positionX
-                                            (sin (324.124 * itm.time))
-                                        , let
-                                            m3 = itm.time % 4.0
-                                            py
-                                              | m3 < 1.0 = 0.125
-                                              | m3 < 2.0 = -0.5
-                                              | m3 < 3.0 = -0.125
-                                              | otherwise = 0.5
-                                          in
-                                            positionY py
-                                        , positionZ
-                                            (-1.0 * speed * itm.time)
-                                        , scaleX $ s
-                                        , scaleY $ s
-                                        , scaleZ $ s
-                                        , P.onClick \_ -> setCol (RGB 0.1 0.8 0.6)
-                                        ]
-                                  )
+                                          (col <#> P.color)
+                                      )
+                                      ( let
+                                          s =
+                                            if itm.time < 2.0 then 0.0
+                                            else 0.2
+                                        in
+                                          oneOfMap bang
+                                            [ positionX
+                                                ( ( ( Int.toNumber x /
+                                                        Int.toNumber pcMax
+                                                    ) - 0.5
+                                                  ) * 2.0
+                                                )
+                                            , positionY (-1.0)
+                                            , positionZ
+                                                (-1.0 * speed * itm.time)
+                                            , scaleX $ (s * 3.0)
+                                            , scaleY $ (s * 0.3)
+                                            , scaleZ $ (s * 2.5)
+                                            , P.onMouseDown \_ -> setCol
+                                                (RGB 0.1 0.8 0.6)
+                                            ]
+                                      )
+                                )
                             )
-                        )
-                          <|>
-                            ( lowPrioritySchedule lps
-                                (itm.startsAt + 1000.0)
-                                (bang Remove)
-                            )
+                              <|>
+                                ( lowPrioritySchedule lps
+                                    (itm.startsAt + 1000.0)
+                                    (bang Remove)
+                                )
+                          )
                     )
                     e
               ]
@@ -233,6 +219,7 @@ lowPrioritySchedule f n e = makeEvent \k -> do
 type Animated = NEA.NonEmptyArray
   { startsAt :: Number
   , time :: Number
+  , column :: Column
   , buffer :: BrowserAudioBuffer
   }
 
@@ -240,20 +227,21 @@ type AnimatedS =
   { startsAt :: Number
   , time :: Number
   , buffer :: BrowserAudioBuffer
+  , column :: Column
   }
 
 animate
   :: Behavior (Object.Object BrowserAudioBuffer)
   -> Behavior Number
-  -> Map.Map Offset (List Note)
+  -> Map.Map Offset (List (Column /\ Note))
   -> Event Number
   -> Event Animated
 animate babB clengthB offsetMap afE = compact
   $ map (NEA.fromArray <<< Array.fromFoldable)
   $
     ( (map <<< filterMap)
-        ( \{ time, buffer, startsAt } -> case buffer of
-            Just bf -> Just $ { time, buffer: bf, startsAt }
+        ( \{ time, buffer, startsAt, column } -> case buffer of
+            Just bf -> Just $ { time, buffer: bf, startsAt, column }
             Nothing -> Nothing
         )
     )
@@ -283,9 +271,10 @@ animate babB clengthB offsetMap afE = compact
                             in
                               join $ Map.values $ mapWithIndex
                                 ( \(Offset offset) -> map
-                                    \(Note n) ->
+                                    \(c /\ Note n) ->
                                       { startsAt: unwrap $ unInstant tnow
                                       , buffer: Object.lookup n bab
+                                      , column: c
                                       , time:
                                           if prevAJ == 0.0 then offset
                                           else calcSlope prevAJ prevAC adjTime
@@ -411,15 +400,28 @@ main = launchAff_ do
     info = gatherAll bmsRes
     noffsets = noteOffsets info
     -- list of notes in the order we need them
-    folded :: Map.Map Offset (List Note)
+    folded :: Map.Map Offset (List (Column /\ Note))
     folded = unwrap
       $ fold
       $ map SemigroupMap
       $ (map <<< map) pure
-      $ Map.values noffsets
+      $ map (\(a /\ b) -> map (\c -> a /\ c) b)
+      $ (Map.toUnfoldable :: _ -> List _) noffsets
+    pcMax :: Int
+    pcMax = foldl
+      ( foldl
+          ( \b (c /\ _) -> case c of
+              PlayColumn i -> max b i
+              _ -> b
+          )
+      )
+      0
+      folded
+    n2o :: List (Note /\ String)
     n2o = compact
       $ map (sequence <<< ((/\) <*> flip Map.lookup info.headers.wavs))
       $ nub
+      $ map snd
       $ join
       $ Map.values
       $ folded
@@ -430,7 +432,13 @@ main = launchAff_ do
 
   Log.info $ JSON.writeJSON
     ( ( map
-          (\((Offset a) /\ b) -> { o: a, n: Array.fromFoldable $ map unwrap b })
+          ( \((Offset a) /\ b) ->
+              { o: a
+              , n: Array.fromFoldable $ map
+                  (\(x /\ y) -> { col: show x, nt: unwrap y })
+                  b
+              }
+          )
           :: _ -> Array _
       ) $ Map.toUnfoldable folded
     )
@@ -470,6 +478,7 @@ main = launchAff_ do
                                     ( runThree
                                         { texture: txtr }
                                         unsched
+                                        pcMax
                                         ( keepLatest $ map (oneOfMap bang)
                                             event.toAnimate
                                         )
