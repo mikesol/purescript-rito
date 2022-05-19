@@ -164,7 +164,7 @@ runThree _ lps pcMax e afE iw ih canvas = do
                                                 )
                                             , positionY (-1.0)
                                             , positionZ
-                                                (-1.0 * speed * itm.time)
+                                                (-1.0 * speed * itm.time - 0.25)
                                             , scaleX $ (s * 3.0)
                                             , scaleY $ (s * 0.3)
                                             , scaleZ $ (s * 2.5)
