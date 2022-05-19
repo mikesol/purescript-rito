@@ -18,7 +18,7 @@ import Rito.Core (toGroup)
 import Rito.Core as C
 import Rito.Group as Group
 import Unsafe.Coerce (unsafeCoerce)
-import Web.TouchEvent (TouchEvent)
+import Web.TouchEvent (Touch)
 import Web.UIEvent.MouseEvent (MouseEvent)
 
 ----
@@ -27,10 +27,10 @@ type Mesh' = Variant
   , onMouseDown :: MouseEvent -> Effect Unit
   , onMouseUp :: MouseEvent -> Effect Unit
   , onMouseMove :: MouseEvent -> Effect Unit
-  , onTouchStart :: TouchEvent -> Effect Unit
-  , onTouchEnd :: TouchEvent -> Effect Unit
-  , onTouchMove :: TouchEvent -> Effect Unit
-  , onTouchCancel :: TouchEvent -> Effect Unit
+  , onTouchStart :: Touch -> Effect Unit
+  , onTouchEnd :: Touch -> Effect Unit
+  , onTouchMove :: Touch -> Effect Unit
+  , onTouchCancel :: Touch -> Effect Unit
   | C.Object3D
   )
 newtype Mesh = Mesh Mesh'
