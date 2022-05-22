@@ -1,8 +1,6 @@
-import * as THREE from "three";
+export const loader = (THREE) => () => THREE.TextureLoader();
 
-const loader = new THREE.TextureLoader();
-
-export const load = (url) => (onLoad) => (onError) => () => {
+export const load = (loader) => (url) => (onLoad) => (onError) => () => {
 	loader.load(
 		url,
 		(x) => onLoad(x)(),

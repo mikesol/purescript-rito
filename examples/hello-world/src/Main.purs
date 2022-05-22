@@ -1,4 +1,4 @@
-module Rito.Example.HelloWorld where
+module Main where
 
 import Prelude
 
@@ -42,10 +42,11 @@ import FRP.Event.VBus (V, vbus)
 import Foreign.Object (fromHomogeneous, values)
 import Random.LCG (mkSeed)
 import Rito.Cameras.PerspectiveCamera (defaultOrbitControls, perspectiveCamera)
-import Rito.Color (RGB(..))
+import Rito.Color (RGB(..), color)
 import Rito.Core (OrbitControls(..), toScene)
 import Rito.Geometries.Sphere (sphere)
 import Rito.InstancedMesh (instancedMesh, setter)
+import Rito.Interpret (orbitControlsAff, threeAff)
 import Rito.Lights.PointLight (pointLight)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Matrix4 (ctor, scale, setPosition)
@@ -53,6 +54,7 @@ import Rito.Properties (positionX, positionY, positionZ, render, setMatrixAt, si
 import Rito.Renderers.WebGL (webGLRenderer)
 import Rito.Run as Rito.Run
 import Rito.Scene (scene)
+import Rito.THREE (ThreeStuff)
 import Rito.Vector3 (vector3)
 import Test.QuickCheck.Gen (elements, evalGen)
 import Type.Proxy (Proxy(..))
@@ -139,16 +141,17 @@ denv s e = bang
 ttap (o /\ n) = AudioNumeric { o: o + 0.04, n, t: _linear }
 
 runThree
-  :: Event (Array CanvasInfo)
+  :: ThreeStuff
+  -> Event (Array CanvasInfo)
   -> Number
   -> Number
   -> HTMLCanvasElement
   -> Effect Unit
-runThree canvas iw ih e = do
-  _ <- Rito.Run.run
+runThree ts@{ three } canvas iw ih e = do
+  _ <- Rito.Run.run ts
     ( webGLRenderer
         ( scene empty
-            [ toScene $ pointLight {}
+            [ toScene $ pointLight { color: color three $ RGB 1.0 1.0 1.0 }
                 ( oneOfMap bang
                     [ positionX 1.0
                     , positionY (-0.5)
@@ -160,7 +163,7 @@ runThree canvas iw ih e = do
                     empty
                 )
                 ( meshStandardMaterial
-                    { color: RGB 1.0 1.0 1.0
+                    { color: color three $ RGB 1.0 1.0 1.0
                     , metalness: 1.0
                     }
                     empty
@@ -181,14 +184,14 @@ runThree canvas iw ih e = do
                               fromMaybe ({ x: 0.0, y: 0.0 } /\ 0.0)
                                 (a !! i) # \({ x, y } /\ n) -> do
                                 scale
-                                  ( vector3
+                                  ( vector3 three
                                       { x: (n * 0.1)
                                       , y: (n * 0.1)
                                       , z: (n * 0.1)
                                       }
                                   )
                                   ( setPosition
-                                      ( vector3
+                                      ( vector3 three
                                           { x:
                                               sin
                                                 ( 0.2 * tni40 * time *
@@ -213,7 +216,7 @@ runThree canvas iw ih e = do
                                                 * 1.0
                                           }
                                       )
-                                      ctor
+                                      (ctor three)
                                   )
                         if time % 1.0 < 0.25 then setMatrixAt $ (setter :: FV.Vect 40 _ -> _) $ mapWithIndex (#) $ pure f else setMatrixAt $ setter $ mapWithIndex (#)
                           $ FVR.set (Proxy :: _ 0) f
@@ -254,6 +257,9 @@ runThree canvas iw ih e = do
 
 main :: Effect Unit
 main = launchAff_ do
+  three <- threeAff
+  orbitControls <- orbitControlsAff
+  let threeStuff = { three, orbitControls }
   w <- liftEffect $ window
   iw <- liftEffect $ Int.toNumber <$> innerWidth w
   ih <- liftEffect $ Int.toNumber <$> innerHeight w
@@ -381,7 +387,7 @@ main = launchAff_ do
                         , D.Style := "width: 100%;"
                         , D.Self := HTMLCanvasElement.fromElement >>>
                             traverse_
-                              (runThree event.canvas iw ih)
+                              (runThree threeStuff event.canvas iw ih)
                         ]
                     )
                     []

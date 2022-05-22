@@ -18,18 +18,17 @@ import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
-import Rito.Color (class ColorRepresentation, Color, color)
+import Rito.Color (Color)
 import Rito.Core as C
 
 data PointLightOptions = PointLightOptions
 
 instance
-  ColorRepresentation n =>
   ConvertOption PointLightOptions
     "color"
-    n
+    Color
     Color where
-  convertOption _ _ = color
+  convertOption _ _ = identity
 
 instance
   ConvertOption PointLightOptions
@@ -53,19 +52,18 @@ instance
   convertOption _ _ = identity
 
 type PointLightOptional =
-  ( color :: Color
-  , intensity :: Number
+  ( intensity :: Number
   , distance :: Number
   , decay :: Number
   )
 
 type PointLightAll =
-  (| PointLightOptional)
+  (color :: Color
+  | PointLightOptional)
 
 defaultPointLight :: { | PointLightOptional }
 defaultPointLight =
-  { color: color 0xffffff
-  , intensity: 1.0
+  { intensity: 1.0
   , distance: 0.0
   , decay: 1.0
   }

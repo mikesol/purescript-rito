@@ -6,11 +6,19 @@ import Data.Either (Either(..))
 import Effect (Effect)
 import Effect.Aff (Aff, makeAff)
 import Effect.Exception (Error)
+import Rito.THREE as THREE
 
 data Texture
+data TextureLoader
+
+foreign import loader :: THREE.Three -> Effect TextureLoader
 
 foreign import load
-  :: String -> (Texture -> Effect Unit) -> (Error -> Effect Unit) -> Effect Unit
+  :: TextureLoader
+  -> String
+  -> (Texture -> Effect Unit)
+  -> (Error -> Effect Unit)
+  -> Effect Unit
 
-loadAff :: String -> Aff Texture
-loadAff url = makeAff \f -> load url (Right >>> f) (Left >>> f) *> mempty
+loadAff :: TextureLoader -> String -> Aff Texture
+loadAff l url = makeAff \f -> load l url (Right >>> f) (Left >>> f) *> mempty

@@ -17,19 +17,18 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
-import Rito.Color (class ColorRepresentation, Color, color)
+import Rito.Color (Color)
 import Rito.Core as C
 import Rito.Texture (Texture)
 
 data MeshBasicMaterialOptions = MeshBasicMaterialOptions
 
 instance
-  ColorRepresentation n =>
   ConvertOption MeshBasicMaterialOptions
     "color"
-    n
+    Color
     (Maybe Color) where
-  convertOption _ _ = Just <<< color
+  convertOption _ _ = Just
 
 instance
   ConvertOption MeshBasicMaterialOptions

@@ -2,17 +2,21 @@ module Rito.Interpret
   ( FFIThreeSnapshot
   , effectfulThreeInterpret
   , makeFFIThreeSnapshot
+  , threeAff
+  , orbitControlsAff
   ) where
 
 import Prelude
 
 import Bolson.Core (Scope(..))
+import Control.Promise (Promise, toAffE)
 import Data.Lens (over)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
 import Data.Symbol (class IsSymbol)
 import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Random as R
 import Prim.Row (class Cons, class Lacks)
 import Prim.RowList (class RowToList)
@@ -25,6 +29,7 @@ import Rito.Core as Core
 import Rito.NormalMapTypes (NormalMapType(..))
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
+import Rito.THREE as THREE
 import Rito.Texture (Texture)
 import Rito.Undefinable (Undefinable, m2u)
 import Rito.Vector2 (Vector2)
@@ -37,12 +42,15 @@ type Payload = FFIThreeSnapshot -> Effect Unit
 -- foreign
 data FFIThreeSnapshot
 
-{-
- TangentSpaceNormalMap = 0;
-export const ObjectSpaceNormalMap = 1;
--}
-
-foreign import makeFFIThreeSnapshot :: Effect FFIThreeSnapshot
+foreign import three :: Effect (Promise THREE.Three)
+threeAff :: Aff THREE.Three
+threeAff = toAffE three
+foreign import orbitControls :: Effect (Promise THREE.OrbitControls)
+orbitControlsAff :: Aff THREE.OrbitControls
+orbitControlsAff = toAffE orbitControls
+foreign import makeFFIThreeSnapshot
+  :: THREE.ThreeStuff
+  -> Effect FFIThreeSnapshot
 
 --
 foreign import webGLRender_ :: Core.WebGLRender -> Payload

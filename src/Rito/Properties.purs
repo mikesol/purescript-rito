@@ -12,6 +12,7 @@ import Rito.InstancedMesh (InstancedMesh, Setter)
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
 import Rito.Sphere as Sphere
+import Rito.THREE as THREE
 import Rito.Texture (Texture)
 import Rito.Vector3 (Vector3)
 import Type.Proxy (Proxy(..))
@@ -136,9 +137,10 @@ color
   :: forall c nt r
    . Newtype nt (Variant (color :: Color.Color | r))
   => Color.ColorRepresentation c
-  => c
+  => THREE.Three
+  -> c
   -> nt
-color = wrap <<< inj (Proxy :: Proxy "color") <<< Color.color
+color a b = wrap $ inj (Proxy :: Proxy "color") $ Color.color a b
 
 center
   :: forall nt r

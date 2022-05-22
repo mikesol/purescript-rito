@@ -15,8 +15,8 @@ let additions =
           , "js-timers"
           , "now"
           ]
-        , repo = "https://github.com/mikesol/purescript-fast-vect.git"
-        , version = "head-impl"
+        , repo = "https://github.com/sigma-andex/purescript-fast-vect.git"
+        , version = "main"
         }
       , event =
         { dependencies =

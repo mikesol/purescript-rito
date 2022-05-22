@@ -18,18 +18,17 @@ import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
-import Rito.Color (class ColorRepresentation, Color, color)
+import Rito.Color (Color)
 import Rito.Core as C
 
 data DirectionalLightOptions = DirectionalLightOptions
 
 instance
-  ColorRepresentation n =>
   ConvertOption DirectionalLightOptions
     "color"
-    n
+    Color
     Color where
-  convertOption _ _ = color
+  convertOption _ _ = identity
 
 instance
   ConvertOption DirectionalLightOptions
@@ -39,17 +38,17 @@ instance
   convertOption _ _ = identity
 
 type DirectionalLightOptional =
-  ( color :: Color
-  , intensity :: Number
+  ( intensity :: Number
   )
 
 type DirectionalLightAll =
-  (| DirectionalLightOptional)
+  ( color :: Color
+  | DirectionalLightOptional
+  )
 
 defaultDirectionalLight :: { | DirectionalLightOptional }
 defaultDirectionalLight =
-  { color: color 0xffffff
-  , intensity: 1.0
+  { intensity: 1.0
   }
 
 class InitialDirectionalLight i where
@@ -59,12 +58,15 @@ instance InitialDirectionalLight C.InitializeDirectionalLight where
   toInitializeDirectionalLight = identity
 
 instance
-  ConvertOptionsWithDefaults DirectionalLightOptions { | DirectionalLightOptional }
+  ConvertOptionsWithDefaults DirectionalLightOptions
+    { | DirectionalLightOptional }
     { | provided }
     { | DirectionalLightAll } =>
   InitialDirectionalLight { | provided } where
   toInitializeDirectionalLight provided = C.InitializeDirectionalLight
-    (convertOptionsWithDefaults DirectionalLightOptions defaultDirectionalLight provided)
+    ( convertOptionsWithDefaults DirectionalLightOptions defaultDirectionalLight
+        provided
+    )
 
 type DirectionalLight' = Variant
   ( color :: Color
@@ -85,14 +87,15 @@ directionalLight i' atts = Bolson.Element' $ C.Light go
   C.InitializeDirectionalLight i = toInitializeDirectionalLight i'
   go
     parent
-    di@( C.ThreeInterpret
-        { ids
-        , deleteFromCache
-        , makeDirectionalLight
-        , setColor
-        , setIntensity
-        }
-    ) = makeEvent \k -> do
+    di@
+      ( C.ThreeInterpret
+          { ids
+          , deleteFromCache
+          , makeDirectionalLight
+          , setColor
+          , setIntensity
+          }
+      ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
@@ -108,9 +111,12 @@ directionalLight i' atts = Bolson.Element' $ C.Light go
         <|>
           ( map
               ( \(DirectionalLight e) -> match
-                  (union { color: setColor <<< { id: me, color: _ }
-                  , intensity: setIntensity <<< { id: me, intensity: _ }
-                  } (C.object3D me di))
+                  ( union
+                      { color: setColor <<< { id: me, color: _ }
+                      , intensity: setIntensity <<< { id: me, intensity: _ }
+                      }
+                      (C.object3D me di)
+                  )
                   e
               )
               atts

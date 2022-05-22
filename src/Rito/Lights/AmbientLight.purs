@@ -18,18 +18,17 @@ import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
-import Rito.Color (class ColorRepresentation, Color, color)
+import Rito.Color (Color)
 import Rito.Core as C
 
 data AmbientLightOptions = AmbientLightOptions
 
 instance
-  ColorRepresentation n =>
   ConvertOption AmbientLightOptions
     "color"
-    n
+    Color
     Color where
-  convertOption _ _ = color
+  convertOption _ _ = identity
 
 instance
   ConvertOption AmbientLightOptions
@@ -39,17 +38,17 @@ instance
   convertOption _ _ = identity
 
 type AmbientLightOptional =
-  ( color :: Color
-  , intensity :: Number
+  ( intensity :: Number
   )
 
 type AmbientLightAll =
-  (| AmbientLightOptional)
+  ( color :: Color
+  | AmbientLightOptional
+  )
 
 defaultAmbientLight :: { | AmbientLightOptional }
 defaultAmbientLight =
-  { color: color 0xffffff
-  , intensity: 1.0
+  { intensity: 1.0
   }
 
 class InitialAmbientLight i where
@@ -64,7 +63,9 @@ instance
     { | AmbientLightAll } =>
   InitialAmbientLight { | provided } where
   toInitializeAmbientLight provided = C.InitializeAmbientLight
-    (convertOptionsWithDefaults AmbientLightOptions defaultAmbientLight provided)
+    ( convertOptionsWithDefaults AmbientLightOptions defaultAmbientLight
+        provided
+    )
 
 type AmbientLight' = Variant
   ( color :: Color
@@ -86,14 +87,15 @@ ambientLight i' atts = Bolson.Element' $ C.Light go
   C.InitializeAmbientLight i = toInitializeAmbientLight i'
   go
     parent
-    di@( C.ThreeInterpret
-        { ids
-        , deleteFromCache
-        , makeAmbientLight
-        , setColor
-        , setIntensity
-        }
-    ) = makeEvent \k -> do
+    di@
+      ( C.ThreeInterpret
+          { ids
+          , deleteFromCache
+          , makeAmbientLight
+          , setColor
+          , setIntensity
+          }
+      ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
@@ -109,9 +111,12 @@ ambientLight i' atts = Bolson.Element' $ C.Light go
         <|>
           ( map
               ( \(AmbientLight e) -> match
-                  (union { color: setColor <<< { id: me, color: _ }
-                  , intensity: setIntensity <<< { id: me, intensity: _ }
-                  } (C.object3D me di))
+                  ( union
+                      { color: setColor <<< { id: me, color: _ }
+                      , intensity: setIntensity <<< { id: me, intensity: _ }
+                      }
+                      (C.object3D me di)
+                  )
                   e
               )
               atts

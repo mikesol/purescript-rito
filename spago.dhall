@@ -1,6 +1,7 @@
-{ name = "purescript-deku"
+{ name = "purescript-rito"
 , dependencies =
   [ "aff"
+  , "aff-promise"
   , "bolson"
   , "control"
   , "convertable-options"

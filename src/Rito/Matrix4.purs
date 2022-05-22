@@ -32,6 +32,7 @@ import Prelude
 
 import Rito.Euler (Euler)
 import Rito.Quaternion (Quaternion)
+import Rito.THREE as THREE
 import Rito.Vector3 (Vector3)
 
 type Matrix4' =
@@ -52,14 +53,14 @@ type Matrix4' =
   , n43 :: Number
   , n44 :: Number
   }
-foreign import ctor_ :: Matrix4
+foreign import ctor_ :: THREE.Three -> Matrix4
 foreign import equals_ :: Matrix4 -> Matrix4 -> Boolean
-foreign import set_ :: Matrix4' -> Matrix4
+foreign import set_ :: THREE.Three -> Matrix4' -> Matrix4
 foreign import compose_
-  :: Vector3 -> Quaternion -> Vector3 -> Matrix4
+  :: THREE.Three -> Vector3 -> Quaternion -> Vector3 -> Matrix4
 foreign import determinant_ :: Matrix4 -> Number
 foreign import invert_ :: Matrix4 -> Matrix4
-foreign import identity_ :: Matrix4
+foreign import identity_ :: THREE.Three -> Matrix4
 foreign import lookAt_ :: Vector3 -> Vector3 -> Vector3 -> Matrix4 -> Matrix4
 foreign import makeRotationAxis_ :: Vector3 -> Number -> Matrix4 -> Matrix4
 foreign import makeRotationFromEuler_ :: Euler -> Matrix4 -> Matrix4
@@ -87,29 +88,27 @@ foreign import scale_ :: Vector3 -> Matrix4 -> Matrix4
 foreign import setPosition_ :: Vector3 -> Matrix4 -> Matrix4
 foreign import transpose_ :: Matrix4 -> Matrix4
 
-matrix4 :: Matrix4' -> Matrix4
+matrix4 :: THREE.Three -> Matrix4' -> Matrix4
 matrix4 = set_
 
 data Matrix4
 instance Semigroup Matrix4 where
   append = multiply_
-instance Monoid Matrix4 where
-  mempty = identity_
 instance Eq Matrix4 where
   eq = equals_
 
 --
 
-ctor :: Matrix4
+ctor :: THREE.Three -> Matrix4
 ctor = ctor_
 
 equals :: Matrix4 -> Matrix4 -> Boolean
 equals = equals_
 
-set :: Matrix4' -> Matrix4
+set :: THREE.Three -> Matrix4' -> Matrix4
 set = set_
 
-compose :: Vector3 -> Quaternion -> Vector3 -> Matrix4
+compose :: THREE.Three -> Vector3 -> Quaternion -> Vector3 -> Matrix4
 compose = compose_
 
 determinant :: Matrix4 -> Number
@@ -118,7 +117,7 @@ determinant = determinant_
 invert :: Matrix4 -> Matrix4
 invert = invert_
 
-identity :: Matrix4
+identity :: THREE.Three -> Matrix4
 identity = identity_
 
 lookAt :: Vector3 -> Vector3 -> Vector3 -> Matrix4 -> Matrix4

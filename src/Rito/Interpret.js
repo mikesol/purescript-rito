@@ -1,5 +1,8 @@
-import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+export const three = () => import("three");
+export const orbitControls = () =>
+	import("three/examples/jsm/controls/OrbitControls.js").then(
+		(r) => r.OrbitControls
+	);
 
 const GLOBAL_SCOPE = "@global@";
 
@@ -14,7 +17,7 @@ const genericMake_ = (ctor) => (conn) => (a) => (state) => () => {
 		listeners: {},
 		parent: parent,
 		scope: $scope,
-		main: ctor(rest),
+		main: ctor(state.THREE, rest),
 	};
 	if (parent === undefined) {
 		return;
@@ -47,7 +50,10 @@ export const connectMaterial_ = (a) => (state) => () => {
 };
 
 export const makeBox_ = genericMake_(
-	({ width, height, depth, widthSegments, heightSegments, depthSegments }) =>
+	(
+		THREE,
+		{ width, height, depth, widthSegments, heightSegments, depthSegments }
+	) =>
 		new THREE.BoxGeometry(
 			width,
 			height,
@@ -60,33 +66,36 @@ export const makeBox_ = genericMake_(
 	y.main.geometry = x.main;
 });
 export const makePlane_ = genericMake_(
-	({ width, height, widthSegments, heightSegments }) =>
+	(THREE, { width, height, widthSegments, heightSegments }) =>
 		new THREE.PlaneGeometry(width, height, widthSegments, heightSegments)
 )((x, y) => {
 	y.main.geometry = x.main;
 });
 export const makeCapsule_ = genericMake_(
-	({ radius, length, capSegments, radialSegments }) =>
+	(THREE, { radius, length, capSegments, radialSegments }) =>
 		new THREE.CapsuleGeometry(radius, length, capSegments, radialSegments)
 )((x, y) => {
 	y.main.geometry = x.main;
 });
 export const makeTorus_ = genericMake_(
-	({ radius, tube, radialSegments, tubularSegments, arc }) =>
+	(THREE, { radius, tube, radialSegments, tubularSegments, arc }) =>
 		new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc)
 )((x, y) => {
 	y.main.geometry = x.main;
 });
 export const makeSphere_ = genericMake_(
-	({
-		radius,
-		widthSegments,
-		heightSegments,
-		phiStart,
-		phiLength,
-		thetaStart,
-		thetaLength,
-	}) =>
+	(
+		THREE,
+		{
+			radius,
+			widthSegments,
+			heightSegments,
+			phiStart,
+			phiLength,
+			thetaStart,
+			thetaLength,
+		}
+	) =>
 		new THREE.SphereGeometry(
 			radius,
 			widthSegments,
@@ -101,10 +110,10 @@ export const makeSphere_ = genericMake_(
 });
 export const makePerspectiveCamera_ = (a) => (state) => () => {
 	genericMake_(
-		({ fov, aspect, near, far }) =>
+		(THREE, { fov, aspect, near, far }) =>
 			new THREE.PerspectiveCamera(fov, aspect, near, far)
 	)(() => {})(a)(state)();
-	const orbitControls = new OrbitControls(
+	const orbitControls = new state.OrbitControls(
 		state.units[a.id].main,
 		a.orbitControls.canvas
 	);
@@ -132,7 +141,7 @@ export const makeInstancedMesh_ = (a) => (state) => () => {
 		listeners: {},
 		parent: parent,
 		scope: $scope,
-		main: new THREE.InstancedMesh(
+		main: new state.THREE.InstancedMesh(
 			state.units[geometry].main,
 			state.units[material].main,
 			count
@@ -143,41 +152,40 @@ export const makeInstancedMesh_ = (a) => (state) => () => {
 	}
 	state.units[parent].main.add(state.units[id].main);
 };
-export const makeMesh_ = genericMake_(() => new THREE.Mesh())((x, y) => {
+export const makeMesh_ = genericMake_((THREE) => new THREE.Mesh())((x, y) => {
 	y.main.add(x.main);
 });
-export const makeAmbientLight_ = genericMake_(({ color, intensity }) => {
-	console.log(color, intensity);
+export const makeAmbientLight_ = genericMake_((THREE, { color, intensity }) => {
 	return new THREE.AmbientLight(color, intensity);
 })((x, y) => {
 	y.main.add(x.main);
 });
 export const makeDirectionalLight_ = genericMake_(
-	({ color, intensity }) => new THREE.DirectionalLight(color, intensity)
+	(THREE, { color, intensity }) => new THREE.DirectionalLight(color, intensity)
 )((x, y) => {
 	y.main.add(x.main);
 });
 export const makePointLight_ = genericMake_(
-	({ color, intensity, distance, decay }) =>
+	(THREE, { color, intensity, distance, decay }) =>
 		new THREE.PointLight(color, intensity, distance, decay)
 )((x, y) => {
 	y.main.add(x.main);
 });
 export const makeMeshBasicMaterial_ = genericMake_(
-	(options) => new THREE.MeshBasicMaterial(options)
+	(THREE, options) => new THREE.MeshBasicMaterial(options)
 )((x, y) => {
 	y.main.material = x.main;
 });
 export const makeMeshStandardMaterial_ = genericMake_(
-	(options) => new THREE.MeshStandardMaterial(options)
+	(THREE, options) => new THREE.MeshStandardMaterial(options)
 )((x, y) => {
 	y.main.material = x.main;
 });
 export const setSize_ = (a) => (state) => () => {
 	state.units[a.id].main.setSize(a.width, a.height);
 };
-export const makeScene_ = genericMake_(() => new THREE.Scene())(() => {});
-export const makeGroup_ = genericMake_(() => new THREE.Group())((x, y) => {
+export const makeScene_ = genericMake_((THREE) => new THREE.Scene())(() => {});
+export const makeGroup_ = genericMake_((THREE) => new THREE.Group())((x, y) => {
 	y.main.add(x.main);
 });
 export const webGLRender_ = (a) => (state) => () => {
@@ -197,7 +205,7 @@ const getAllTouches = (tl) => {
 export const makeWebGLRenderer_ = (a) => (state) => () => {
 	const { id, ...parameters } = a;
 	const canvas = parameters.canvas;
-	const renderer = new THREE.WebGLRenderer(parameters);
+	const renderer = new state.THREE.WebGLRenderer(parameters);
 	state.units[a.id] = { main: renderer };
 	renderer.setSize(canvas.width, canvas.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -213,7 +221,7 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 	state.listeners.touchend = {};
 	state.listeners.touchmove = {};
 	state.listeners.touchcancel = {};
-	const raycaster = new THREE.Raycaster();
+	const raycaster = new state.THREE.Raycaster();
 	const camera = state.units[parameters.camera].main;
 
 	const makeListener = (eventName) => {
@@ -504,7 +512,6 @@ export const setIntensity_ = (a) => (state) => () => {
 	state.units[a.id].main.intensity = a.intensity;
 };
 // mesh
-const updateIfCamera = (u, o) => u instanceof THREE.Camera && o.update();
 export const setRotationFromAxisAngle_ = (a) => (state) => () => {
 	state.units[a.id].main.setRotationFromAxisAngle(a.axis, a.angle);
 	// updateIfCamera(state.units[a.id].main, state.orbitControls);
@@ -559,7 +566,7 @@ export const setPositionZ_ = (a) => (state) => () => {
 };
 // camera
 export const withWorldDirection_ = (a) => (state) => () => {
-	const v3 = new THREE.Vector3();
+	const v3 = new state.THREE.Vector3();
 	state.units[a.id].main.getWorldDirection(v3);
 	a.withWorldDirection(v3)(state)();
 };
@@ -619,12 +626,16 @@ export const setViewOffset_ =
 	};
 
 //
-export function makeFFIThreeSnapshot() {
-	return {
-		units: {},
-		scopes: {},
+export const makeFFIThreeSnapshot =
+	({ three, orbitControls }) =>
+	() => {
+		return {
+			THREE: three,
+			OrbitControls: orbitControls,
+			units: {},
+			scopes: {},
+		};
 	};
-}
 
 export function giveNewParent_(a) {
 	return function (state) {
@@ -651,8 +662,8 @@ export function disconnect_(a) {
 			state.units[ptr].main.removeFromParent();
 			if (a.scope !== GLOBAL_SCOPE) {
 				if (
-					state.units[ptr].main instanceof THREE.BufferGeometry ||
-					state.units[ptr].main instanceof THREE.Material
+					state.units[ptr].main instanceof state.THREE.BufferGeometry ||
+					state.units[ptr].main instanceof state.THREE.Material
 				) {
 					state.units[ptr].main.dispose();
 				}

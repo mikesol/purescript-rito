@@ -1,25 +1,7 @@
-import * as THREE from "three";
-
-export const ctor_ = new THREE.Matrix4();
-export const set_ = ({
-	n11,
-	n12,
-	n13,
-	n14,
-	n21,
-	n22,
-	n23,
-	n24,
-	n31,
-	n32,
-	n33,
-	n34,
-	n41,
-	n42,
-	n43,
-	n44,
-}) =>
-	new THREE.Matrix4().set(
+export const ctor_ = (THREE) => new THREE.Matrix4();
+export const set_ =
+	(THREE) =>
+	({
 		n11,
 		n12,
 		n13,
@@ -35,14 +17,32 @@ export const set_ = ({
 		n41,
 		n42,
 		n43,
-		n44
-	);
+		n44,
+	}) =>
+		new THREE.Matrix4().set(
+			n11,
+			n12,
+			n13,
+			n14,
+			n21,
+			n22,
+			n23,
+			n24,
+			n31,
+			n32,
+			n33,
+			n34,
+			n41,
+			n42,
+			n43,
+			n44
+		);
 export const equals_ = (a) => (b) => a.equals(b);
-export const compose_ = (position) => (quaternion) => (scale) =>
+export const compose_ = (THREE) => (position) => (quaternion) => (scale) =>
 	new THREE.Matrix4().compose(position, quaternion, scale);
 export const determinant_ = (a) => a.determinant();
 export const invert_ = (a) => a.clone().invert();
-export const identity_ = new THREE.Matrix4().identity();
+export const identity_ = (THREE) => new THREE.Matrix4().identity();
 export const lookAt_ = (eye) => (target) => (up) => (a) =>
 	a.clone().lookAt(eye, target, up);
 export const makeRotationAxis_ = (axis) => (a) => (theta) =>
@@ -61,8 +61,7 @@ export const makeShear_ = (a) => (xy) => (xz) => (yx) => (yz) => (zx) => (zy) =>
 export const makeTranslation_ = (a) => (x) => (y) => (z) =>
 	a.clone().makeTranslation(x, y, z);
 export const multiply_ = (a) => (b) => a.clone().multiply(b);
-export const multiplyMatrices_ = (a) => (b) =>
-	new THREE.Matrix4().multiplyMatrices(a, b);
+export const multiplyMatrices_ = (a) => (b) => a.clone().multiplyMatrices(a, b);
 export const multiplyScalar_ = (b) => (a) => a.clone().multiplyScalar(b);
 export const premultiply_ = (a) => (b) => a.clone().premultiply(b);
 export const scale_ = (v) => (a) => a.clone().scale(v);

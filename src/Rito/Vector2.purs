@@ -1,14 +1,14 @@
-module Rito.Vector2 (vector2, Vector2, Vector2', normalize) where
+module Rito.Vector2 (vector2, Vector2, Vector2', normalize, add, mul, div, sub) where
 
-import Prelude
+import Rito.THREE as THREE
 
 data Vector2
 type Vector2' = { x :: Number, y :: Number }
 
-vector2 :: Vector2' -> Vector2
+vector2 :: THREE.Three -> Vector2' -> Vector2
 vector2 = ctor_
 
-foreign import ctor_ :: Vector2' -> Vector2
+foreign import ctor_ :: THREE.Three -> Vector2' -> Vector2
 foreign import add_ :: Vector2 -> Vector2 -> Vector2
 foreign import multiply_ :: Vector2 -> Vector2 -> Vector2
 foreign import divide_ :: Vector2 -> Vector2 -> Vector2
@@ -18,18 +18,11 @@ foreign import normalize_ :: Vector2 -> Vector2
 normalize :: Vector2 -> Vector2
 normalize = normalize_
 
-instance Semiring Vector2 where
-  add = add_
-  mul = multiply_
-  one = vector2 { x: 1.0, y: 1.0 }
-  zero = vector2 { x: 0.0, y: 0.0 }
-
-instance Ring Vector2 where
-  sub = sub_
-
-instance CommutativeRing Vector2
-
-instance EuclideanRing Vector2 where
-  degree _ = 1
-  div = divide_
-  mod _ _ = zero
+add :: Vector2 -> Vector2 -> Vector2
+add = add_
+mul :: Vector2 -> Vector2 -> Vector2
+mul = multiply_
+sub :: Vector2 -> Vector2 -> Vector2
+sub = sub_
+div :: Vector2 -> Vector2 -> Vector2
+div = divide_

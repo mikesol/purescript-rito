@@ -1,7 +1,7 @@
-let conf = ./spago.dhall
+let conf = ../../spago.dhall
 
 in      conf
-    //  { sources = conf.sources # [ "examples/**/*.purs" ]
+    //  { sources = conf.sources # [ "../../src/**/*.purs" ]
         , dependencies =
               conf.dependencies
             # [ "web-html"
