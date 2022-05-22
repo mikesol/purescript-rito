@@ -134,13 +134,11 @@ map
 map = wrap <<< inj (Proxy :: Proxy "map")
 
 color
-  :: forall c nt r
+  :: forall nt r
    . Newtype nt (Variant (color :: Color.Color | r))
-  => Color.ColorRepresentation c
-  => THREE.Three
-  -> c
+  => Color.Color
   -> nt
-color a b = wrap $ inj (Proxy :: Proxy "color") $ Color.color a b
+color = wrap <<< inj (Proxy :: Proxy "color")
 
 center
   :: forall nt r
