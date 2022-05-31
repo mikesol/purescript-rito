@@ -6,12 +6,15 @@ import Bolson.Control (flatten)
 import Bolson.Core (fixed)
 import Bolson.Core as Bolson
 import Control.Plus (empty)
-import Data.Foldable (oneOf)
+import Data.Foldable (oneOf, traverse_)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import Effect (Effect)
-import FRP.Event (Event, bang, keepLatest, makeEvent, subscribe)
+import Effect.Ref as Ref
+import FRP.Event (Event, bang, makeEvent, subscribe)
+import Foreign.Object (Object)
+import Foreign.Object as Object
 import Heterogeneous.Mapping (class Mapping, hmap)
 import Record (union)
 import Rito.Core (toGroup)
@@ -33,18 +36,20 @@ type Mesh' = Variant
   , onTouchCancel :: Touch -> Effect Unit
   | C.Object3D
   )
+
 newtype Mesh = Mesh Mesh'
+
 instance Newtype Mesh Mesh'
 
 data MakeEvent = MakeEvent
 
-instance Mapping MakeEvent (x -> a) (x -> Event a) where
-  mapping MakeEvent = map bang
+instance Mapping MakeEvent (x -> a) (x -> Effect a) where
+  mapping MakeEvent = map pure
 
-withRemoval :: forall a. a -> a -> Event a
-withRemoval attach remove = makeEvent \k -> do
-  k attach
-  pure (k remove)
+withRemoval' :: forall a. Ref.Ref (Object a) -> String -> a -> a -> Effect a
+withRemoval' p s attach remove = do
+  Ref.modify_ (Object.insert s remove) p
+  pure attach
 
 mesh'
   :: forall lock payload
@@ -77,7 +82,8 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
           , removeOnTouchStart
           , removeOnTouchEnd
           , removeOnTouchMove
-          , removeOnTouchCancel          }
+          , removeOnTouchCancel
+          }
       ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
@@ -100,36 +106,70 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
             , raiseId: mempty
             }
             di
-        , keepLatest $ props <#>
-            ( \(Mesh msh) ->
-                msh # match
+        , makeEvent \pusher -> do
+            unsubs <- Ref.new Object.empty
+            let withRemoval = withRemoval' unsubs me
+            usu <- subscribe props \(Mesh msh) -> pusher =<<
+              ( msh # match
                   ( union
                       { onClick: \onClick -> withRemoval (setOnClick { id: me, onClick }) (removeOnClick { id: me, onClick })
-                      , onMouseDown: \onMouseDown -> withRemoval (setOnMouseDown
-                          { id: me, onMouseDown }) (removeOnMouseDown
-                          { id: me, onMouseDown })
-                      , onMouseUp: \onMouseUp -> withRemoval (setOnMouseUp
-                          { id: me, onMouseUp }) (removeOnMouseUp
-                          { id: me, onMouseUp })
-                      , onMouseMove: \onMouseMove -> withRemoval (setOnMouseMove
-                          { id: me, onMouseMove }) (removeOnMouseMove
-                          { id: me, onMouseMove })
-                      , onTouchStart: \onTouchStart -> withRemoval (setOnTouchStart
-                          { id: me, onTouchStart }) (removeOnTouchStart
-                          { id: me, onTouchStart })
-                      , onTouchEnd: \onTouchEnd -> withRemoval (setOnTouchEnd
-                          { id: me, onTouchEnd }) (removeOnTouchEnd
-                          { id: me, onTouchEnd })
-                      , onTouchMove: \onTouchMove -> withRemoval (setOnTouchMove
-                          { id: me, onTouchMove }) (removeOnTouchMove
-                          { id: me, onTouchMove })
-                      , onTouchCancel: \onTouchCancel -> withRemoval (setOnTouchCancel
-                          { id: me, onTouchCancel }) (removeOnTouchCancel
-                          { id: me, onTouchCancel })
+                      , onMouseDown: \onMouseDown -> withRemoval
+                          ( setOnMouseDown
+                              { id: me, onMouseDown }
+                          )
+                          ( removeOnMouseDown
+                              { id: me, onMouseDown }
+                          )
+                      , onMouseUp: \onMouseUp -> withRemoval
+                          ( setOnMouseUp
+                              { id: me, onMouseUp }
+                          )
+                          ( removeOnMouseUp
+                              { id: me, onMouseUp }
+                          )
+                      , onMouseMove: \onMouseMove -> withRemoval
+                          ( setOnMouseMove
+                              { id: me, onMouseMove }
+                          )
+                          ( removeOnMouseMove
+                              { id: me, onMouseMove }
+                          )
+                      , onTouchStart: \onTouchStart -> withRemoval
+                          ( setOnTouchStart
+                              { id: me, onTouchStart }
+                          )
+                          ( removeOnTouchStart
+                              { id: me, onTouchStart }
+                          )
+                      , onTouchEnd: \onTouchEnd -> withRemoval
+                          ( setOnTouchEnd
+                              { id: me, onTouchEnd }
+                          )
+                          ( removeOnTouchEnd
+                              { id: me, onTouchEnd }
+                          )
+                      , onTouchMove: \onTouchMove -> withRemoval
+                          ( setOnTouchMove
+                              { id: me, onTouchMove }
+                          )
+                          ( removeOnTouchMove
+                              { id: me, onTouchMove }
+                          )
+                      , onTouchCancel: \onTouchCancel -> withRemoval
+                          ( setOnTouchCancel
+                              { id: me, onTouchCancel }
+                          )
+                          ( removeOnTouchCancel
+                              { id: me, onTouchCancel }
+                          )
                       }
                       (hmap MakeEvent (C.object3D me di))
                   )
-            )
+              )
+            pure do
+              removes <- Ref.read unsubs
+              traverse_ pusher removes
+              usu
         , flatten
             { doLogic: absurd
             , ids: unwrap >>> _.ids

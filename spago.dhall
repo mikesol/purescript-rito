@@ -12,6 +12,7 @@
   , "exists"
   , "fast-vect"
   , "foldable-traversable"
+  , "foreign-object"
   , "heterogeneous"
   , "integers"
   , "maybe"
