@@ -52,7 +52,6 @@ group props kidz = Element' $ C.Group go
             { doLogic: absurd
             , ids: unwrap >>> _.ids
             , disconnectElement: unwrap >>> _.disconnect
-            , wrapElt: \a -> group empty [ C.toGroup a ]
             , toElt: \(C.Group obj) -> Bolson.Element obj
             }
             { parent: Just me, scope: parent.scope, raiseId: pure mempty }

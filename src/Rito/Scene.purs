@@ -52,9 +52,6 @@ scene props kidz = Element' $ C.Scene go
             { doLogic: absurd
             , ids: unwrap >>> _.ids
             , disconnectElement: unwrap >>> _.disconnect
-            , wrapElt: \a ->
-                (unsafeCoerce :: C.AGroup lock payload -> C.AScene lock payload)
-                  (Group.group empty [ coerce a ])
             , toElt: \(C.Scene obj) -> Bolson.Element obj
             }
             { parent: Just me, scope: parent.scope, raiseId: pure mempty }

@@ -174,9 +174,6 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
             { doLogic: absurd
             , ids: unwrap >>> _.ids
             , disconnectElement: unwrap >>> _.disconnect
-            , wrapElt: \a ->
-                (unsafeCoerce :: C.AGroup lock payload -> C.AMesh lock payload)
-                  (Group.group empty [ toGroup a ])
             , toElt: \(C.Mesh obj) -> Bolson.Element obj
             }
             { parent: Just me, scope: parent.scope, raiseId: pure mempty }
