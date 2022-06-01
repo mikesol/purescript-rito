@@ -637,27 +637,10 @@ export const makeFFIThreeSnapshot =
 		};
 	};
 
-export function giveNewParent_(a) {
-	return function (state) {
-		return function () {
-			const ptr = a.id;
-			const parent = a.parent;
-			state.units[ptr].containingScope = a.scope;
-			state.units[parent].main.prepend(state.units[ptr].main);
-		};
-	};
-}
-
 export function disconnect_(a) {
 	return function (state) {
 		return function () {
 			const ptr = a.id;
-			if (
-				state.units[ptr].containingScope &&
-				state.units[ptr].containingScope !== a.scope
-			) {
-				return;
-			}
 			// check to make sure this actually works
 			state.units[ptr].main.removeFromParent();
 			if (a.scope !== GLOBAL_SCOPE) {

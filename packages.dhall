@@ -230,7 +230,7 @@ let additions =
       , bolson =
         { dependencies = [ "heterogeneous", "fast-vect" ]
         , repo = "https://github.com/mikesol/purescript-bolson.git"
-        , version = "v0.0.4"
+        , version = "v0.0.5"
         }
       }
 
