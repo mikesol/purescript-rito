@@ -559,8 +559,8 @@ export const setInstancedMeshColor_ = (a) => (state) => () => {
 };
 export const setSingleInstancedMeshMatrix4_ = (a) => (state) => () => {
 	const u = state.units[a.id].main;
-	u.setMatrix4At(a.instanceId, a.matrix4);
-	u.instanceColor.needsUpdate = true;
+	u.setMatrixAt(a.instanceId, a.matrix4);
+	u.instanceMatrix.needsUpdate = true;
 };
 export const setSingleInstancedMeshColor_ = (a) => (state) => () => {
 	const u = state.units[a.id].main;
