@@ -30,9 +30,9 @@ jobs:
         run: npm ci
       - name: Spago build examples
         run: npm run build:examples
-      - name: Test
-        run: npm t
-      - name: Build qc
-        run: npx spago -x examples.dhall bundle-app --main Rito.Example.HelloWorld --to examples/hello-world/index.js
+      # - name: Test
+      #   run: npm t
+      # - name: Build qc
+      #   run: npx spago -x examples.dhall bundle-app --main Rito.Example.HelloWorld --to examples/hello-world/index.js
       #- name: Performance test
       #  run: npm run test:performance
