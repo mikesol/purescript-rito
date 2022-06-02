@@ -763,6 +763,23 @@ newtype ThreeInterpret payload = ThreeInterpret
   , removeOnTouchEnd :: RemoveOnTouchEnd -> payload
   , removeOnTouchMove :: RemoveOnTouchMove -> payload
   , removeOnTouchCancel :: RemoveOnTouchCancel -> payload
+  -- (faux) IM Listeners
+  , setIMOnClick :: SetIMOnClick -> payload
+  , setIMOnMouseDown :: SetIMOnMouseDown -> payload
+  , setIMOnMouseUp :: SetIMOnMouseUp -> payload
+  , setIMOnMouseMove :: SetIMOnMouseMove -> payload
+  , setIMOnTouchStart :: SetIMOnTouchStart -> payload
+  , setIMOnTouchEnd :: SetIMOnTouchEnd -> payload
+  , setIMOnTouchMove :: SetIMOnTouchMove -> payload
+  , setIMOnTouchCancel :: SetIMOnTouchCancel -> payload
+  , removeIMOnClick :: RemoveIMOnClick -> payload
+  , removeIMOnMouseDown :: RemoveIMOnMouseDown -> payload
+  , removeIMOnMouseUp :: RemoveIMOnMouseUp -> payload
+  , removeIMOnMouseMove :: RemoveIMOnMouseMove -> payload
+  , removeIMOnTouchStart :: RemoveIMOnTouchStart -> payload
+  , removeIMOnTouchEnd :: RemoveIMOnTouchEnd -> payload
+  , removeIMOnTouchMove :: RemoveIMOnTouchMove -> payload
+  , removeIMOnTouchCancel :: RemoveIMOnTouchCancel -> payload
   -- CapsuleGeometry
   , setCapSegments :: SetCapSegments -> payload
   , setRadialSegments :: SetRadialSegments -> payload
