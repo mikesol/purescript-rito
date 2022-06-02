@@ -22,10 +22,20 @@ import Foreign.Object as Object
 import Rito.Color (Color)
 import Rito.Core as C
 import Rito.Matrix4 (Matrix4)
+import Web.TouchEvent (Touch)
+import Web.UIEvent.MouseEvent (MouseEvent)
 
 newtype Instance = Instance
   ( Variant
-      ( matrix4 :: Matrix4
+      ( onClick :: MouseEvent -> Effect Unit
+      , onMouseDown :: MouseEvent -> Effect Unit
+      , onMouseUp :: MouseEvent -> Effect Unit
+      , onMouseMove :: MouseEvent -> Effect Unit
+      , onTouchStart :: Touch -> Effect Unit
+      , onTouchEnd :: Touch -> Effect Unit
+      , onTouchMove :: Touch -> Effect Unit
+      , onTouchCancel :: Touch -> Effect Unit
+      , matrix4 :: Matrix4
       , color :: Color
       )
   )
@@ -50,6 +60,22 @@ singleInstance props (InstanceId { meshId, instanceId }) = C.Instance
     ( C.ThreeInterpret
         { setSingleInstancedMeshMatrix4
         , setSingleInstancedMeshColor
+        , setIMOnClick
+        , setIMOnMouseDown
+        , setIMOnMouseUp
+        , setIMOnMouseMove
+        , setIMOnTouchStart
+        , setIMOnTouchEnd
+        , setIMOnTouchMove
+        , setIMOnTouchCancel
+        , removeIMOnClick
+        , removeIMOnMouseDown
+        , removeIMOnMouseUp
+        , removeIMOnMouseMove
+        , removeIMOnTouchStart
+        , removeIMOnTouchEnd
+        , removeIMOnTouchMove
+        , removeIMOnTouchCancel
         }
     ) = makeEvent \k -> do
 
@@ -69,6 +95,58 @@ singleInstance props (InstanceId { meshId, instanceId }) = C.Instance
                     , instanceId
                     , color
                     }
+                , onClick: \onClick -> withRemoval "click"
+                    (setIMOnClick { id: meshId, instanceId, onClick })
+                    (removeIMOnClick { id: meshId, instanceId, onClick })
+                , onMouseDown: \onMouseDown -> withRemoval "mousedown"
+                    ( setIMOnMouseDown
+                        { id: meshId, instanceId, onMouseDown }
+                    )
+                    ( removeIMOnMouseDown
+                        { id: meshId, instanceId, onMouseDown }
+                    )
+                , onMouseUp: \onMouseUp -> withRemoval "mouseup"
+                    ( setIMOnMouseUp
+                        { id: meshId, instanceId, onMouseUp }
+                    )
+                    ( removeIMOnMouseUp
+                        { id: meshId, instanceId, onMouseUp }
+                    )
+                , onMouseMove: \onMouseMove -> withRemoval "mousemove"
+                    ( setIMOnMouseMove
+                        { id: meshId, instanceId, onMouseMove }
+                    )
+                    ( removeIMOnMouseMove
+                        { id: meshId, instanceId, onMouseMove }
+                    )
+                , onTouchStart: \onTouchStart -> withRemoval "touchstart"
+                    ( setIMOnTouchStart
+                        { id: meshId, instanceId, onTouchStart }
+                    )
+                    ( removeIMOnTouchStart
+                        { id: meshId, instanceId, onTouchStart }
+                    )
+                , onTouchEnd: \onTouchEnd -> withRemoval "touchend"
+                    ( setIMOnTouchEnd
+                        { id: meshId, instanceId, onTouchEnd }
+                    )
+                    ( removeIMOnTouchEnd
+                        { id: meshId, instanceId, onTouchEnd }
+                    )
+                , onTouchMove: \onTouchMove -> withRemoval "touchmove"
+                    ( setIMOnTouchMove
+                        { id: meshId, instanceId, onTouchMove }
+                    )
+                    ( removeIMOnTouchMove
+                        { id: meshId, instanceId, onTouchMove }
+                    )
+                , onTouchCancel: \onTouchCancel -> withRemoval "touchcancel"
+                    ( setIMOnTouchCancel
+                        { id: meshId, instanceId, onTouchCancel }
+                    )
+                    ( removeIMOnTouchCancel
+                        { id: meshId, instanceId, onTouchCancel }
+                    )
                 }
             )
           pure
