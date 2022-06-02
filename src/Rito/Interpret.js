@@ -132,6 +132,10 @@ export const makePerspectiveCamera_ = (a) => (state) => () => {
 // COPY of generic make, needed because indexed mesh is a bit different
 export const makeInstancedMesh_ = (a) => (state) => () => {
 	// ugggghhhh
+	const _instanceLocalMatrix = /*@__PURE__*/ new state.THREE.Matrix4();
+	const _instanceWorldMatrix = /*@__PURE__*/ new state.THREE.Matrix4();
+
+	const _instanceIntersects = [];
 	const _mesh = /*@__PURE__*/ new state.THREE.Mesh();
 	class MyInstancedMesh extends state.THREE.InstancedMesh {
 		constructor(geometry, material, count) {
