@@ -58,8 +58,9 @@ type PointLightOptional =
   )
 
 type PointLightAll =
-  (color :: Color
-  | PointLightOptional)
+  ( color :: Color
+  | PointLightOptional
+  )
 
 defaultPointLight :: { | PointLightOptional }
 defaultPointLight =
@@ -104,16 +105,17 @@ pointLight i' atts = Bolson.Element' $ C.Light go
   C.InitializePointLight i = toInitializePointLight i'
   go
     parent
-    di@( C.ThreeInterpret
-        { ids
-        , deleteFromCache
-        , makePointLight
-        , setColor
-        , setIntensity
-        , setDistance
-        , setDecay
-        }
-    ) = makeEvent \k -> do
+    di@
+      ( C.ThreeInterpret
+          { ids
+          , deleteFromCache
+          , makePointLight
+          , setColor
+          , setIntensity
+          , setDistance
+          , setDecay
+          }
+      ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
@@ -131,11 +133,14 @@ pointLight i' atts = Bolson.Element' $ C.Light go
         <|>
           ( map
               ( \(PointLight e) -> match
-                  (union { color: setColor <<< { id: me, color: _ }
-                  , intensity: setIntensity <<< { id: me, intensity: _ }
-                  , distance: setDistance <<< { id: me, distance: _ }
-                  , decay: setDecay <<< { id: me, decay: _ }
-                  } (C.object3D me di))
+                  ( union
+                      { color: setColor <<< { id: me, color: _ }
+                      , intensity: setIntensity <<< { id: me, intensity: _ }
+                      , distance: setDistance <<< { id: me, distance: _ }
+                      , decay: setDecay <<< { id: me, decay: _ }
+                      }
+                      (C.object3D me di)
+                  )
                   e
               )
               atts

@@ -5,7 +5,6 @@ import Prelude
 import Bolson.Control (flatten)
 import Bolson.Core (fixed)
 import Bolson.Core as Bolson
-import Control.Plus (empty)
 import Data.Foldable (oneOf, traverse_)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
@@ -17,10 +16,7 @@ import Foreign.Object (Object)
 import Foreign.Object as Object
 import Heterogeneous.Mapping (class Mapping, hmap)
 import Record (union)
-import Rito.Core (toGroup)
 import Rito.Core as C
-import Rito.Group as Group
-import Unsafe.Coerce (unsafeCoerce)
 import Web.TouchEvent (Touch)
 import Web.UIEvent.MouseEvent (MouseEvent)
 
@@ -108,47 +104,49 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
             di
         , makeEvent \pusher -> do
             unsubs <- Ref.new Object.empty
-            let withRemoval = withRemoval' unsubs me
+            let withRemoval = withRemoval' unsubs
             usu <- subscribe props \(Mesh msh) -> pusher =<<
               ( msh # match
                   ( union
-                      { onClick: \onClick -> withRemoval (setOnClick { id: me, onClick }) (removeOnClick { id: me, onClick })
-                      , onMouseDown: \onMouseDown -> withRemoval
+                      { onClick: \onClick -> withRemoval "click"
+                          (setOnClick { id: me, onClick })
+                          (removeOnClick { id: me, onClick })
+                      , onMouseDown: \onMouseDown -> withRemoval "mousedown"
                           ( setOnMouseDown
                               { id: me, onMouseDown }
                           )
                           ( removeOnMouseDown
                               { id: me, onMouseDown }
                           )
-                      , onMouseUp: \onMouseUp -> withRemoval
+                      , onMouseUp: \onMouseUp -> withRemoval "mouseup"
                           ( setOnMouseUp
                               { id: me, onMouseUp }
                           )
                           ( removeOnMouseUp
                               { id: me, onMouseUp }
                           )
-                      , onMouseMove: \onMouseMove -> withRemoval
+                      , onMouseMove: \onMouseMove -> withRemoval "mousemove"
                           ( setOnMouseMove
                               { id: me, onMouseMove }
                           )
                           ( removeOnMouseMove
                               { id: me, onMouseMove }
                           )
-                      , onTouchStart: \onTouchStart -> withRemoval
+                      , onTouchStart: \onTouchStart -> withRemoval "touchstart"
                           ( setOnTouchStart
                               { id: me, onTouchStart }
                           )
                           ( removeOnTouchStart
                               { id: me, onTouchStart }
                           )
-                      , onTouchEnd: \onTouchEnd -> withRemoval
+                      , onTouchEnd: \onTouchEnd -> withRemoval "touchend"
                           ( setOnTouchEnd
                               { id: me, onTouchEnd }
                           )
                           ( removeOnTouchEnd
                               { id: me, onTouchEnd }
                           )
-                      , onTouchMove: \onTouchMove -> withRemoval
+                      , onTouchMove: \onTouchMove -> withRemoval "touchmove"
                           ( setOnTouchMove
                               { id: me, onTouchMove }
                           )
@@ -156,6 +154,7 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
                               { id: me, onTouchMove }
                           )
                       , onTouchCancel: \onTouchCancel -> withRemoval
+                          "touchcancel"
                           ( setOnTouchCancel
                               { id: me, onTouchCancel }
                           )

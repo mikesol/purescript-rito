@@ -50,7 +50,10 @@ type Ctor payload =
   , scope :: Scope
   , raiseId :: String -> Effect Unit
   }
-  -> ThreeInterpret payload
+  -> SimpleCtor payload
+
+type SimpleCtor payload =
+  ThreeInterpret payload
   -> Event payload
 
 newtype Light (lock :: Type) payload = Light (Ctor payload)
@@ -58,6 +61,7 @@ type ALight lock payload = Entity Void (Light lock payload) Effect lock
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
 newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
+newtype Instance (lock :: Type) payload = Instance (SimpleCtor payload)
 type AMesh lock payload = Entity Void (Mesh lock payload) Effect lock
 newtype Group (lock :: Type) payload = Group (Ctor payload)
 type AGroup lock payload = Entity Void (Group lock payload) Effect lock
@@ -390,6 +394,10 @@ type SetInstancedMeshMatrix4 =
   { id :: String, setMatrix4 :: (Int -> Matrix4 -> Effect Unit) -> Effect Unit }
 type SetInstancedMeshColor =
   { id :: String, setColor :: (Int -> Color -> Effect Unit) -> Effect Unit }
+type SetSingleInstancedMeshMatrix4 =
+  { id :: String, instanceId :: Int, matrix4 :: Matrix4 }
+type SetSingleInstancedMeshColor =
+  { id :: String, instanceId :: Int, color :: Color }
 type SetColor = { id :: String, color :: Color }
 type SetRoughness = { id :: String, roughness :: Number }
 type SetMetalness = { id :: String, metalness :: Number }
@@ -443,6 +451,39 @@ type RemoveOnTouchMove =
   { id :: String, onTouchMove :: Touch -> Effect Unit }
 type RemoveOnTouchCancel =
   { id :: String, onTouchCancel :: Touch -> Effect Unit }
+-- im listeners
+type SetIMOnClick =
+  { id :: String, instanceId :: Int, onClick :: MouseEvent -> Effect Unit }
+type SetIMOnMouseDown =
+  { id :: String, instanceId :: Int, onMouseDown :: MouseEvent -> Effect Unit }
+type SetIMOnMouseUp =
+  { id :: String, instanceId :: Int, onMouseUp :: MouseEvent -> Effect Unit }
+type SetIMOnMouseMove =
+  { id :: String, instanceId :: Int, onMouseMove :: MouseEvent -> Effect Unit }
+type SetIMOnTouchStart =
+  { id :: String, instanceId :: Int, onTouchStart :: Touch -> Effect Unit }
+type SetIMOnTouchEnd =
+  { id :: String, instanceId :: Int, onTouchEnd :: Touch -> Effect Unit }
+type SetIMOnTouchMove =
+  { id :: String, instanceId :: Int, onTouchMove :: Touch -> Effect Unit }
+type SetIMOnTouchCancel =
+  { id :: String, instanceId :: Int, onTouchCancel :: Touch -> Effect Unit }
+type RemoveIMOnClick =
+  { id :: String, instanceId :: Int, onClick :: MouseEvent -> Effect Unit }
+type RemoveIMOnMouseDown =
+  { id :: String, instanceId :: Int, onMouseDown :: MouseEvent -> Effect Unit }
+type RemoveIMOnMouseUp =
+  { id :: String, instanceId :: Int, onMouseUp :: MouseEvent -> Effect Unit }
+type RemoveIMOnMouseMove =
+  { id :: String, instanceId :: Int, onMouseMove :: MouseEvent -> Effect Unit }
+type RemoveIMOnTouchStart =
+  { id :: String, instanceId :: Int, onTouchStart :: Touch -> Effect Unit }
+type RemoveIMOnTouchEnd =
+  { id :: String, instanceId :: Int, onTouchEnd :: Touch -> Effect Unit }
+type RemoveIMOnTouchMove =
+  { id :: String, instanceId :: Int, onTouchMove :: Touch -> Effect Unit }
+type RemoveIMOnTouchCancel =
+  { id :: String, instanceId :: Int, onTouchCancel :: Touch -> Effect Unit }
 -- mesh
 type SetRotationFromAxisAngle =
   { id :: String, axis :: Vector3, angle :: Number }
@@ -754,6 +795,23 @@ newtype ThreeInterpret payload = ThreeInterpret
   , removeOnTouchEnd :: RemoveOnTouchEnd -> payload
   , removeOnTouchMove :: RemoveOnTouchMove -> payload
   , removeOnTouchCancel :: RemoveOnTouchCancel -> payload
+  -- (faux) IM Listeners
+  , setIMOnClick :: SetIMOnClick -> payload
+  , setIMOnMouseDown :: SetIMOnMouseDown -> payload
+  , setIMOnMouseUp :: SetIMOnMouseUp -> payload
+  , setIMOnMouseMove :: SetIMOnMouseMove -> payload
+  , setIMOnTouchStart :: SetIMOnTouchStart -> payload
+  , setIMOnTouchEnd :: SetIMOnTouchEnd -> payload
+  , setIMOnTouchMove :: SetIMOnTouchMove -> payload
+  , setIMOnTouchCancel :: SetIMOnTouchCancel -> payload
+  , removeIMOnClick :: RemoveIMOnClick -> payload
+  , removeIMOnMouseDown :: RemoveIMOnMouseDown -> payload
+  , removeIMOnMouseUp :: RemoveIMOnMouseUp -> payload
+  , removeIMOnMouseMove :: RemoveIMOnMouseMove -> payload
+  , removeIMOnTouchStart :: RemoveIMOnTouchStart -> payload
+  , removeIMOnTouchEnd :: RemoveIMOnTouchEnd -> payload
+  , removeIMOnTouchMove :: RemoveIMOnTouchMove -> payload
+  , removeIMOnTouchCancel :: RemoveIMOnTouchCancel -> payload
   -- CapsuleGeometry
   , setCapSegments :: SetCapSegments -> payload
   , setRadialSegments :: SetRadialSegments -> payload
@@ -786,6 +844,8 @@ newtype ThreeInterpret payload = ThreeInterpret
   -- InstancedMesh
   , setInstancedMeshMatrix4 :: SetInstancedMeshMatrix4 -> payload
   , setInstancedMeshColor :: SetInstancedMeshColor -> payload
+  , setSingleInstancedMeshMatrix4 :: SetSingleInstancedMeshMatrix4 -> payload
+  , setSingleInstancedMeshColor :: SetSingleInstancedMeshColor -> payload
   -- MeshStandardMaterial
   , setColor :: SetColor -> payload
   , setRoughness :: SetRoughness -> payload

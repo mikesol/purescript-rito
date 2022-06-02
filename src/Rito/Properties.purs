@@ -12,12 +12,9 @@ import Rito.InstancedMesh (InstancedMesh, Setter)
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
 import Rito.Sphere as Sphere
-import Rito.THREE as THREE
 import Rito.Texture (Texture)
 import Rito.Vector3 (Vector3)
 import Type.Proxy (Proxy(..))
-import Web.TouchEvent (Touch)
-import Web.UIEvent.MouseEvent (MouseEvent)
 
 radius
   :: forall nt r
@@ -268,22 +265,22 @@ setMatrixAt = wrap <<< inj (Proxy :: Proxy "setMatrix4")
 
 -- listeners
 onClick
-  :: forall nt r
-   . Newtype nt (Variant (onClick :: MouseEvent -> Effect Unit | r))
-  => (MouseEvent -> Effect Unit)
+  :: forall onClick nt r
+   . Newtype nt (Variant (onClick :: onClick | r))
+  => onClick
   -> nt
 onClick = wrap <<< inj (Proxy :: Proxy "onClick")
 
 onMouseDown
-  :: forall nt r
-   . Newtype nt (Variant (onMouseDown :: MouseEvent -> Effect Unit | r))
-  => (MouseEvent -> Effect Unit)
+  :: forall onMouseDown nt r
+   . Newtype nt (Variant (onMouseDown :: onMouseDown | r))
+  => onMouseDown
   -> nt
 onMouseDown = wrap <<< inj (Proxy :: Proxy "onMouseDown")
 
 onTouchStart
-  :: forall nt r
-   . Newtype nt (Variant (onTouchStart :: Touch -> Effect Unit | r))
-  => (Touch -> Effect Unit)
+  :: forall onTouchStart nt r
+   . Newtype nt (Variant (onTouchStart :: onTouchStart | r))
+  => onTouchStart
   -> nt
 onTouchStart = wrap <<< inj (Proxy :: Proxy "onTouchStart")
