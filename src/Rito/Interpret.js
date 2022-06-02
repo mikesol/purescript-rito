@@ -129,6 +129,10 @@ export const makePerspectiveCamera_ = (a) => (state) => () => {
 	orbitControls.zoomSpeed = a.orbitControls.zoomSpeed;
 	state.orbitControls = orbitControls;
 };
+
+const ascSort = function (a, b) {
+	return a.distance - b.distance;
+}
 // COPY of generic make, needed because indexed mesh is a bit different
 export const makeInstancedMesh_ = (a) => (state) => () => {
 	// ugggghhhh
