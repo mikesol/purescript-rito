@@ -131,6 +131,51 @@ export const makePerspectiveCamera_ = (a) => (state) => () => {
 };
 // COPY of generic make, needed because indexed mesh is a bit different
 export const makeInstancedMesh_ = (a) => (state) => () => {
+	// ugggghhhh
+	class MyInstancedMesh extends state.THREE.InstancedMesh {
+		constructor(geometry, material, count) {
+			super(geometry, material, count);
+		}
+		raycastInstances(raycaster, instances, intersects) {
+			const matrixWorld = this.matrixWorld;
+			const raycastTimes =
+				instances !== undefined ? instances.length : this.count;
+
+			_mesh.geometry = this.geometry;
+			_mesh.material = this.material;
+
+			if (_mesh.material === undefined) return;
+
+			for (let i = 0; i < raycastTimes; i++) {
+				const instanceId = instances !== undefined ? instances[i] : i;
+				// calculate the world matrix for each instance
+
+				this.getMatrixAt(instanceId, _instanceLocalMatrix);
+
+				_instanceWorldMatrix.multiplyMatrices(
+					matrixWorld,
+					_instanceLocalMatrix
+				);
+
+				// the mesh represents this single instance
+
+				_mesh.matrixWorld = _instanceWorldMatrix;
+
+				_mesh.raycast(raycaster, _instanceIntersects);
+
+				// process the result of raycast
+
+				for (let i = 0, l = _instanceIntersects.length; i < l; i++) {
+					const intersect = _instanceIntersects[i];
+					intersect.instanceId = instanceId;
+					intersect.object = this;
+					intersects.push(intersect);
+				}
+
+				_instanceIntersects.length = 0;
+			}
+		}
+	}
 	const { id, scope, parent, geometry, material, count } = a;
 	const $scope = scope ? scope : GLOBAL_SCOPE;
 	if (!state.scopes[$scope]) {
@@ -141,7 +186,7 @@ export const makeInstancedMesh_ = (a) => (state) => () => {
 		listeners: {},
 		parent: parent,
 		scope: $scope,
-		main: new state.THREE.InstancedMesh(
+		main: new MyInstancedMesh(
 			state.units[geometry].main,
 			state.units[material].main,
 			count
@@ -202,6 +247,17 @@ const getAllTouches = (tl) => {
 	}
 	return o;
 };
+
+const intersectInstance = (raycaster, mesh, instances, intersects = []) => {
+	if (mesh.layers.test(raycaster.layers)) {
+		mesh.raycastInstances(raycaster, instances, intersects);
+	}
+
+	intersects.sort(ascSort);
+
+	return intersects;
+};
+
 export const makeWebGLRenderer_ = (a) => (state) => () => {
 	const { id, ...parameters } = a;
 	const canvas = parameters.canvas;
@@ -209,18 +265,6 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 	state.units[a.id] = { main: renderer };
 	renderer.setSize(canvas.width, canvas.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-	// it's a bit hackish
-	// no, not a bit, it's mega hackish
-	// but we hook up our listeners here
-	state.listeners = {};
-	state.listeners.click = {};
-	state.listeners.mousemove = {};
-	state.listeners.mouseup = {};
-	state.listeners.mousedown = {};
-	state.listeners.touchstart = {};
-	state.listeners.touchend = {};
-	state.listeners.touchmove = {};
-	state.listeners.touchcancel = {};
 	const raycaster = new state.THREE.Raycaster();
 	const camera = state.units[parameters.camera].main;
 
@@ -240,6 +284,28 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 						if (intersects.length > 0) {
 							v(e)();
 						}
+					});
+				});
+			}
+			/////////// instanced code
+			const instancedEntries = Object.entries(
+				state.listeners[eventName + "Instanced"]
+			);
+			if (instancedEntries.length > 0) {
+				const es =
+					eventName.indexOf("touch") !== -1 ? getAllTouches($e.touches) : [$e];
+				es.forEach((e) => {
+					const x = (e.clientX / window.innerWidth) * 2 - 1;
+					const y = -(e.clientY / window.innerHeight) * 2 + 1;
+					raycaster.setFromCamera({ x, y }, camera);
+					instancedEntries.forEach(([k, v]) => {
+						const u = state.units[k].main;
+						Object.entries(v).forEach(([kk, vv]) => {
+							const intersects = intersectInstance(raycaster, u, [kk]);
+							if (intersects.length > 0) {
+								vv(e)();
+							}
+						});
 					});
 				});
 			}
@@ -301,6 +367,78 @@ export const removeOnTouchMove_ = (a) => (state) => () => {
 };
 export const removeOnTouchCancel_ = (a) => (state) => () => {
 	delete state.listeners.touchcancel[a.id];
+};
+export const setIMOnClick_ = (a) => (state) => () => {
+	if (!state.listeners.clickInstance[a.id]) {
+		state.listeners.clickInstance[a.id] = {};
+	}
+	state.listeners.clickInstance[a.id][a.instanceId] = a.onClick;
+};
+export const setIMOnMouseDown_ = (a) => (state) => () => {
+	if (!state.listeners.mousedownInstance[a.id]) {
+		state.listeners.mousedownInstance[a.id] = {};
+	}
+	state.listeners.mousedownInstance[a.id][a.instanceId] = a.onMouseDown;
+};
+export const setIMOnMouseUp_ = (a) => (state) => () => {
+	if (!state.listeners.mouseupInstance[a.id]) {
+		state.listeners.mouseupInstance[a.id] = {};
+	}
+	state.listeners.mouseupInstance[a.id][a.instanceId] = a.onMouseUp;
+};
+export const setIMOnMouseMove_ = (a) => (state) => () => {
+	if (!state.listeners.mousemoveInstance[a.id]) {
+		state.listeners.mousemoveInstance[a.id] = {};
+	}
+	state.listeners.mousemoveInstance[a.id][a.instanceId] = a.onMouseMove;
+};
+export const setIMOnTouchStart_ = (a) => (state) => () => {
+	if (!state.listeners.touchstartInstance[a.id]) {
+		state.listeners.touchstartInstance[a.id] = {};
+	}
+	state.listeners.touchstartInstance[a.id][a.instanceId] = a.onTouchStart;
+};
+export const setIMOnTouchEnd_ = (a) => (state) => () => {
+	if (!state.listeners.touchendInstance[a.id]) {
+		state.listeners.touchendInstance[a.id] = {};
+	}
+	state.listeners.touchendInstance[a.id][a.instanceId] = a.onTouchEnd;
+};
+export const setIMOnTouchMove_ = (a) => (state) => () => {
+	if (!state.listeners.touchmoveInstance[a.id]) {
+		state.listeners.touchmoveInstance[a.id] = {};
+	}
+	state.listeners.touchmoveInstance[a.id][a.instanceId] = a.onTouchMove;
+};
+export const setIMOnTouchCancel_ = (a) => (state) => () => {
+	if (!state.listeners.touchcancelInstance[a.id]) {
+		state.listeners.touchcancelInstance[a.id] = {};
+	}
+	state.listeners.touchcancelInstance[a.id][a.instanceId] = a.onTouchCancel;
+};
+export const removeIMOnClick_ = (a) => (state) => () => {
+	delete state.listeners.clickInstance[a.id][a.instanceId];
+};
+export const removeIMOnMouseDown_ = (a) => (state) => () => {
+	delete state.listeners.mousedownInstance[a.id][a.instanceId];
+};
+export const removeIMOnMouseUp_ = (a) => (state) => () => {
+	delete state.listeners.mouseupInstance[a.id][a.instanceId];
+};
+export const removeIMOnMouseMove_ = (a) => (state) => () => {
+	delete state.listeners.mousemoveInstance[a.id][a.instanceId];
+};
+export const removeIMOnTouchStart_ = (a) => (state) => () => {
+	delete state.listeners.touchstartInstance[a.id][a.instanceId];
+};
+export const removeIMOnTouchEnd_ = (a) => (state) => () => {
+	delete state.listeners.touchendInstance[a.id][a.instanceId];
+};
+export const removeIMOnTouchMove_ = (a) => (state) => () => {
+	delete state.listeners.touchmoveInstance[a.id][a.instanceId];
+};
+export const removeIMOnTouchCancel_ = (a) => (state) => () => {
+	delete state.listeners.touchcancelInstance[a.id][a.instanceId];
 };
 // box
 export const setWidth_ = (a) => (state) => () => {
@@ -418,6 +556,16 @@ export const setInstancedMeshColor_ = (a) => (state) => () => {
 		u.setColorAt(i, c);
 	})();
 	u.instanceColor.needsUpdate = updated;
+};
+export const setSingleInstancedMeshMatrix4_ = (a) => (state) => () => {
+	const u = state.units[a.id].main;
+	u.setMatrix4At(a.instanceId, a.matrix4);
+	u.instanceColor.needsUpdate = true;
+};
+export const setSingleInstancedMeshColor_ = (a) => (state) => () => {
+	const u = state.units[a.id].main;
+	u.setColorAt(a.instanceId, a.color);
+	u.instanceColor.needsUpdate = true;
 };
 // mesh standard material
 export const setColor_ = (a) => (state) => () => {
@@ -634,6 +782,27 @@ export const makeFFIThreeSnapshot =
 			OrbitControls: orbitControls,
 			units: {},
 			scopes: {},
+			// it's a bit hackish
+			// no, not a bit, it's mega hackish
+			// but we hook up our listeners here
+			listeners: {
+				click: {},
+				mousemove: {},
+				mouseup: {},
+				mousedown: {},
+				touchstart: {},
+				touchend: {},
+				touchmove: {},
+				touchcancel: {},
+				clickInstanced: {},
+				mousemoveInstanced: {},
+				mouseupInstanced: {},
+				mousedownInstanced: {},
+				touchstartInstanced: {},
+				touchendInstanced: {},
+				touchmoveInstanced: {},
+				touchcancelInstanced: {},
+			},
 		};
 	};
 

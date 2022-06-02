@@ -171,6 +171,23 @@ foreign import removeOnTouchStart_ :: Core.RemoveOnTouchStart -> Payload
 foreign import removeOnTouchEnd_ :: Core.RemoveOnTouchEnd -> Payload
 foreign import removeOnTouchMove_ :: Core.RemoveOnTouchMove -> Payload
 foreign import removeOnTouchCancel_ :: Core.RemoveOnTouchCancel -> Payload
+-- (faux) IMlisteners
+foreign import setIMOnClick_ :: Core.SetIMOnClick -> Payload
+foreign import setIMOnMouseDown_ :: Core.SetIMOnMouseDown -> Payload
+foreign import setIMOnMouseUp_ :: Core.SetIMOnMouseUp -> Payload
+foreign import setIMOnMouseMove_ :: Core.SetIMOnMouseMove -> Payload
+foreign import setIMOnTouchStart_ :: Core.SetIMOnTouchStart -> Payload
+foreign import setIMOnTouchEnd_ :: Core.SetIMOnTouchEnd -> Payload
+foreign import setIMOnTouchMove_ :: Core.SetIMOnTouchMove -> Payload
+foreign import setIMOnTouchCancel_ :: Core.SetIMOnTouchCancel -> Payload
+foreign import removeIMOnClick_ :: Core.RemoveIMOnClick -> Payload
+foreign import removeIMOnMouseDown_ :: Core.RemoveIMOnMouseDown -> Payload
+foreign import removeIMOnMouseUp_ :: Core.RemoveIMOnMouseUp -> Payload
+foreign import removeIMOnMouseMove_ :: Core.RemoveIMOnMouseMove -> Payload
+foreign import removeIMOnTouchStart_ :: Core.RemoveIMOnTouchStart -> Payload
+foreign import removeIMOnTouchEnd_ :: Core.RemoveIMOnTouchEnd -> Payload
+foreign import removeIMOnTouchMove_ :: Core.RemoveIMOnTouchMove -> Payload
+foreign import removeIMOnTouchCancel_ :: Core.RemoveIMOnTouchCancel -> Payload
 -- mesh
 foreign import setRotationFromAxisAngle_
   :: Core.SetRotationFromAxisAngle -> Payload
@@ -336,6 +353,23 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , removeOnTouchEnd: removeOnTouchEnd_
   , removeOnTouchMove: removeOnTouchMove_
   , removeOnTouchCancel: removeOnTouchCancel_
+  -- (faux) im listeners
+  , setIMOnClick: setIMOnClick_
+  , setIMOnMouseDown: setIMOnMouseDown_
+  , setIMOnMouseUp: setIMOnMouseUp_
+  , setIMOnMouseMove: setIMOnMouseMove_
+  , setIMOnTouchStart: setIMOnTouchStart_
+  , setIMOnTouchEnd: setIMOnTouchEnd_
+  , setIMOnTouchMove: setIMOnTouchMove_
+  , setIMOnTouchCancel: setIMOnTouchCancel_
+  , removeIMOnClick: removeIMOnClick_
+  , removeIMOnMouseDown: removeIMOnMouseDown_
+  , removeIMOnMouseUp: removeIMOnMouseUp_
+  , removeIMOnMouseMove: removeIMOnMouseMove_
+  , removeIMOnTouchStart: removeIMOnTouchStart_
+  , removeIMOnTouchEnd: removeIMOnTouchEnd_
+  , removeIMOnTouchMove: removeIMOnTouchMove_
+  , removeIMOnTouchCancel: removeIMOnTouchCancel_
   -- box geometry
   , setWidth: setWidth_
   , setHeight: setHeight_

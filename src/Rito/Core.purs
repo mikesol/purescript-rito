@@ -56,7 +56,6 @@ type SimpleCtor payload =
   ThreeInterpret payload
   -> Event payload
 
-
 newtype Light (lock :: Type) payload = Light (Ctor payload)
 type ALight lock payload = Entity Void (Light lock payload) Effect lock
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
@@ -452,6 +451,39 @@ type RemoveOnTouchMove =
   { id :: String, onTouchMove :: Touch -> Effect Unit }
 type RemoveOnTouchCancel =
   { id :: String, onTouchCancel :: Touch -> Effect Unit }
+-- im listeners
+type SetIMOnClick =
+  { id :: String, instanceId :: Int, onClick :: MouseEvent -> Effect Unit }
+type SetIMOnMouseDown =
+  { id :: String, instanceId :: Int, onMouseDown :: MouseEvent -> Effect Unit }
+type SetIMOnMouseUp =
+  { id :: String, instanceId :: Int, onMouseUp :: MouseEvent -> Effect Unit }
+type SetIMOnMouseMove =
+  { id :: String, instanceId :: Int, onMouseMove :: MouseEvent -> Effect Unit }
+type SetIMOnTouchStart =
+  { id :: String, instanceId :: Int, onTouchStart :: Touch -> Effect Unit }
+type SetIMOnTouchEnd =
+  { id :: String, instanceId :: Int, onTouchEnd :: Touch -> Effect Unit }
+type SetIMOnTouchMove =
+  { id :: String, instanceId :: Int, onTouchMove :: Touch -> Effect Unit }
+type SetIMOnTouchCancel =
+  { id :: String, instanceId :: Int, onTouchCancel :: Touch -> Effect Unit }
+type RemoveIMOnClick =
+  { id :: String, instanceId :: Int, onClick :: MouseEvent -> Effect Unit }
+type RemoveIMOnMouseDown =
+  { id :: String, instanceId :: Int, onMouseDown :: MouseEvent -> Effect Unit }
+type RemoveIMOnMouseUp =
+  { id :: String, instanceId :: Int, onMouseUp :: MouseEvent -> Effect Unit }
+type RemoveIMOnMouseMove =
+  { id :: String, instanceId :: Int, onMouseMove :: MouseEvent -> Effect Unit }
+type RemoveIMOnTouchStart =
+  { id :: String, instanceId :: Int, onTouchStart :: Touch -> Effect Unit }
+type RemoveIMOnTouchEnd =
+  { id :: String, instanceId :: Int, onTouchEnd :: Touch -> Effect Unit }
+type RemoveIMOnTouchMove =
+  { id :: String, instanceId :: Int, onTouchMove :: Touch -> Effect Unit }
+type RemoveIMOnTouchCancel =
+  { id :: String, instanceId :: Int, onTouchCancel :: Touch -> Effect Unit }
 -- mesh
 type SetRotationFromAxisAngle =
   { id :: String, axis :: Vector3, angle :: Number }
