@@ -90,8 +90,10 @@ foreign import deleteFromCache_ :: Core.DeleteFromCache -> Payload
 foreign import setInstancedMeshMatrix4_
   :: Core.SetInstancedMeshMatrix4 -> Payload
 foreign import setInstancedMeshColor_ :: Core.SetInstancedMeshColor -> Payload
-foreign import setSingleInstancedMeshMatrix4_ :: Core.SetSingleInstancedMeshMatrix4 -> Payload
-foreign import setSingleInstancedMeshColor_ :: Core.SetSingleInstancedMeshColor -> Payload
+foreign import setSingleInstancedMeshMatrix4_
+  :: Core.SetSingleInstancedMeshMatrix4 -> Payload
+foreign import setSingleInstancedMeshColor_
+  :: Core.SetSingleInstancedMeshColor -> Payload
 --
 foreign import setWidth_ :: Core.SetWidth -> Payload
 foreign import setHeight_ :: Core.SetHeight -> Payload

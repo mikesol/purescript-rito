@@ -81,12 +81,12 @@ instance
     (convertOptionsWithDefaults PlaneOptions defaultPlane provided)
 
 type Plane' = Variant
-      ( width :: Number
-      , height :: Number
-      , widthSegments :: Int
-      , heightSegments :: Int
-      | C.BufferGeometry
-      )
+  ( width :: Number
+  , height :: Number
+  , widthSegments :: Int
+  , heightSegments :: Int
+  | C.BufferGeometry
+  )
 newtype Plane = Plane Plane'
 instance Newtype Plane Plane'
 
@@ -101,16 +101,17 @@ plane i' atts = C.Geometry go
   C.InitializePlane i = toInitializePlane i'
   go
     parent
-    di@( C.ThreeInterpret
-        { ids
-        , deleteFromCache
-        , makePlane
-        , setWidth
-        , setHeight
-        , setWidthSegments
-        , setHeightSegments
-        }
-    ) = makeEvent \k -> do
+    di@
+      ( C.ThreeInterpret
+          { ids
+          , deleteFromCache
+          , makePlane
+          , setWidth
+          , setHeight
+          , setWidthSegments
+          , setHeightSegments
+          }
+      ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
@@ -128,13 +129,16 @@ plane i' atts = C.Geometry go
         <|>
           ( map
               ( \(Plane e) -> match
-                  (union { width: setWidth <<< { id: me, width: _ }
-                  , height: setHeight <<< { id: me, height: _ }
-                  , widthSegments: setWidthSegments <<<
-                      { id: me, widthSegments: _ }
-                  , heightSegments: setHeightSegments <<<
-                      { id: me, heightSegments: _ }
-                  } (C.bufferGeometry me di))
+                  ( union
+                      { width: setWidth <<< { id: me, width: _ }
+                      , height: setHeight <<< { id: me, height: _ }
+                      , widthSegments: setWidthSegments <<<
+                          { id: me, widthSegments: _ }
+                      , heightSegments: setHeightSegments <<<
+                          { id: me, heightSegments: _ }
+                      }
+                      (C.bufferGeometry me di)
+                  )
                   e
               )
               atts

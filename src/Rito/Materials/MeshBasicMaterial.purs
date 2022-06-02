@@ -93,7 +93,6 @@ instance
     (Maybe Number) where
   convertOption _ _ = Just
 
-
 type MeshBasicMaterialOptional =
   ( color :: Maybe Color
   , map :: Maybe Texture
@@ -143,17 +142,17 @@ instance
     )
 
 type MeshBasicMaterial' = Variant
-      ( color :: Color
-      , map :: Texture
-      , lightMap :: Texture
-      , lightMapIntensity :: Number
-      , aoMap :: Texture
-      , aoMapIntensity :: Number
-      , alphaMap :: Texture
-      , envMap :: Texture
-      , wireframe :: Boolean
-      , wireframeLinewidth :: Number
-      )
+  ( color :: Color
+  , map :: Texture
+  , lightMap :: Texture
+  , lightMapIntensity :: Number
+  , aoMap :: Texture
+  , aoMapIntensity :: Number
+  , alphaMap :: Texture
+  , envMap :: Texture
+  , wireframe :: Boolean
+  , wireframeLinewidth :: Number
+  )
 
 newtype MeshBasicMaterial = MeshBasicMaterial MeshBasicMaterial'
 instance Newtype MeshBasicMaterial MeshBasicMaterial'

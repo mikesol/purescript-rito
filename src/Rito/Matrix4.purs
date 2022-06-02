@@ -65,7 +65,7 @@ foreign import lookAt_ :: Vector3 -> Vector3 -> Vector3 -> Matrix4 -> Matrix4
 foreign import makeRotationAxis_ :: Vector3 -> Number -> Matrix4 -> Matrix4
 foreign import makeRotationFromEuler_ :: Euler -> Matrix4 -> Matrix4
 foreign import makeRotationFromQuaternion_ :: Quaternion -> Matrix4 -> Matrix4
-foreign import makeRotationX_ :: Number -> Matrix4 ->Matrix4
+foreign import makeRotationX_ :: Number -> Matrix4 -> Matrix4
 foreign import makeRotationY_ :: Number -> Matrix4 -> Matrix4
 foreign import makeRotationZ_ :: Number -> Matrix4 -> Matrix4
 foreign import makeScale_ :: Matrix4 -> Number -> Number -> Number -> Matrix4

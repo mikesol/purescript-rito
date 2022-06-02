@@ -297,34 +297,34 @@ instance
     )
 
 type MeshStandardMaterial' = Variant
-      ( color :: Color
-      , roughness :: Number
-      , metalness :: Number
-      , map :: Texture
-      , lightMap :: Texture
-      , lightMapIntensity :: Number
-      , aoMap :: Texture
-      , aoMapIntensity :: Number
-      , emissive :: Color
-      , emissiveIntensity :: Number
-      , emissiveMap :: Texture
-      , bumpMap :: Texture
-      , bumpScale :: Number
-      , normalMap :: Texture
-      , normalMapType :: NormalMapType
-      , normalScale :: Vector2
-      , displacementMap :: Texture
-      , displacementScale :: Number
-      , displacementBias :: Number
-      , roughnessMap :: Texture
-      , metalnessMap :: Texture
-      , alphaMap :: Texture
-      , envMap :: Texture
-      , envMapIntensity :: Number
-      , wireframe :: Boolean
-      , wireframeLinewidth :: Number
-      , flatShading :: Boolean
-      )
+  ( color :: Color
+  , roughness :: Number
+  , metalness :: Number
+  , map :: Texture
+  , lightMap :: Texture
+  , lightMapIntensity :: Number
+  , aoMap :: Texture
+  , aoMapIntensity :: Number
+  , emissive :: Color
+  , emissiveIntensity :: Number
+  , emissiveMap :: Texture
+  , bumpMap :: Texture
+  , bumpScale :: Number
+  , normalMap :: Texture
+  , normalMapType :: NormalMapType
+  , normalScale :: Vector2
+  , displacementMap :: Texture
+  , displacementScale :: Number
+  , displacementBias :: Number
+  , roughnessMap :: Texture
+  , metalnessMap :: Texture
+  , alphaMap :: Texture
+  , envMap :: Texture
+  , envMapIntensity :: Number
+  , wireframe :: Boolean
+  , wireframeLinewidth :: Number
+  , flatShading :: Boolean
+  )
 
 newtype MeshStandardMaterial = MeshStandardMaterial MeshStandardMaterial'
 instance Newtype MeshStandardMaterial MeshStandardMaterial'

@@ -110,15 +110,15 @@ instance
     (convertOptionsWithDefaults SphereOptions defaultSphere provided)
 
 type Sphere' = Variant
-      ( radius :: Number
-      , widthSegments :: Int
-      , heightSegments :: Int
-      , phiStart :: Number
-      , phiLength :: Number
-      , thetaStart :: Number
-      , thetaLength :: Number
-      | C.BufferGeometry
-      )
+  ( radius :: Number
+  , widthSegments :: Int
+  , heightSegments :: Int
+  , phiStart :: Number
+  , phiLength :: Number
+  , thetaStart :: Number
+  , thetaLength :: Number
+  | C.BufferGeometry
+  )
 newtype Sphere = Sphere Sphere'
 instance Newtype Sphere Sphere'
 
@@ -133,19 +133,20 @@ sphere i' atts = C.Geometry go
   C.InitializeSphere i = toInitializeSphere i'
   go
     parent
-    di@( C.ThreeInterpret
-        { ids
-        , deleteFromCache
-        , makeSphere
-        , setRadius
-        , setWidthSegments
-        , setHeightSegments
-        , setPhiStart
-        , setPhiLength
-        , setThetaStart
-        , setThetaLength
-        }
-    ) = makeEvent \k -> do
+    di@
+      ( C.ThreeInterpret
+          { ids
+          , deleteFromCache
+          , makeSphere
+          , setRadius
+          , setWidthSegments
+          , setHeightSegments
+          , setPhiStart
+          , setPhiLength
+          , setThetaStart
+          , setThetaLength
+          }
+      ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
@@ -166,16 +167,20 @@ sphere i' atts = C.Geometry go
         <|>
           ( map
               ( \(Sphere e) -> match
-                  (union { radius: setRadius <<< { id: me, radius: _ }
-                  , widthSegments: setWidthSegments <<<
-                      { id: me, widthSegments: _ }
-                  , heightSegments: setHeightSegments <<<
-                      { id: me, heightSegments: _ }
-                  , phiStart: setPhiStart <<< { id: me, phiStart: _ }
-                  , phiLength: setPhiLength <<< { id: me, phiLength: _ }
-                  , thetaStart: setThetaStart <<< { id: me, thetaStart: _ }
-                  , thetaLength: setThetaLength <<< { id: me, thetaLength: _ }
-                  } (C.bufferGeometry me di))
+                  ( union
+                      { radius: setRadius <<< { id: me, radius: _ }
+                      , widthSegments: setWidthSegments <<<
+                          { id: me, widthSegments: _ }
+                      , heightSegments: setHeightSegments <<<
+                          { id: me, heightSegments: _ }
+                      , phiStart: setPhiStart <<< { id: me, phiStart: _ }
+                      , phiLength: setPhiLength <<< { id: me, phiLength: _ }
+                      , thetaStart: setThetaStart <<< { id: me, thetaStart: _ }
+                      , thetaLength: setThetaLength <<<
+                          { id: me, thetaLength: _ }
+                      }
+                      (C.bufferGeometry me di)
+                  )
                   e
               )
               atts

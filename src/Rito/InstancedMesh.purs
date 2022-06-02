@@ -63,8 +63,9 @@ instancedMesh'
   -> C.Material lock payload
   -> Event (InstancedMesh n)
   -> C.AMesh lock payload
-instancedMesh' _ (C.Geometry geo) (C.Material mat) props = Bolson.Element' $ C.Mesh
-  go
+instancedMesh' _ (C.Geometry geo) (C.Material mat) props = Bolson.Element' $
+  C.Mesh
+    go
   where
   go
     parent

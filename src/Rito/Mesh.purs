@@ -108,7 +108,9 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
             usu <- subscribe props \(Mesh msh) -> pusher =<<
               ( msh # match
                   ( union
-                      { onClick: \onClick -> withRemoval "click" (setOnClick { id: me, onClick }) (removeOnClick { id: me, onClick })
+                      { onClick: \onClick -> withRemoval "click"
+                          (setOnClick { id: me, onClick })
+                          (removeOnClick { id: me, onClick })
                       , onMouseDown: \onMouseDown -> withRemoval "mousedown"
                           ( setOnMouseDown
                               { id: me, onMouseDown }
@@ -151,7 +153,8 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
                           ( removeOnTouchMove
                               { id: me, onTouchMove }
                           )
-                      , onTouchCancel: \onTouchCancel -> withRemoval "touchcancel"
+                      , onTouchCancel: \onTouchCancel -> withRemoval
+                          "touchcancel"
                           ( setOnTouchCancel
                               { id: me, onTouchCancel }
                           )

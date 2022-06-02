@@ -25,7 +25,10 @@ instance Portable C.Scene
 instance Portable C.Sceneful
 instance Portable C.Camera
 
-unsafeCoerceClosure :: forall lock payload obj1 obj2. Entity Void (obj1 lock payload) Effect lock -> Entity Void (obj2 lock payload) Effect lock
+unsafeCoerceClosure
+  :: forall lock payload obj1 obj2
+   . Entity Void (obj1 lock payload) Effect lock
+  -> Entity Void (obj2 lock payload) Effect lock
 unsafeCoerceClosure = unsafeCoerce
 
 globalGeometryPortal1

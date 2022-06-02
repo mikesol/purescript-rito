@@ -81,12 +81,12 @@ instance
     (convertOptionsWithDefaults CapsuleOptions defaultCapsule provided)
 
 type Capsule' = Variant
-      ( radius :: Number
-      , length :: Number
-      , radialSegments :: Int
-      , capSegments :: Int
-      | C.BufferGeometry
-      )
+  ( radius :: Number
+  , length :: Number
+  , radialSegments :: Int
+  , capSegments :: Int
+  | C.BufferGeometry
+  )
 newtype Capsule = Capsule Capsule'
 instance Newtype Capsule Capsule'
 
@@ -101,16 +101,17 @@ capsule i' atts = C.Geometry go
   C.InitializeCapsule i = toInitializeCapsule i'
   go
     parent
-    di@( C.ThreeInterpret
-        { ids
-        , deleteFromCache
-        , makeCapsule
-        , setRadius
-        , setLength
-        , setRadialSegments
-        , setCapSegments
-        }
-    ) = makeEvent \k -> do
+    di@
+      ( C.ThreeInterpret
+          { ids
+          , deleteFromCache
+          , makeCapsule
+          , setRadius
+          , setLength
+          , setRadialSegments
+          , setCapSegments
+          }
+      ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
@@ -128,13 +129,16 @@ capsule i' atts = C.Geometry go
         <|>
           ( map
               ( \(Capsule e) -> match
-                  (union { radius: setRadius <<< { id: me, radius: _ }
-                  , length: setLength <<< { id: me, length: _ }
-                  , radialSegments: setRadialSegments <<<
-                      { id: me, radialSegments: _ }
-                  , capSegments: setCapSegments <<<
-                      { id: me, capSegments: _ }
-                  } (C.bufferGeometry me di))
+                  ( union
+                      { radius: setRadius <<< { id: me, radius: _ }
+                      , length: setLength <<< { id: me, length: _ }
+                      , radialSegments: setRadialSegments <<<
+                          { id: me, radialSegments: _ }
+                      , capSegments: setCapSegments <<<
+                          { id: me, capSegments: _ }
+                      }
+                      (C.bufferGeometry me di)
+                  )
                   e
               )
               atts
