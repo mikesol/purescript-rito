@@ -13,6 +13,7 @@ import Control.Plus (empty)
 import Data.Array (nub, uncons, (..))
 import Data.Foldable (oneOf, traverse_)
 import Data.Maybe (Maybe(..))
+import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import Effect (Effect)
 import Effect.Ref as Ref
@@ -39,6 +40,8 @@ newtype Instance = Instance
       , color :: Color
       )
   )
+
+derive instance Newtype Instance _
 
 newtype InstanceId = InstanceId { meshId :: String, instanceId :: Int }
 
