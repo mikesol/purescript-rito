@@ -369,76 +369,76 @@ export const removeOnTouchCancel_ = (a) => (state) => () => {
 	delete state.listeners.touchcancel[a.id];
 };
 export const setIMOnClick_ = (a) => (state) => () => {
-	if (!state.listeners.clickInstance[a.id]) {
-		state.listeners.clickInstance[a.id] = {};
+	if (!state.listeners.clickInstanced[a.id]) {
+		state.listeners.clickInstanced[a.id] = {};
 	}
-	state.listeners.clickInstance[a.id][a.instanceId] = a.onClick;
+	state.listeners.clickInstanced[a.id][a.instanceId] = a.onClick;
 };
 export const setIMOnMouseDown_ = (a) => (state) => () => {
-	if (!state.listeners.mousedownInstance[a.id]) {
-		state.listeners.mousedownInstance[a.id] = {};
+	if (!state.listeners.mousedownInstanced[a.id]) {
+		state.listeners.mousedownInstanced[a.id] = {};
 	}
-	state.listeners.mousedownInstance[a.id][a.instanceId] = a.onMouseDown;
+	state.listeners.mousedownInstanced[a.id][a.instanceId] = a.onMouseDown;
 };
 export const setIMOnMouseUp_ = (a) => (state) => () => {
-	if (!state.listeners.mouseupInstance[a.id]) {
-		state.listeners.mouseupInstance[a.id] = {};
+	if (!state.listeners.mouseupInstanced[a.id]) {
+		state.listeners.mouseupInstanced[a.id] = {};
 	}
-	state.listeners.mouseupInstance[a.id][a.instanceId] = a.onMouseUp;
+	state.listeners.mouseupInstanced[a.id][a.instanceId] = a.onMouseUp;
 };
 export const setIMOnMouseMove_ = (a) => (state) => () => {
-	if (!state.listeners.mousemoveInstance[a.id]) {
-		state.listeners.mousemoveInstance[a.id] = {};
+	if (!state.listeners.mousemoveInstanced[a.id]) {
+		state.listeners.mousemoveInstanced[a.id] = {};
 	}
-	state.listeners.mousemoveInstance[a.id][a.instanceId] = a.onMouseMove;
+	state.listeners.mousemoveInstanced[a.id][a.instanceId] = a.onMouseMove;
 };
 export const setIMOnTouchStart_ = (a) => (state) => () => {
-	if (!state.listeners.touchstartInstance[a.id]) {
-		state.listeners.touchstartInstance[a.id] = {};
+	if (!state.listeners.touchstartInstanced[a.id]) {
+		state.listeners.touchstartInstanced[a.id] = {};
 	}
-	state.listeners.touchstartInstance[a.id][a.instanceId] = a.onTouchStart;
+	state.listeners.touchstartInstanced[a.id][a.instanceId] = a.onTouchStart;
 };
 export const setIMOnTouchEnd_ = (a) => (state) => () => {
-	if (!state.listeners.touchendInstance[a.id]) {
-		state.listeners.touchendInstance[a.id] = {};
+	if (!state.listeners.touchendInstanced[a.id]) {
+		state.listeners.touchendInstanced[a.id] = {};
 	}
-	state.listeners.touchendInstance[a.id][a.instanceId] = a.onTouchEnd;
+	state.listeners.touchendInstanced[a.id][a.instanceId] = a.onTouchEnd;
 };
 export const setIMOnTouchMove_ = (a) => (state) => () => {
-	if (!state.listeners.touchmoveInstance[a.id]) {
-		state.listeners.touchmoveInstance[a.id] = {};
+	if (!state.listeners.touchmoveInstanced[a.id]) {
+		state.listeners.touchmoveInstanced[a.id] = {};
 	}
-	state.listeners.touchmoveInstance[a.id][a.instanceId] = a.onTouchMove;
+	state.listeners.touchmoveInstanced[a.id][a.instanceId] = a.onTouchMove;
 };
 export const setIMOnTouchCancel_ = (a) => (state) => () => {
-	if (!state.listeners.touchcancelInstance[a.id]) {
-		state.listeners.touchcancelInstance[a.id] = {};
+	if (!state.listeners.touchcancelInstanced[a.id]) {
+		state.listeners.touchcancelInstanced[a.id] = {};
 	}
-	state.listeners.touchcancelInstance[a.id][a.instanceId] = a.onTouchCancel;
+	state.listeners.touchcancelInstanced[a.id][a.instanceId] = a.onTouchCancel;
 };
 export const removeIMOnClick_ = (a) => (state) => () => {
-	delete state.listeners.clickInstance[a.id][a.instanceId];
+	delete state.listeners.clickInstanced[a.id][a.instanceId];
 };
 export const removeIMOnMouseDown_ = (a) => (state) => () => {
-	delete state.listeners.mousedownInstance[a.id][a.instanceId];
+	delete state.listeners.mousedownInstanced[a.id][a.instanceId];
 };
 export const removeIMOnMouseUp_ = (a) => (state) => () => {
-	delete state.listeners.mouseupInstance[a.id][a.instanceId];
+	delete state.listeners.mouseupInstanced[a.id][a.instanceId];
 };
 export const removeIMOnMouseMove_ = (a) => (state) => () => {
-	delete state.listeners.mousemoveInstance[a.id][a.instanceId];
+	delete state.listeners.mousemoveInstanced[a.id][a.instanceId];
 };
 export const removeIMOnTouchStart_ = (a) => (state) => () => {
-	delete state.listeners.touchstartInstance[a.id][a.instanceId];
+	delete state.listeners.touchstartInstanced[a.id][a.instanceId];
 };
 export const removeIMOnTouchEnd_ = (a) => (state) => () => {
-	delete state.listeners.touchendInstance[a.id][a.instanceId];
+	delete state.listeners.touchendInstanced[a.id][a.instanceId];
 };
 export const removeIMOnTouchMove_ = (a) => (state) => () => {
-	delete state.listeners.touchmoveInstance[a.id][a.instanceId];
+	delete state.listeners.touchmoveInstanced[a.id][a.instanceId];
 };
 export const removeIMOnTouchCancel_ = (a) => (state) => () => {
-	delete state.listeners.touchcancelInstance[a.id][a.instanceId];
+	delete state.listeners.touchcancelInstanced[a.id][a.instanceId];
 };
 // box
 export const setWidth_ = (a) => (state) => () => {
