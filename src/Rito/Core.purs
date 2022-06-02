@@ -50,14 +50,19 @@ type Ctor payload =
   , scope :: Scope
   , raiseId :: String -> Effect Unit
   }
-  -> ThreeInterpret payload
+  -> SimpleCtor payload
+
+type SimpleCtor payload =
+  ThreeInterpret payload
   -> Event payload
+
 
 newtype Light (lock :: Type) payload = Light (Ctor payload)
 type ALight lock payload = Entity Void (Light lock payload) Effect lock
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
 newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
+newtype Instance (lock :: Type) payload = Instance (SimpleCtor payload)
 type AMesh lock payload = Entity Void (Mesh lock payload) Effect lock
 newtype Group (lock :: Type) payload = Group (Ctor payload)
 type AGroup lock payload = Entity Void (Group lock payload) Effect lock
@@ -390,6 +395,10 @@ type SetInstancedMeshMatrix4 =
   { id :: String, setMatrix4 :: (Int -> Matrix4 -> Effect Unit) -> Effect Unit }
 type SetInstancedMeshColor =
   { id :: String, setColor :: (Int -> Color -> Effect Unit) -> Effect Unit }
+type SetSingleInstancedMeshMatrix4 =
+  { id :: String, instanceId :: Int, matrix4 :: Matrix4 }
+type SetSingleInstancedMeshColor =
+  { id :: String, instanceId :: Int, color :: Color }
 type SetColor = { id :: String, color :: Color }
 type SetRoughness = { id :: String, roughness :: Number }
 type SetMetalness = { id :: String, metalness :: Number }
@@ -786,6 +795,8 @@ newtype ThreeInterpret payload = ThreeInterpret
   -- InstancedMesh
   , setInstancedMeshMatrix4 :: SetInstancedMeshMatrix4 -> payload
   , setInstancedMeshColor :: SetInstancedMeshColor -> payload
+  , setSingleInstancedMeshMatrix4 :: SetSingleInstancedMeshMatrix4 -> payload
+  , setSingleInstancedMeshColor :: SetSingleInstancedMeshColor -> payload
   -- MeshStandardMaterial
   , setColor :: SetColor -> payload
   , setRoughness :: SetRoughness -> payload
