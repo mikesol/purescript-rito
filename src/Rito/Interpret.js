@@ -132,6 +132,7 @@ export const makePerspectiveCamera_ = (a) => (state) => () => {
 // COPY of generic make, needed because indexed mesh is a bit different
 export const makeInstancedMesh_ = (a) => (state) => () => {
 	// ugggghhhh
+	const _mesh = /*@__PURE__*/ new state.THREE.Mesh();
 	class MyInstancedMesh extends state.THREE.InstancedMesh {
 		constructor(geometry, material, count) {
 			super(geometry, material, count);
