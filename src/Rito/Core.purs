@@ -5,6 +5,7 @@ import Prelude
 import Bolson.Core (Entity, Scope)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
+import Deku.Core (ANut)
 import Effect (Effect)
 import FRP.Event (Event)
 import Record (union)
@@ -24,6 +25,7 @@ import Rito.Undefinable (Undefinable)
 import Rito.Vector2 (Vector2)
 import Rito.Vector3 (Vector3)
 import Unsafe.Coerce (unsafeCoerce)
+import Web.DOM as Web.DOM
 import Web.HTML (HTMLCanvasElement)
 import Web.TouchEvent (Touch)
 import Web.UIEvent.MouseEvent (MouseEvent)
@@ -40,11 +42,6 @@ class Groupable ctor where
      . Entity Void (ctor lock payload) Effect lock
     -> Entity Void (Groupful lock payload) Effect lock
 
-newtype Renderer (lock :: Type) payload = Renderer
-  ( ThreeInterpret payload
-    -> Event payload
-  )
-
 type Ctor payload =
   { parent :: Maybe String
   , scope :: Scope
@@ -56,8 +53,12 @@ type SimpleCtor payload =
   ThreeInterpret payload
   -> Event payload
 
+newtype Renderer (lock :: Type) payload = Renderer (Ctor payload)
+type ARenderer lock payload = Entity Void (Renderer lock payload) Effect lock
 newtype Light (lock :: Type) payload = Light (Ctor payload)
 type ALight lock payload = Entity Void (Light lock payload) Effect lock
+newtype CSS2DObject (lock :: Type) payload = CSS2DObject (Ctor payload)
+type ACSS2DObject lock payload = Entity Void (CSS2DObject lock payload) Effect lock
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
 newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
@@ -66,15 +67,18 @@ type AMesh lock payload = Entity Void (Mesh lock payload) Effect lock
 newtype Group (lock :: Type) payload = Group (Ctor payload)
 type AGroup lock payload = Entity Void (Group lock payload) Effect lock
 newtype Scene (lock :: Type) payload = Scene (Ctor payload)
-type AScene lock payload = Entity Void (Scene lock payload) Effect lock
+-- type AScene lock payload = Entity Void (Scene lock payload) Effect lock
 newtype Sceneful (lock :: Type) payload = Sceneful (Ctor payload)
 type ASceneful lock payload = Entity Void (Sceneful lock payload) Effect lock
 newtype Groupful (lock :: Type) payload = Groupful (Ctor payload)
 type AGroupful lock payload = Entity Void (Groupful lock payload) Effect lock
 newtype Camera (lock :: Type) payload = Camera (Ctor payload)
-type ACamera lock payload = Entity Void (Camera lock payload) Effect lock
+-- type ACamera lock payload = Entity Void (Camera lock payload) Effect lock
 
 instance Sceneable Light where
+  toScene = unsafeCoerce
+
+instance Sceneable CSS2DObject where
   toScene = unsafeCoerce
 
 instance Sceneable Mesh where
@@ -129,6 +133,14 @@ newtype InitializeWebGLRenderer = InitializeWebGLRenderer
       WPP.WebGLRenderingPowerPreference
   }
 
+type CSS2DRender = { id :: String, scene :: String, camera :: String }
+
+type MakeCSS2DRenderer =
+  { id :: String
+  , camera :: String
+  , canvas :: HTMLCanvasElement
+  }
+
 type MakeScene f s =
   { id :: String
   , scope :: s
@@ -168,6 +180,18 @@ type InitializeSphere' =
   , thetaStart :: Number
   , thetaLength :: Number
   )
+-- css
+type MakeCSS2DObject f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | InitializeCSS2DObject' Web.DOM.Element
+  }
+type InitializeCSS2DObject' (nut :: Type) =
+  ( nut :: nut
+  )
+newtype InitializeCSS2DObject = InitializeCSS2DObject { | InitializeCSS2DObject' ANut }
+-- light
 type MakePointLight f s =
   { id :: String
   , scope :: s
@@ -553,6 +577,16 @@ type ConnectGeometry =
   , parent :: String
   , scope :: Scope
   }
+type ConnectScene =
+  { id :: String
+  , parent :: String
+  , scope :: Scope
+  }
+type ConnectCamera =
+  { id :: String
+  , parent :: String
+  , scope :: Scope
+  }
 type ConnectMaterial =
   { id :: String
   , parent :: String
@@ -759,10 +793,11 @@ object3D
 
 newtype ThreeInterpret payload = ThreeInterpret
   { ids :: Effect String
-  --
   , webGLRender :: WebGLRender -> payload
+  , css2DRender :: CSS2DRender -> payload
   --
   , makeWebGLRenderer :: MakeWebGLRenderer -> payload
+  , makeCSS2DRenderer :: MakeCSS2DRenderer -> payload
   , makeGroup :: MakeGroup Maybe Scope -> payload
   , makeScene :: MakeScene Maybe Scope -> payload
   , makeMesh :: MakeMesh Maybe Scope -> payload
@@ -778,6 +813,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeMeshBasicMaterial :: MakeMeshBasicMaterial Maybe Scope -> payload
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
+  , makeCSS2DObject :: MakeCSS2DObject Maybe Scope -> payload
   -- (faux) Listeners
   , setOnClick :: SetOnClick -> payload
   , setOnMouseDown :: SetOnMouseDown -> payload
@@ -914,6 +950,8 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setSize :: SetSize -> payload
   -- connectors
   , connectMesh :: ConnectMesh -> payload
+  , connectScene :: ConnectScene -> payload
+  , connectCamera :: ConnectCamera -> payload
   , connectGeometry :: ConnectGeometry -> payload
   , connectMaterial :: ConnectMaterial -> payload
   , connectToScene :: ConnectToScene -> payload

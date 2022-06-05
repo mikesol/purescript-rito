@@ -3,6 +3,8 @@ export const orbitControls = () =>
 	import("three/examples/jsm/controls/OrbitControls.js").then(
 		(r) => r.OrbitControls
 	);
+export const css2DRenderer = () =>
+	import("three/examples/jsm/renderers/CSS2DRenderer.js");
 
 const GLOBAL_SCOPE = "@global@";
 
@@ -17,7 +19,8 @@ const genericMake_ = (ctor) => (conn) => (a) => (state) => () => {
 		listeners: {},
 		parent: parent,
 		scope: $scope,
-		main: ctor(state.THREE, rest),
+		// uggggh
+		main: ctor(state.THREE, rest, state.CSS2DObject),
 	};
 	if (parent === undefined) {
 		return;
@@ -43,6 +46,21 @@ export const connectMesh_ = (a) => (state) => () =>
 
 export const connectGeometry_ = (a) => (state) => () => {
 	state.units[a.parent].main.geometry = state.units[a.id].main;
+};
+
+export const connectScene_ = (a) => (state) => () => {
+	// for now this is a no op
+	// in the current setup, scenes are parent-less and not
+	// intrinsicaally connected or disconnected to anything
+	// in the future, we will want to change this so that a renderer
+	// can render a revolving scene
+};
+export const connectCamera_ = (a) => (state) => () => {
+	// for now this is a no op
+	// in the current setup, cameras are parent-less and not
+	// intrinsicaally connected or disconnected to anything
+	// in the future, we will want to change this so that a renderer
+	// can render a revolving camera
 };
 
 export const connectMaterial_ = (a) => (state) => () => {
@@ -132,7 +150,7 @@ export const makePerspectiveCamera_ = (a) => (state) => () => {
 
 const ascSort = function (a, b) {
 	return a.distance - b.distance;
-}
+};
 // COPY of generic make, needed because indexed mesh is a bit different
 export const makeInstancedMesh_ = (a) => (state) => () => {
 	// ugggghhhh
@@ -209,6 +227,11 @@ export const makeInstancedMesh_ = (a) => (state) => () => {
 export const makeMesh_ = genericMake_((THREE) => new THREE.Mesh())((x, y) => {
 	y.main.add(x.main);
 });
+export const makeCSS2DObject_ = genericMake_(
+	(_, { nut }, CSS2DObject) => new CSS2DObject(nut)
+)((x, y) => {
+	y.main.add(x.main);
+});
 export const makeAmbientLight_ = genericMake_((THREE, { color, intensity }) => {
 	return new THREE.AmbientLight(color, intensity);
 })((x, y) => {
@@ -243,6 +266,13 @@ export const makeGroup_ = genericMake_((THREE) => new THREE.Group())((x, y) => {
 	y.main.add(x.main);
 });
 export const webGLRender_ = (a) => (state) => () => {
+	state.orbitControls.update();
+	state.units[a.id].main.render(
+		state.units[a.scene].main,
+		state.units[a.camera].main
+	);
+};
+export const css2DRender_ = (a) => (state) => () => {
 	state.orbitControls.update();
 	state.units[a.id].main.render(
 		state.units[a.scene].main,
@@ -328,6 +358,21 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 	makeListener("touchend");
 	makeListener("touchmove");
 	makeListener("touchcancel");
+};
+export const makeCSS2DRenderer_ = (a) => (state) => () => {
+	const { id, ...parameters } = a;
+	const canvas = parameters.canvas;
+	const renderer = new state.CSS2DRenderer(parameters);
+	renderer.setSize(canvas.width, canvas.height);
+	renderer.domElement.style.position = "absolute";
+	renderer.domElement.style.pointerEvents = "none";
+	// todo: this isn't exactly right... we want this at the same position
+	// as the canvas. it only works if the canvas is full screen, otherwise it will
+	// be off.
+	// fix later
+	renderer.domElement.style.top = "0px";
+	document.body.appendChild(renderer.domElement);
+	state.units[a.id] = { main: renderer };
 };
 export const setOnClick_ = (a) => (state) => () => {
 	state.listeners.click[a.id] = a.onClick;
@@ -784,11 +829,13 @@ export const setViewOffset_ =
 
 //
 export const makeFFIThreeSnapshot =
-	({ three, orbitControls }) =>
+	({ three, orbitControls, css2DRenderer, css2DObject }) =>
 	() => {
 		return {
 			THREE: three,
 			OrbitControls: orbitControls,
+			CSS2DRenderer: css2DRenderer,
+			CSS2DObject: css2DObject,
 			units: {},
 			scopes: {},
 			// it's a bit hackish
