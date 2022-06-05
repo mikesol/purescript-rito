@@ -2,28 +2,33 @@ module Rito.Run where
 
 import Prelude
 
+import Bolson.Control (flatten)
+import Bolson.Core (Scope(..))
+import Bolson.Core as Bolson
+import Data.Maybe (Maybe(..))
+import Data.Newtype (unwrap)
 import Effect (Effect)
-import FRP.Event (Event, keepLatest, subscribe)
+import FRP.Event (subscribe)
 import Rito.Core as C
 import Rito.Interpret (FFIThreeSnapshot, effectfulThreeInterpret, makeFFIThreeSnapshot)
 import Rito.THREE as THREE
 
 run
   :: THREE.ThreeStuff
-  -> (forall lock. (C.Renderer lock (FFIThreeSnapshot -> Effect Unit)))
+  -> (forall lock. (C.ARenderer lock (FFIThreeSnapshot -> Effect Unit)))
   -> Effect (Effect Unit)
-run threeStuff (C.Renderer s) = do
-  ffi <- makeFFIThreeSnapshot threeStuff
-  u <- subscribe (s effectfulThreeInterpret) (_ $ ffi)
-  pure u
-
-runE
-  :: THREE.ThreeStuff
-  -> (forall lock. Event (C.Renderer lock (FFIThreeSnapshot -> Effect Unit)))
-  -> Effect (Effect Unit)
-runE threeStuff s = do
+run threeStuff s = do
   ffi <- makeFFIThreeSnapshot threeStuff
   u <- subscribe
-    (keepLatest (map (\(C.Renderer i) -> i effectfulThreeInterpret) s))
+    ( flatten
+        { doLogic: absurd
+        , ids: unwrap >>> _.ids
+        , disconnectElement: unwrap >>> _.disconnect
+        , toElt: \(C.Renderer obj) -> Bolson.Element obj
+        }
+        { parent: Nothing, scope: Global, raiseId: pure mempty }
+        effectfulThreeInterpret
+        s
+    )
     (_ $ ffi)
   pure u

@@ -4,6 +4,7 @@ module Rito.Interpret
   , makeFFIThreeSnapshot
   , threeAff
   , orbitControlsAff
+  , css2DRendererAff
   ) where
 
 import Prelude
@@ -35,6 +36,7 @@ import Rito.Undefinable (Undefinable, m2u)
 import Rito.Vector2 (Vector2)
 import Rito.Vector3 (Vector3)
 import Type.Proxy (Proxy(..))
+import Web.DOM as Web.DOM
 import Web.HTML (HTMLCanvasElement)
 
 type Payload = FFIThreeSnapshot -> Effect Unit
@@ -48,14 +50,29 @@ threeAff = toAffE three
 foreign import orbitControls :: Effect (Promise THREE.OrbitControls)
 orbitControlsAff :: Aff THREE.OrbitControls
 orbitControlsAff = toAffE orbitControls
+type CSS2DRendererModuleCaps =
+  { "CSS2DRenderer" :: THREE.CSS2DRenderer
+  , "CSS2DObject" :: THREE.CSS2DObject
+  }
+type CSS2DRendererModule =
+  { css2DRenderer :: THREE.CSS2DRenderer
+  , css2DObject :: THREE.CSS2DObject
+  }
+foreign import css2DRenderer :: Effect (Promise CSS2DRendererModuleCaps)
+css2DRendererAff :: Aff CSS2DRendererModule
+css2DRendererAff = toAffE css2DRenderer <#>
+  \{ "CSS2DRenderer": css2DRenderer, "CSS2DObject": css2DObject } ->
+    { css2DRenderer, css2DObject }
 foreign import makeFFIThreeSnapshot
   :: THREE.ThreeStuff
   -> Effect FFIThreeSnapshot
 
 --
 foreign import webGLRender_ :: Core.WebGLRender -> Payload
+foreign import css2DRender_ :: Core.CSS2DRender -> Payload
 --
 foreign import makeWebGLRenderer_ :: Core.MakeWebGLRenderer' -> Payload
+foreign import makeCSS2DRenderer_ :: Core.MakeCSS2DRenderer -> Payload
 foreign import makePointLight_
   :: Core.MakePointLight Undefinable (Undefinable String) -> Payload
 foreign import makeAmbientLight_
@@ -84,6 +101,8 @@ foreign import makeMeshStandardMaterial_
   :: Core.MakeMeshStandardMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeMeshBasicMaterial_
   :: Core.MakeMeshBasicMaterial' Undefinable (Undefinable String) -> Payload
+foreign import makeCSS2DObject_
+  :: Core.MakeCSS2DObject Undefinable (Undefinable String) -> Payload
 --
 foreign import deleteFromCache_ :: Core.DeleteFromCache -> Payload
 --
@@ -229,6 +248,8 @@ foreign import setViewOffset_ :: Core.SetViewOffset -> Payload
 --
 foreign import connectToScene_ :: Core.ConnectToScene -> Payload
 foreign import connectMesh_ :: Core.ConnectMesh -> Payload
+foreign import connectScene_ :: Core.ConnectScene -> Payload
+foreign import connectCamera_ :: Core.ConnectCamera -> Payload
 foreign import connectGeometry_ :: Core.ConnectGeometry -> Payload
 foreign import connectMaterial_ :: Core.ConnectMaterial -> Payload
 foreign import disconnect_ :: Core.Disconnect -> Payload
@@ -237,6 +258,9 @@ class FFIMe i o | i -> o where
   ffiMe :: i -> o
 
 instance FFIMe Int Int where
+  ffiMe = identity
+
+instance FFIMe Web.DOM.Element Web.DOM.Element where
   ffiMe = identity
 
 instance FFIMe OrbitControls OrbitControls where
@@ -321,8 +345,10 @@ effectfulThreeInterpret = Core.ThreeInterpret
   { ids: map show R.random
   -- render
   , webGLRender: webGLRender_
+  , css2DRender: css2DRender_
   -- makers
   , makeWebGLRenderer: lcmap ffiize makeWebGLRenderer_
+  , makeCSS2DRenderer: lcmap ffiize makeCSS2DRenderer_
   , makeScene: lcmap ffiize makeScene_
   , makeGroup: lcmap ffiize makeGroup_
   , makeMesh: lcmap ffiize makeMesh_
@@ -338,6 +364,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makePerspectiveCamera: lcmap ffiize makePerspectiveCamera_
   , makeMeshBasicMaterial: lcmap ffiize makeMeshBasicMaterial_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
+  , makeCSS2DObject: lcmap ffiize makeCSS2DObject_
   -- (faux) listeners
   , setOnClick: setOnClick_
   , setOnMouseDown: setOnMouseDown_
@@ -475,6 +502,8 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setSize: setSize_
   -- connectors
   , connectMesh: connectMesh_
+  , connectScene: connectScene_
+  , connectCamera: connectCamera_
   , connectGeometry: connectGeometry_
   , connectMaterial: connectMaterial_
   , connectToScene: connectToScene_

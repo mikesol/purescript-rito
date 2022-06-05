@@ -2,6 +2,7 @@ module Main where
 
 import Prelude
 
+import Bolson.Core (Element(..), fixed)
 import Control.Alt ((<|>))
 import Control.Parallel (parTraverse)
 import Control.Plus (empty)
@@ -25,7 +26,8 @@ import Data.Traversable (traverse)
 import Data.Tuple.Nested (type (/\), (/\))
 import Data.UInt (toNumber)
 import Deku.Attribute (attr, cb, (:=))
-import Deku.Control (text)
+import Deku.Control (text, text_)
+import Deku.Core (ANut(..))
 import Deku.DOM as D
 import Deku.Toplevel (runInBody1)
 import Effect (Effect)
@@ -41,17 +43,20 @@ import FRP.Event.Time (withTime)
 import FRP.Event.VBus (V, vbus)
 import Foreign.Object (fromHomogeneous, values)
 import Random.LCG (mkSeed)
+import Record (union)
+import Rito.CSS.CSS2DObject (css2DObject)
 import Rito.Cameras.PerspectiveCamera (defaultOrbitControls, perspectiveCamera)
 import Rito.Color (RGB(..), color)
-import Rito.Core (OrbitControls(..), toScene)
+import Rito.Core (OrbitControls(..), toScene, Scene(..), Renderer(..))
 import Rito.Geometries.Sphere (sphere)
 import Rito.InstancedMesh (instancedMesh, setter)
-import Rito.Interpret (orbitControlsAff, threeAff)
+import Rito.Interpret (css2DRendererAff, orbitControlsAff, threeAff)
 import Rito.Lights.PointLight (pointLight)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Matrix4 (ctor, scale, setPosition)
-import Rito.Portal (globalGeometryPortal1)
+import Rito.Portal (globalCameraPortal1, globalGeometryPortal1, globalScenePortal, globalScenePortal1)
 import Rito.Properties (positionX, positionY, positionZ, render, setMatrixAt, size)
+import Rito.Renderers.CSS2D (css2DRenderer)
 import Rito.Renderers.WebGL (webGLRenderer)
 import Rito.Run as Rito.Run
 import Rito.Scene (scene)
@@ -150,82 +155,92 @@ runThree
   -> Effect Unit
 runThree ts@{ three } canvas iw ih e = do
   _ <- Rito.Run.run ts
-    ( webGLRenderer
-        ( globalGeometryPortal1
-            ( ( sphere { widthSegments: 32, heightSegments: 32 }
-                  empty
-              )
-            )
-            \mySphere -> scene empty
-              [ toScene $ pointLight { color: color three $ RGB 1.0 1.0 1.0 }
-                  ( oneOfMap bang
-                      [ positionX 1.0
-                      , positionY (-0.5)
-                      , positionZ 1.0
-                      ]
-                  )
-              , toScene $ instancedMesh
-                  mySphere
-                  ( meshStandardMaterial
-                      { color: color three $ RGB 1.0 1.0 1.0
-                      , metalness: 1.0
+    ( globalGeometryPortal1
+        ( ( sphere { widthSegments: 32, heightSegments: 32 }
+              empty
+          )
+        )
+        \mySphere -> globalScenePortal1
+          ( ( scene empty
+                [ toScene
+                    $ css2DObject
+                      { nut: ANut
+                          ( D.span
+                              (bang (D.Class := "text-white font-bold text-xl"))
+                              [ text_ "Hello world" ]
+                          )
                       }
                       empty
-                  )
-                  ( ( over
-                        (prop (Proxy :: Proxy "time"))
-                        ( (_ / 1000.0)
-                            <<< unwrap
-                            <<< unInstant
-                        ) <$> withTime (canvas <|> bang [])
-                        <#>
-                          \{ time
-                           , value: a
-                           } -> do
-                            let
-                              f i = do
-                                let tni = Int.toNumber i
-                                let tni40 = tni / 40.0
-                                fromMaybe ({ x: 0.0, y: 0.0 } /\ 0.0)
-                                  (a !! i) # \({ x, y } /\ n) -> do
-                                  scale
-                                    ( vector3 three
-                                        { x: (n * 0.1)
-                                        , y: (n * 0.1)
-                                        , z: (n * 0.1)
-                                        }
-                                    )
-                                    ( setPosition
-                                        ( vector3 three
-                                            { x:
-                                                sin
-                                                  ( 0.2 * tni40 * time *
-                                                      twoPi
+                , toScene
+                    $ pointLight { color: color three $ RGB 1.0 1.0 1.0 }
+                      ( oneOfMap bang
+                          [ positionX 1.0
+                          , positionY (-0.5)
+                          , positionZ 1.0
+                          ]
+                      )
+                , toScene $ instancedMesh
+                    mySphere
+                    ( meshStandardMaterial
+                        { color: color three $ RGB 1.0 1.0 1.0
+                        , metalness: 1.0
+                        }
+                        empty
+                    )
+                    ( ( over
+                          (prop (Proxy :: Proxy "time"))
+                          ( (_ / 1000.0)
+                              <<< unwrap
+                              <<< unInstant
+                          ) <$> withTime (canvas <|> bang [])
+                          <#>
+                            \{ time
+                             , value: a
+                             } -> do
+                              let
+                                f i = do
+                                  let tni = Int.toNumber i
+                                  let tni40 = tni / 40.0
+                                  fromMaybe ({ x: 0.0, y: 0.0 } /\ 0.0)
+                                    (a !! i) # \({ x, y } /\ n) -> do
+                                    scale
+                                      ( vector3 three
+                                          { x: (n * 0.1)
+                                          , y: (n * 0.1)
+                                          , z: (n * 0.1)
+                                          }
+                                      )
+                                      ( setPosition
+                                          ( vector3 three
+                                              { x:
+                                                  sin
+                                                    ( 0.2 * tni40 * time *
+                                                        twoPi
+                                                    )
+                                                    + x * 2.0
+                                                    - 1.0
+                                              , y:
+                                                  cos
+                                                    ( 0.2 * tni40 * time *
+                                                        twoPi
+                                                    )
+                                                    + y * 2.0
+                                                    - 1.0
+                                              , z:
+                                                  ( if i `mod` 2 == 0 then cos
+                                                    else sin
                                                   )
-                                                  + x * 2.0
-                                                  - 1.0
-                                            , y:
-                                                cos
-                                                  ( 0.2 * tni40 * time *
-                                                      twoPi
-                                                  )
-                                                  + y * 2.0
-                                                  - 1.0
-                                            , z:
-                                                ( if i `mod` 2 == 0 then cos
-                                                  else sin
-                                                )
-                                                  ( 0.2 * tni40 * time *
-                                                      twoPi
-                                                  )
-                                                  * 1.0
-                                            }
-                                        )
-                                        (ctor three)
-                                    )
-                            if time % 1.0 < 0.25
-                            then setMatrixAt $ (setter :: FV.Vect 40 _ -> _) $ mapWithIndex (#) $ pure f
-                            else setMatrixAt $ setter $ mapWithIndex (#)
+                                                    ( 0.2 * tni40 * time *
+                                                        twoPi
+                                                    )
+                                                    * 1.0
+                                              }
+                                          )
+                                          (ctor three)
+                                      )
+                              if time % 1.0 < 0.25
+                              then setMatrixAt $ (setter :: FV.Vect 40 _ -> _) $ mapWithIndex (#) $ pure f
+                              else setMatrixAt $ setter $ mapWithIndex (#)
                                 $ FVR.set (Proxy :: _ 0) f
                                 $ FVR.set (Proxy :: _ 2) f
                                 $ FVR.set (Proxy :: _ 3) f
@@ -238,29 +253,52 @@ runThree ts@{ three } canvas iw ih e = do
                                 $ FVR.set (Proxy :: _ 28) f
                                 $ FVR.set (Proxy :: _ 36) f
                                 $ FVR.sparse
+                      )
                     )
-                  )
-              ]
-        )
-        ( perspectiveCamera
-            { fov: 75.0
-            , aspect: iw / ih
-            , near: 0.1
-            , far: 100.0
-            , orbitControls: OrbitControls
-                ((defaultOrbitControls e) { enabled = true })
-            }
-            ( oneOf
-                [ bang (positionX 0.0)
-                , bang (positionY 0.0)
-                , bang (positionZ 2.0)
                 ]
             )
-        )
-        { canvas: e }
-        ( bang (size { width: iw, height: ih }) <|> bang render <|>
-            (canvas $> render)
-        )
+          )
+          \myScene -> globalCameraPortal1
+            ( ( perspectiveCamera
+                  { fov: 75.0
+                  , aspect: iw / ih
+                  , near: 0.1
+                  , far: 100.0
+                  , orbitControls: OrbitControls
+                      ((defaultOrbitControls e) { enabled = true })
+                  }
+                  ( oneOf
+                      [ bang (positionX 0.0)
+                      , bang (positionY 0.0)
+                      , bang (positionZ 2.0)
+                      ]
+                  )
+              )
+            )
+            \myCamera ->
+              ( fixed
+                  [ webGLRenderer
+                      myScene
+                      myCamera
+                      { canvas: e }
+                      ( oneOf
+                          [ bang (size { width: iw, height: ih })
+                          , bang render
+                          , (canvas $> render)
+                          ]
+                      )
+                  , css2DRenderer
+                      myScene
+                      myCamera
+                      { canvas: e }
+                      ( oneOf
+                          [ bang (size { width: iw, height: ih })
+                          , bang render
+                          , (canvas $> render)
+                          ]
+                      )
+                  ]
+              )
     )
   pure unit
 
@@ -268,7 +306,8 @@ main :: Effect Unit
 main = launchAff_ do
   three <- threeAff
   orbitControls <- orbitControlsAff
-  let threeStuff = { three, orbitControls }
+  cssThings <- css2DRendererAff
+  let threeStuff = union { three, orbitControls } cssThings
   w <- liftEffect $ window
   iw <- liftEffect $ Int.toNumber <$> innerWidth w
   ih <- liftEffect $ Int.toNumber <$> innerHeight w

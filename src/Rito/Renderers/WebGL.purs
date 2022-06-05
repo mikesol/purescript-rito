@@ -2,9 +2,8 @@ module Rito.Renderers.WebGL where
 
 import Prelude
 
-import Bolson.Core (Entity(..), Scope(..))
-import Control.Lazy (fix)
-import Control.Plus (empty)
+import Bolson.Core (Scope(..))
+import Bolson.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
@@ -15,8 +14,6 @@ import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Core as C
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
-import Rito.Scene (scene)
-import Safe.Coerce (coerce)
 import Web.HTML (HTMLCanvasElement)
 
 data WebGLRendererOptions = WebGLRendererOptions
@@ -155,15 +152,16 @@ instance Newtype WebGLRenderer WebGLRenderer'
 webGLRenderer
   :: forall i lock payload
    . InitialWebGLRenderer i
-  => C.AScene lock payload
-  -> C.ACamera lock payload
+  => C.Scene lock payload
+  -> C.Camera lock payload
   -> i
   -> Event WebGLRenderer
-  -> C.Renderer lock payload
-webGLRenderer sne cam i' props = C.Renderer go
+  -> C.ARenderer lock payload
+webGLRenderer sne cam i' props = Bolson.Element' $ C.Renderer go
   where
   C.InitializeWebGLRenderer i = toInitializeWebGLRenderer i'
   go
+    psr
     di@
       ( C.ThreeInterpret
           { ids
@@ -174,31 +172,24 @@ webGLRenderer sne cam i' props = C.Renderer go
           }
       ) = makeEvent \k0 -> do
     me <- ids
+    psr.raiseId me
     scope <- ids
     sceneAvar <- Ref.new Nothing
     cameraAvar <- Ref.new Nothing
     u0 <- subscribe
       ( oneOf
-          [ sne #
-              fix \f -> case _ of
-                Element' (C.Scene gooo) -> gooo
-                  { parent: Just me
-                  , scope: Local scope
-                  , raiseId: \i -> Ref.write (Just i) sceneAvar
-                  }
-                  di
-                _ -> f (scene empty [ coerce sne ])
-          , cam # case _ of
-              Element' (C.Camera gooo) -> gooo
-                { parent: Just me
-                , scope: Local scope
-                , raiseId: \i -> Ref.write (Just i) cameraAvar
-                }
-                di
-              -- todo: this is a bug and means we've rigged
-              -- our smart constructors wrong
-              -- watch for it?
-              _ -> empty
+          [ sne # \(C.Scene gooo) -> gooo
+              { parent: Just me
+              , scope: Local scope
+              , raiseId: \i -> Ref.write (Just i) sceneAvar
+              }
+              di
+          , cam # \(C.Camera gooo) -> gooo
+              { parent: Just me
+              , scope: Local scope
+              , raiseId: \i -> Ref.write (Just i) cameraAvar
+              }
+              di
           ]
       )
       k0
