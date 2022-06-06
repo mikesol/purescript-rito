@@ -362,7 +362,7 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 export const makeCSS2DRenderer_ = (a) => (state) => () => {
 	const { id, canvas, element } = a;
 	const renderer = new state.CSS2DRenderer({ element });
-	renderer.setSize(canvas.width, canvas.height);
+	renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
 	state.units[id] = { main: renderer };
 };
 export const setOnClick_ = (a) => (state) => () => {
