@@ -139,6 +139,7 @@ type MakeCSS2DRenderer =
   { id :: String
   , camera :: String
   , canvas :: HTMLCanvasElement
+  , element :: Web.DOM.Element
   }
 
 type MakeScene f s =

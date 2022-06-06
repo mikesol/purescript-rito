@@ -360,19 +360,10 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 	makeListener("touchcancel");
 };
 export const makeCSS2DRenderer_ = (a) => (state) => () => {
-	const { id, ...parameters } = a;
-	const canvas = parameters.canvas;
-	const renderer = new state.CSS2DRenderer(parameters);
+	const { id, canvas, element } = a;
+	const renderer = new state.CSS2DRenderer({ element });
 	renderer.setSize(canvas.width, canvas.height);
-	renderer.domElement.style.position = "absolute";
-	renderer.domElement.style.pointerEvents = "none";
-	// todo: this isn't exactly right... we want this at the same position
-	// as the canvas. it only works if the canvas is full screen, otherwise it will
-	// be off.
-	// fix later
-	renderer.domElement.style.top = "0px";
-	document.body.appendChild(renderer.domElement);
-	state.units[a.id] = { main: renderer };
+	state.units[id] = { main: renderer };
 };
 export const setOnClick_ = (a) => (state) => () => {
 	state.listeners.click[a.id] = a.onClick;

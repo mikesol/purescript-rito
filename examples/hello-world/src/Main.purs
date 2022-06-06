@@ -2,7 +2,7 @@ module Main where
 
 import Prelude
 
-import Bolson.Core (Element(..), fixed)
+import Bolson.Core (Element(..), envy, fixed)
 import Control.Alt ((<|>))
 import Control.Parallel (parTraverse)
 import Control.Plus (empty)
@@ -72,6 +72,7 @@ import WAGS.Math (calcSlope)
 import WAGS.Properties as P
 import WAGS.Run (run2)
 import WAGS.WebAPI (AnalyserNodeCb(..))
+import Web.DOM as Web.DOM
 import Web.Event.Event (target)
 import Web.HTML (window)
 import Web.HTML.HTMLCanvasElement (HTMLCanvasElement)
@@ -85,6 +86,7 @@ type UIEvents = V
   ( startStop :: StartStop
   , slider :: Number
   , canvas :: Array CanvasInfo
+  , renderElement :: Web.DOM.Element
   )
 
 e2e :: Effect ~> Event
@@ -148,12 +150,13 @@ ttap (o /\ n) = AudioNumeric { o: o + 0.04, n, t: _linear }
 
 runThree
   :: ThreeStuff
+  -> Event Web.DOM.Element
   -> Event (Array CanvasInfo)
   -> Number
   -> Number
   -> HTMLCanvasElement
   -> Effect Unit
-runThree ts@{ three } canvas iw ih e = do
+runThree ts@{ three } delt canvas iw ih e = do
   _ <- Rito.Run.run ts
     ( globalGeometryPortal1
         ( ( sphere { widthSegments: 32, heightSegments: 32 }
@@ -287,16 +290,19 @@ runThree ts@{ three } canvas iw ih e = do
                           , (canvas $> render)
                           ]
                       )
-                  , css2DRenderer
-                      myScene
-                      myCamera
-                      { canvas: e }
-                      ( oneOf
-                          [ bang (size { width: iw, height: ih })
-                          , bang render
-                          , (canvas $> render)
-                          ]
+                  , envy $ map
+                      ( \element -> css2DRenderer
+                          myScene
+                          myCamera
+                          { canvas: e, element }
+                          ( oneOf
+                              [ bang (size { width: iw, height: ih })
+                              , bang render
+                              , (canvas $> render)
+                              ]
+                          )
                       )
+                      delt
                   ]
               )
     )
@@ -432,10 +438,21 @@ main = launchAff_ do
                     ( oneOfMap bang
                         [ D.Width := cvsxs
                         , D.Height := cvsys
-                        , D.Style := "width: 100%;"
+                        , D.Style := "width: 100%;position:absolute;top:0px;"
                         , D.Self := HTMLCanvasElement.fromElement >>>
                             traverse_
-                              (runThree threeStuff event.canvas iw ih)
+                              ( runThree threeStuff event.renderElement
+                                  event.canvas
+                                  iw
+                                  ih
+                              )
+                        ]
+                    )
+                    []
+                , D.div
+                    ( oneOfMap bang
+                        [ D.Style := "width: 100%;position:absolute;top:0px;"
+                        , D.Self := push.renderElement
                         ]
                     )
                     []

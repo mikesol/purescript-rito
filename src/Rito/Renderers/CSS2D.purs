@@ -10,7 +10,9 @@ import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import Effect.Ref as Ref
 import FRP.Event (Event, bang, makeEvent, subscribe)
+import Record (union)
 import Rito.Core as C
+import Web.DOM as Web.DOM
 import Web.HTML (HTMLCanvasElement)
 
 type CSS2DRenderer' = Variant
@@ -25,10 +27,10 @@ css2DRenderer
   :: forall lock payload
    . C.Scene lock payload
   -> C.Camera lock payload
-  -> { canvas :: HTMLCanvasElement }
+  -> { canvas :: HTMLCanvasElement, element :: Web.DOM.Element }
   -> Event CSS2DRenderer
   -> C.ARenderer lock payload
-css2DRenderer sne cam { canvas } props = Bolson.Element' $ C.Renderer go
+css2DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
   where
   go
     psr
@@ -49,17 +51,17 @@ css2DRenderer sne cam { canvas } props = Bolson.Element' $ C.Renderer go
     u0 <- subscribe
       ( oneOf
           [ sne # \(C.Scene gooo) -> gooo
-                  { parent: Just me
-                  , scope: Local scope
-                  , raiseId: \i -> Ref.write (Just i) sceneAvar
-                  }
-                  di
+              { parent: Just me
+              , scope: Local scope
+              , raiseId: \i -> Ref.write (Just i) sceneAvar
+              }
+              di
           , cam # \(C.Camera gooo) -> gooo
-                { parent: Just me
-                , scope: Local scope
-                , raiseId: \i -> Ref.write (Just i) cameraAvar
-                }
-                di
+              { parent: Just me
+              , scope: Local scope
+              , raiseId: \i -> Ref.write (Just i) cameraAvar
+              }
+              di
           ]
       )
       k0
@@ -74,10 +76,11 @@ css2DRenderer sne cam { canvas } props = Bolson.Element' $ C.Renderer go
         Just cameraId -> subscribe
           ( oneOf
               [ bang $ makeCSS2DRenderer
-                  { id: me
-                  , camera: cameraId
-                  , canvas
-                  }
+                  $ union
+                    { id: me
+                    , camera: cameraId
+                    }
+                    make
               , makeEvent \k -> do
                   usuRef <- Ref.new mempty
                   -- ugh, there's got to be a better way...
