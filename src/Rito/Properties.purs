@@ -220,6 +220,27 @@ scaleZ
   -> nt
 scaleZ = wrap <<< inj (Proxy :: Proxy "scaleZ")
 
+decay
+  :: forall nt r
+   . Newtype nt (Variant (decay :: Number | r))
+  => Number
+  -> nt
+decay = wrap <<< inj (Proxy :: Proxy "decay")
+
+distance
+  :: forall nt r
+   . Newtype nt (Variant (distance :: Number | r))
+  => Number
+  -> nt
+distance = wrap <<< inj (Proxy :: Proxy "distance")
+
+intensity
+  :: forall nt r
+   . Newtype nt (Variant (intensity :: Number | r))
+  => Number
+  -> nt
+intensity = wrap <<< inj (Proxy :: Proxy "intensity")
+
 aspect
   :: forall nt r
    . Newtype nt (Variant (aspect :: Number | r))

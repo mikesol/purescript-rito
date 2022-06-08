@@ -451,7 +451,7 @@ main = launchAff_ do
                     []
                 , D.div
                     ( oneOfMap bang
-                        [ D.Style := "width: 100%;position:absolute;top:0px;"
+                        [ D.Style := "width:100%;position:absolute;top:0px;"
                         , D.Self := push.renderElement
                         ]
                     )
