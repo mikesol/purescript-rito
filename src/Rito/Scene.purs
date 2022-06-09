@@ -1,4 +1,4 @@
-module Rito.Scene (scene, Scene, Background(..)) where
+module Rito.Scene (scene, Scene(..), Background(..)) where
 
 import Prelude
 
@@ -7,7 +7,7 @@ import Bolson.Core (fixed)
 import Bolson.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
-import Data.Newtype (unwrap)
+import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
@@ -23,6 +23,8 @@ data Background
 
 newtype Scene = Scene
   (Variant (background :: Background | C.Object3D))
+
+derive instance Newtype Scene _
 
 scene
   :: forall lock payload
