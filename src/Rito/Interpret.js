@@ -500,13 +500,13 @@ export const setLength_ = (a) => (state) => () => {
 };
 // scene (background)
 export const setBackgroundColor_ = (a) => (state) => () => {
-	state.units[a.id].background = a.color;
+	state.units[a.id].main.background = a.color;
 }
 export const setBackgroundTexture_ = (a) => (state) => () => {
-	state.units[a.id].background = a.texture;
+	state.units[a.id].main.background = a.texture;
 };
 export const setBackgroundCubeTexture_ = (a) => (state) => () => {
-	state.units[a.id].background = a.cubeTexture;
+	state.units[a.id].main.background = a.cubeTexture;
 };
 // sphere
 export const setRadius_ = (a) => (state) => () => {
