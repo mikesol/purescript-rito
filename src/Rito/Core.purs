@@ -110,6 +110,8 @@ instance Groupable Groupful where
 instance Groupable Sceneful where
   toGroup = unsafeCoerce
 
+instance Groupable CSS2DObject where
+  toGroup = unsafeCoerce
 
 type WebGLRender = { id :: String, scene :: String, camera :: String }
 type MakeWebGLRenderer =
