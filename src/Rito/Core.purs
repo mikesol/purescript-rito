@@ -104,6 +104,13 @@ instance Groupable Camera where
 instance Groupable Group where
   toGroup = unsafeCoerce
 
+instance Groupable Groupful where
+  toGroup = unsafeCoerce
+
+instance Groupable Sceneful where
+  toGroup = unsafeCoerce
+
+
 type WebGLRender = { id :: String, scene :: String, camera :: String }
 type MakeWebGLRenderer =
   { id :: String
