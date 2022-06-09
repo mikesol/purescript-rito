@@ -12,6 +12,7 @@ import Record (union)
 import Rito.Box (Box)
 import Rito.Box as Box
 import Rito.Color (Color)
+import Rito.CubeTexture (CubeTexture)
 import Rito.Euler (Euler)
 import Rito.Matrix4 (Matrix4)
 import Rito.NormalMapTypes (NormalMapType)
@@ -58,7 +59,8 @@ type ARenderer lock payload = Entity Void (Renderer lock payload) Effect lock
 newtype Light (lock :: Type) payload = Light (Ctor payload)
 type ALight lock payload = Entity Void (Light lock payload) Effect lock
 newtype CSS2DObject (lock :: Type) payload = CSS2DObject (Ctor payload)
-type ACSS2DObject lock payload = Entity Void (CSS2DObject lock payload) Effect lock
+type ACSS2DObject lock payload = Entity Void (CSS2DObject lock payload) Effect
+  lock
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
 newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
@@ -191,7 +193,8 @@ type MakeCSS2DObject f s =
 type InitializeCSS2DObject' (nut :: Type) =
   ( nut :: nut
   )
-newtype InitializeCSS2DObject = InitializeCSS2DObject { | InitializeCSS2DObject' ANut }
+newtype InitializeCSS2DObject = InitializeCSS2DObject
+  { | InitializeCSS2DObject' ANut }
 -- light
 type MakePointLight f s =
   { id :: String
@@ -451,6 +454,10 @@ type SetEnvMapIntensity = { id :: String, envMapIntensity :: Number }
 type SetWireframe = { id :: String, wireframe :: Boolean }
 type SetWireframeLinewidth = { id :: String, wireframeLinewidth :: Number }
 type SetFlatShading = { id :: String, flatShading :: Boolean }
+-- scene
+type SetBackgroundCubeTexture = { id :: String, cubeTexture :: CubeTexture }
+type SetBackgroundTexture = { id :: String, texture :: Texture }
+type SetBackgroundColor = { id :: String, color :: Color }
 -- listeners
 type SetOnClick = { id :: String, onClick :: MouseEvent -> Effect Unit }
 type SetOnMouseDown = { id :: String, onMouseDown :: MouseEvent -> Effect Unit }
@@ -815,6 +822,10 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
   , makeCSS2DObject :: MakeCSS2DObject Maybe Scope -> payload
+  -- scene
+  , setBackgroundCubeTexture :: SetBackgroundCubeTexture -> payload
+  , setBackgroundTexture :: SetBackgroundTexture -> payload
+  , setBackgroundColor :: SetBackgroundColor -> payload
   -- (faux) Listeners
   , setOnClick :: SetOnClick -> payload
   , setOnMouseDown :: SetOnMouseDown -> payload

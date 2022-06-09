@@ -5,7 +5,6 @@ import Prelude
 import Bolson.Control (flatten)
 import Bolson.Core (Entity(..), fixed)
 import Bolson.Core as Bolson
-import Control.Plus (empty)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)

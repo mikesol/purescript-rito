@@ -11,6 +11,7 @@ import Rito.Color as Color
 import Rito.InstancedMesh (InstancedMesh, Setter)
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
+import Rito.Scene (Background)
 import Rito.Sphere as Sphere
 import Rito.Texture (Texture)
 import Rito.Vector3 (Vector3)
@@ -305,3 +306,12 @@ onTouchStart
   => onTouchStart
   -> nt
 onTouchStart = wrap <<< inj (Proxy :: Proxy "onTouchStart")
+
+-- background
+
+background
+  :: forall nt r
+   . Newtype nt (Variant (background :: Background | r))
+  => Background
+  -> nt
+background = wrap <<< inj (Proxy :: Proxy "background")
