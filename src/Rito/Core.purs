@@ -3,6 +3,7 @@ module Rito.Core where
 import Prelude
 
 import Bolson.Core (Entity, Scope)
+import Bolson.Core as Bolson
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
 import Deku.Core (ANut)
@@ -42,6 +43,9 @@ class Groupable ctor where
     :: forall lock payload
      . Entity Void (ctor lock payload) Effect lock
     -> Entity Void (Groupful lock payload) Effect lock
+
+cameraToGroup :: forall lock payload. Camera lock payload -> Entity Void (Groupful lock payload) Effect lock
+cameraToGroup c = Bolson.Element' $ (unsafeCoerce :: Camera lock payload -> Groupful lock payload) c
 
 type Ctor payload =
   { parent :: Maybe String
