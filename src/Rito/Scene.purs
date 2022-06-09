@@ -1,4 +1,4 @@
-module Rito.Scene (scene, Scene) where
+module Rito.Scene (scene, Scene(..), Background(..)) where
 
 import Prelude
 
@@ -7,13 +7,24 @@ import Bolson.Core (fixed)
 import Bolson.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
-import Data.Newtype (unwrap)
+import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
+import Record (union)
+import Rito.Color as Col
 import Rito.Core as C
+import Rito.CubeTexture as CT
+import Rito.Texture as T
+
+data Background
+  = CubeTexture CT.CubeTexture
+  | Texture T.Texture
+  | Color Col.Color
 
 newtype Scene = Scene
-  (Variant (| C.Object3D))
+  (Variant (background :: Background | C.Object3D))
+
+derive instance Newtype Scene _
 
 scene
   :: forall lock payload
@@ -29,6 +40,9 @@ scene props kidz = C.Scene go
           { ids
           , deleteFromCache
           , makeScene
+          , setBackgroundCubeTexture
+          , setBackgroundTexture
+          , setBackgroundColor
           }
       ) = makeEvent \k -> do
     me <- ids
@@ -42,7 +56,17 @@ scene props kidz = C.Scene go
             }
         , props <#>
             ( \(Scene msh) ->
-                msh # match (C.object3D me di)
+                msh # match
+                  ( union
+                      { background: case _ of
+                          CubeTexture ct -> setBackgroundCubeTexture
+                            { id: me, cubeTexture: ct }
+                          Texture ct -> setBackgroundTexture
+                            { id: me, texture: ct }
+                          Color ct -> setBackgroundColor { id: me, color: ct }
+                      }
+                      (C.object3D me di)
+                  )
             )
         , flatten
             { doLogic: absurd
@@ -51,5 +75,6 @@ scene props kidz = C.Scene go
             , toElt: \(C.Sceneful obj) -> Bolson.Element obj
             }
             { parent: Just me, scope: parent.scope, raiseId: pure mempty }
-            di ( fixed kidz            )
+            di
+            (fixed kidz)
         ]

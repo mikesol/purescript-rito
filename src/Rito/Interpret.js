@@ -498,6 +498,16 @@ export const setDepth_ = (a) => (state) => () => {
 export const setLength_ = (a) => (state) => () => {
 	state.units[a.id].main.length = a.length;
 };
+// scene (background)
+export const setBackgroundColor_ = (a) => (state) => () => {
+	state.units[a.id].main.background = a.color;
+}
+export const setBackgroundTexture_ = (a) => (state) => () => {
+	state.units[a.id].main.background = a.texture;
+};
+export const setBackgroundCubeTexture_ = (a) => (state) => () => {
+	state.units[a.id].main.background = a.cubeTexture;
+};
 // sphere
 export const setRadius_ = (a) => (state) => () => {
 	state.units[a.id].main.radius = a.radius;

@@ -61,8 +61,8 @@ type CSS2DRendererModule =
 foreign import css2DRenderer :: Effect (Promise CSS2DRendererModuleCaps)
 css2DRendererAff :: Aff CSS2DRendererModule
 css2DRendererAff = toAffE css2DRenderer <#>
-  \{ "CSS2DRenderer": css2DRenderer, "CSS2DObject": css2DObject } ->
-    { css2DRenderer, css2DObject }
+  \{ "CSS2DRenderer": css2DRenderer', "CSS2DObject": css2DObject } ->
+    { css2DRenderer: css2DRenderer', css2DObject }
 foreign import makeFFIThreeSnapshot
   :: THREE.ThreeStuff
   -> Effect FFIThreeSnapshot
@@ -175,6 +175,10 @@ foreign import setEnvMapIntensity_ :: Core.SetEnvMapIntensity -> Payload
 foreign import setWireframe_ :: Core.SetWireframe -> Payload
 foreign import setWireframeLinewidth_ :: Core.SetWireframeLinewidth -> Payload
 foreign import setFlatShading_ :: Core.SetFlatShading -> Payload
+-- scene
+foreign import setBackgroundCubeTexture_ :: Core.SetBackgroundCubeTexture -> Payload
+foreign import setBackgroundTexture_ :: Core.SetBackgroundTexture -> Payload
+foreign import setBackgroundColor_ :: Core.SetBackgroundColor -> Payload
 -- (faux) listeners
 foreign import setOnClick_ :: Core.SetOnClick -> Payload
 foreign import setOnMouseDown_ :: Core.SetOnMouseDown -> Payload
@@ -365,6 +369,10 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeMeshBasicMaterial: lcmap ffiize makeMeshBasicMaterial_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
   , makeCSS2DObject: lcmap ffiize makeCSS2DObject_
+  -- scene
+  , setBackgroundCubeTexture: setBackgroundCubeTexture_
+  , setBackgroundTexture: setBackgroundTexture_
+  , setBackgroundColor: setBackgroundColor_
   -- (faux) listeners
   , setOnClick: setOnClick_
   , setOnMouseDown: setOnMouseDown_
