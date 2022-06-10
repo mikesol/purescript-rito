@@ -25,7 +25,6 @@ import Prim.RowList as RL
 import Record (get)
 import Record.Builder (Builder, insert, build)
 import Rito.Color (Color)
-import Rito.Core (OrbitControls)
 import Rito.Core as Core
 import Rito.NormalMapTypes (NormalMapType(..))
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
@@ -236,8 +235,6 @@ foreign import setScaleZ_ :: Core.SetScaleZ -> Payload
 foreign import setSize_ :: Core.SetSize -> Payload
 -- camera
 foreign import withWorldDirection_ :: Core.WithWorldDirection Payload -> Payload
--- orbit controls
-foreign import setTarget_ :: Core.SetTarget -> Payload
 -- perspective camera
 foreign import setAspect_ :: Core.SetAspect -> Payload
 foreign import setFar_ :: Core.SetFar -> Payload
@@ -265,9 +262,6 @@ instance FFIMe Int Int where
   ffiMe = identity
 
 instance FFIMe Web.DOM.Element Web.DOM.Element where
-  ffiMe = identity
-
-instance FFIMe OrbitControls OrbitControls where
   ffiMe = identity
 
 instance (RowToList i ri, FFIIze ri i o) => FFIMe { | i } { | o } where
@@ -493,8 +487,6 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setIntensity: setIntensity_
   -- camera
   , withWorldDirection: withWorldDirection_
-  -- orbit controls
-  , setTarget: setTarget_
   -- perspective camera
   , setAspect: setAspect_
   , setFar: setFar_

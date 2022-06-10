@@ -376,30 +376,12 @@ type MakePerspectiveCamera f s =
   , parent :: f String
   | InitializePerspectiveCamera'
   }
-type OrbitControls' =
-  { canvas :: HTMLCanvasElement
-  , autoRotate :: Boolean
-  , autoRotateSpeed :: Number
-  , dampingFactor :: Number
-  , enabled :: Boolean
-  , enableDamping :: Boolean
-  , enablePan :: Boolean
-  , enableRotate :: Boolean
-  , enableZoom :: Boolean
-  , panSpeed :: Number
-  , rotateSpeed :: Number
-  , zoomSpeed :: Number
-  }
-newtype OrbitControls = OrbitControls OrbitControls'
-derive instance Newtype OrbitControls _
 
 type InitializePerspectiveCamera' =
   ( fov :: Number
   , aspect :: Number
   , near :: Number
   , far :: Number
-  -- todo: tons of code dups for this stuff. fix
-  , orbitControls :: OrbitControls
   )
 newtype InitializePerspectiveCamera = InitializePerspectiveCamera
   { | InitializePerspectiveCamera' }
@@ -550,8 +532,6 @@ type SetTranslateZ = { id :: String, translateZ :: Number }
 -- camera
 type WithWorldDirection payload =
   { id :: String, withWorldDirection :: Vector3 -> payload }
--- orbit controls
-type SetTarget = { id :: String, target :: Vector3 }
 -- perspective camera
 type SetAspect = { id :: String, aspect :: Number }
 type SetFar = { id :: String, far :: Number }
@@ -955,7 +935,6 @@ newtype ThreeInterpret payload = ThreeInterpret
   -- camera
   , withWorldDirection :: WithWorldDirection payload -> payload
   -- orbit controls
-  , setTarget :: SetTarget -> payload
   -- perspective camera
   , setAspect :: SetAspect -> payload
   , setFar :: SetFar -> payload

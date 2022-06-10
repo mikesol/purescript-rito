@@ -45,16 +45,16 @@ import Foreign.Object (fromHomogeneous, values)
 import Random.LCG (mkSeed)
 import Record (union)
 import Rito.CSS.CSS2DObject (css2DObject)
-import Rito.Cameras.PerspectiveCamera (defaultOrbitControls, perspectiveCamera)
+import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Color (RGB(..), color)
-import Rito.Core (OrbitControls(..), toScene, Scene(..), Renderer(..))
+import Rito.Core (Renderer(..), toScene)
 import Rito.Geometries.Sphere (sphere)
 import Rito.InstancedMesh (instancedMesh, setter)
 import Rito.Interpret (css2DRendererAff, orbitControlsAff, threeAff)
 import Rito.Lights.PointLight (pointLight)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Matrix4 (ctor, scale, setPosition)
-import Rito.Portal (globalCameraPortal1, globalGeometryPortal1, globalScenePortal, globalScenePortal1)
+import Rito.Portal (globalCameraPortal1, globalGeometryPortal1, globalScenePortal1)
 import Rito.Properties (positionX, positionY, positionZ, render, setMatrixAt, size)
 import Rito.Renderers.CSS2D (css2DRenderer)
 import Rito.Renderers.WebGL (webGLRenderer)
@@ -94,6 +94,10 @@ e2e e = makeEvent \k -> do
   e >>= k
   pure (pure unit)
 
+buffers' :: { pluck0 :: String
+, pluck1 :: String
+, strum0 :: String
+}
 buffers' =
   { pluck0: "https://freesound.org/data/previews/493/493016_10350281-lq.mp3"
   , pluck1: "https://freesound.org/data/previews/141/141524_2558140-lq.mp3"
@@ -101,21 +105,33 @@ buffers' =
   --, bass: "https://freesound.org/data/previews/381/381517_7088365-lq.mp3"
   }
 
+random :: ABehavior (AnEvent Effect) Number
 random = behavior \e ->
   makeEvent \k -> subscribe e \f ->
     Random.random >>= k <<< f
 
+dgl :: forall i617 outputChannels618 lock619 payload620 i621 i625. InitialDelay i617 => InitialGain i621 => InitialLowpass i625 => i617 -> AnEvent Effect (Delay lock619 payload620) -> i621 -> AnEvent Effect (Gain lock619 payload620) -> i625 -> AnEvent Effect (Lowpass lock619 payload620) -> Array (Entity Void (Node outputChannels618 lock619 payload620) Effect lock619) -> Entity Void (Node outputChannels618 lock619 payload620) Effect lock619
 dgl d de g ge h he i =
   delay d de [ gain g ge [ lowpass h he i ] ]
 
+dgh :: forall i637 outputChannels638 lock639 payload640 i641 i645. InitialDelay i637 => InitialGain i641 => InitialHighpass i645 => i637 -> AnEvent Effect (Delay lock639 payload640) -> i641 -> AnEvent Effect (Gain lock639 payload640) -> i645 -> AnEvent Effect (Highpass lock639 payload640) -> Array (Entity Void (Node outputChannels638 lock639 payload640) Effect lock639) -> Entity Void (Node outputChannels638 lock639 payload640) Effect lock639
 dgh d de g ge h he i =
   delay d de [ gain g ge [ highpass h he i ] ]
 
+dgb :: forall i657 outputChannels658 lock659 payload660 i661 i665. InitialDelay i657 => InitialGain i661 => InitialBandpass i665 => i657 -> AnEvent Effect (Delay lock659 payload660) -> i661 -> AnEvent Effect (Gain lock659 payload660) -> i665 -> AnEvent Effect (Bandpass lock659 payload660) -> Array (Entity Void (Node outputChannels658 lock659 payload660) Effect lock659) -> Entity Void (Node outputChannels658 lock659 payload660) Effect lock659
 dgb d de g ge h he i =
   delay d de [ gain g ge [ bandpass h he i ] ]
 
 twoPi = 2.0 * pi :: Number
 
+fade0 :: forall t587 t588 t592 t594 t595.
+  Applicative t587 => Newtype t588
+                        (Variant
+                           ( gain :: AudioParameter t594 t595
+                           | t592
+                           )
+                        )
+                       => AnEvent t587 t588
 fade0 = bang
   $ P.gain
   $ AudioEnvelope
@@ -124,6 +140,14 @@ fade0 = bang
     , d: 24.0
     }
 
+fade1 :: forall t575 t576 t580 t582 t583.
+  Applicative t575 => Newtype t576
+                        (Variant
+                           ( gain :: AudioParameter t582 t583
+                           | t580
+                           )
+                        )
+                       => AnEvent t575 t576
 fade1 = bang
   $ P.gain
   $ AudioEnvelope
@@ -132,20 +156,43 @@ fade1 = bang
     , d: 18.0
     }
 
+cvsx :: Int
 cvsx = 1200
+cvsxs :: String
 cvsxs = show cvsx <> "px"
+cvsxn :: Number
 cvsxn = Int.toNumber cvsx
+cvsy :: Int
 cvsy = 600
+cvsys :: String
 cvsys = show cvsy <> "px"
+cvsyn :: Number
 cvsyn = Int.toNumber cvsy
+fenv :: forall t563 t564 t568 t570 t571.
+  Applicative t563 => Newtype t564
+                        (Variant
+                           ( frequency :: AudioParameter t570 t571
+                           | t568
+                           )
+                        )
+                       => Number -> Number -> AnEvent t563 t564
 fenv s e = bang
   $ P.frequency
   $ AudioEnvelope { p: [ s, e ], o: 0.0, d: 16.0 }
 
+denv :: forall t674 t675 t679 t681 t682.
+  Applicative t674 => Newtype t675
+                        (Variant
+                           ( delayTime :: AudioParameter t681 t682
+                           | t679
+                           )
+                        )
+                       => Number -> Number -> AnEvent t674 t675
 denv s e = bang
   $ P.delayTime
   $ AudioEnvelope { p: [ s, e ], o: 0.0, d: 16.0 }
 
+ttap :: Tuple Number Number -> AudioNumeric
 ttap (o /\ n) = AudioNumeric { o: o + 0.04, n, t: _linear }
 
 runThree
@@ -267,8 +314,6 @@ runThree ts@{ three } delt canvas iw ih e = do
                   , aspect: iw / ih
                   , near: 0.1
                   , far: 100.0
-                  , orbitControls: OrbitControls
-                      ((defaultOrbitControls e) { enabled = true })
                   }
                   ( oneOf
                       [ bang (positionX 0.0)

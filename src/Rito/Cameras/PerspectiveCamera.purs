@@ -1,11 +1,8 @@
 module Rito.Cameras.PerspectiveCamera
   ( perspectiveCamera
   , perspectiveCamera_
-  , OrbitControlsAll
-  , OrbitControlsOptional
   , PerspectiveCamera(..)
   , PerspectiveCamera'
-  , defaultOrbitControls
   , class InitialPerspectiveCamera
   , toInitializePerspectiveCamera
   , PerspectiveCameraOptions
@@ -23,10 +20,8 @@ import Record (union)
 import Rito.Core (object3D)
 import Rito.Core as C
 import Rito.Vector3 (Vector3)
-import Web.HTML (HTMLCanvasElement)
 
 data PerspectiveCameraOptions = PerspectiveCameraOptions
-data OrbitControlsOptions = OrbitControlsOptions
 
 instance
   ConvertOption PerspectiveCameraOptions
@@ -56,97 +51,6 @@ instance
     Number where
   convertOption _ _ = identity
 
-instance
-  ConvertOption OrbitControlsOptions
-    "canvas"
-    HTMLCanvasElement
-    HTMLCanvasElement where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption OrbitControlsOptions
-    "autoRotate"
-    Boolean
-    Boolean where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption OrbitControlsOptions
-    "autoRotateSpeed"
-    Number
-    Number where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption OrbitControlsOptions
-    "dampingFactor"
-    Number
-    Number where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption OrbitControlsOptions
-    "enabled"
-    Boolean
-    Boolean where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption OrbitControlsOptions
-    "enableDamping"
-    Boolean
-    Boolean where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption OrbitControlsOptions
-    "enablePan"
-    Boolean
-    Boolean where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption OrbitControlsOptions
-    "enableRotate"
-    Boolean
-    Boolean where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption OrbitControlsOptions
-    "enableZoom"
-    Boolean
-    Boolean where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption OrbitControlsOptions
-    "panSpeed"
-    Number
-    Number where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption OrbitControlsOptions
-    "rotateSpeed"
-    Number
-    Number where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption OrbitControlsOptions
-    "zoomSpeed"
-    Number
-    Number where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption PerspectiveCameraOptions
-    "orbitControls"
-    C.OrbitControls
-    C.OrbitControls where
-  convertOption _ _ = identity
-
 type PerspectiveCameraOptional =
   ( fov :: Number
   , aspect :: Number
@@ -154,43 +58,8 @@ type PerspectiveCameraOptional =
   , far :: Number
   )
 
-type OrbitControlsOptional =
-  ( autoRotate :: Boolean
-  , autoRotateSpeed :: Number
-  , dampingFactor :: Number
-  , enabled :: Boolean
-  , enableDamping :: Boolean
-  , enablePan :: Boolean
-  , enableRotate :: Boolean
-  , enableZoom :: Boolean
-  , panSpeed :: Number
-  , rotateSpeed :: Number
-  , zoomSpeed :: Number
-  )
-
-type OrbitControlsAll =
-  ( canvas :: HTMLCanvasElement
-  | OrbitControlsOptional
-  )
-
 type PerspectiveCameraAll =
-  (orbitControls :: C.OrbitControls | PerspectiveCameraOptional)
-
-defaultOrbitControls :: HTMLCanvasElement -> { | OrbitControlsAll }
-defaultOrbitControls canvas =
-  { autoRotate: false
-  , canvas
-  , autoRotateSpeed: 2.0
-  , dampingFactor: 0.05
-  , enabled: false
-  , enableDamping: false
-  , enablePan: true
-  , enableRotate: true
-  , enableZoom: true
-  , panSpeed: 1.0
-  , rotateSpeed: 1.0
-  , zoomSpeed: 1.0
-  }
+  (| PerspectiveCameraOptional)
 
 defaultPerspectiveCamera :: { | PerspectiveCameraOptional }
 defaultPerspectiveCamera =
@@ -237,7 +106,6 @@ type PerspectiveCamera' = Variant
       , height :: Number
       }
   , withWorldDirection :: Vector3 -> PerspectiveCamera
-  , orbitControls :: Variant (target :: Vector3)
   | C.Object3D
   )
 newtype PerspectiveCamera = PerspectiveCamera PerspectiveCamera'
@@ -270,7 +138,6 @@ perspectiveCamera i' atts = C.Camera go
           , setFocalLength
           , setViewOffset
           , withWorldDirection
-          , setTarget
           }
       ) = makeEvent \k -> do
     me <- ids
@@ -285,7 +152,6 @@ perspectiveCamera i' atts = C.Camera go
             , far: i.far
             , fov: i.fov
             , near: i.near
-            , orbitControls: i.orbitControls
             }
         )
         <|>
@@ -323,8 +189,6 @@ perspectiveCamera i' atts = C.Camera go
                         , withWorldDirection: withWorldDirection
                             <<< { id: me, withWorldDirection: _ }
                             <<< map fn
-                        , orbitControls: match
-                            { target: setTarget <<< { id: me, target: _ } }
                         }
                         (object3D me di)
                     )

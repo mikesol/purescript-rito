@@ -56,11 +56,12 @@ export const connectScene_ = (a) => (state) => () => {
 	// can render a revolving scene
 };
 export const connectCamera_ = (a) => (state) => () => {
-	// for now this is a no op
-	// in the current setup, cameras are parent-less and not
-	// intrinsicaally connected or disconnected to anything
-	// in the future, we will want to change this so that a renderer
-	// can render a revolving camera
+	if (
+		state.units[a.parent] &&
+		(state.units[a.parent].main.isScene || state.units[a.parent].main.isGroup)
+	) {
+		state.units[a.parent].main.add(state.units[a.id].main);
+	}
 };
 
 export const connectMaterial_ = (a) => (state) => () => {
@@ -131,21 +132,6 @@ export const makePerspectiveCamera_ = (a) => (state) => () => {
 		(THREE, { fov, aspect, near, far }) =>
 			new THREE.PerspectiveCamera(fov, aspect, near, far)
 	)(() => {})(a)(state)();
-	const orbitControls = new state.OrbitControls(
-		state.units[a.id].main,
-		a.orbitControls.canvas
-	);
-	orbitControls.enabled = a.orbitControls.enabled;
-	orbitControls.autoRotate = a.orbitControls.autoRotate;
-	orbitControls.autoRotateSpeed = a.orbitControls.autoRotateSpeed;
-	orbitControls.dampingFactor = a.orbitControls.dampingFactor;
-	orbitControls.enableDamping = a.orbitControls.enableDamping;
-	orbitControls.enableZoom = a.orbitControls.enableZoom;
-	orbitControls.enablePan = a.orbitControls.enablePan;
-	orbitControls.panSpeed = a.orbitControls.panSpeed;
-	orbitControls.rotateSpeed = a.orbitControls.rotateSpeed;
-	orbitControls.zoomSpeed = a.orbitControls.zoomSpeed;
-	state.orbitControls = orbitControls;
 };
 
 const ascSort = function (a, b) {
@@ -266,14 +252,12 @@ export const makeGroup_ = genericMake_((THREE) => new THREE.Group())((x, y) => {
 	y.main.add(x.main);
 });
 export const webGLRender_ = (a) => (state) => () => {
-	state.orbitControls.update();
 	state.units[a.id].main.render(
 		state.units[a.scene].main,
 		state.units[a.camera].main
 	);
 };
 export const css2DRender_ = (a) => (state) => () => {
-	state.orbitControls.update();
 	state.units[a.id].main.render(
 		state.units[a.scene].main,
 		state.units[a.camera].main
@@ -501,7 +485,7 @@ export const setLength_ = (a) => (state) => () => {
 // scene (background)
 export const setBackgroundColor_ = (a) => (state) => () => {
 	state.units[a.id].main.background = a.color;
-}
+};
 export const setBackgroundTexture_ = (a) => (state) => () => {
 	state.units[a.id].main.background = a.texture;
 };
@@ -548,39 +532,30 @@ export const setQuaternion_ = (a) => (state) => () => {
 };
 export const setRotateX_ = (a) => (state) => () => {
 	state.units[a.id].main.rotateX(a.rotateX);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotateY_ = (a) => (state) => () => {
 	state.units[a.id].main.rotateY(a.rotateY);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotateZ_ = (a) => (state) => () => {
 	state.units[a.id].main.rotateZ(a.rotateZ);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setTranslate_ = (a) => (state) => () => {
 	state.units[a.id].main.translate(a.x, a.y, a.z);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setScale_ = (a) => (state) => () => {
 	state.units[a.id].main.scale(a.x, a.y, a.z);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setScaleX_ = (a) => (state) => () => {
 	state.units[a.id].main.scale.x = a.scaleX;
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setScaleY_ = (a) => (state) => () => {
 	state.units[a.id].main.scale.y = a.scaleY;
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setScaleZ_ = (a) => (state) => () => {
 	state.units[a.id].main.scale.z = a.scaleZ;
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setLookAt_ = (a) => (state) => () => {
 	state.units[a.id].main.lookAt(a.v);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setCenter_ = (a) => (state) => () => {
 	state.units[a.id].main.center();
@@ -717,65 +692,48 @@ export const setIntensity_ = (a) => (state) => () => {
 // mesh
 export const setRotationFromAxisAngle_ = (a) => (state) => () => {
 	state.units[a.id].main.setRotationFromAxisAngle(a.axis, a.angle);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotationFromEuler_ = (a) => (state) => () => {
 	state.units[a.id].main.setRotationFromEuler(a.euler);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotationFromMatrix_ = (a) => (state) => () => {
 	state.units[a.id].main.setRotationFromMatrix(a.matrix4);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotationFromQuaternion_ = (a) => (state) => () => {
 	state.units[a.id].main.setRotationFromQuaternion(a.quaternion);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotateOnAxis_ = (a) => (state) => () => {
 	state.units[a.id].main.rotateOnAxis(a.axis, a.angle);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setRotateOnWorldAxis_ = (a) => (state) => () => {
 	state.units[a.id].main.rotateOnWorldAxis(a.axis, a.angle);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setTranslateOnAxis_ = (a) => (state) => () => {
 	state.units[a.id].main.translateOnAxis(a.axis, a.distance);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setTranslateX_ = (a) => (state) => () => {
 	state.units[a.id].main.translateX(a.translateX);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setTranslateY_ = (a) => (state) => () => {
 	state.units[a.id].main.translateY(a.translateY);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setTranslateZ_ = (a) => (state) => () => {
 	state.units[a.id].main.translateZ(a.translateZ);
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setPositionX_ = (a) => (state) => () => {
 	state.units[a.id].main.position.x = a.positionX;
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setPositionY_ = (a) => (state) => () => {
 	state.units[a.id].main.position.y = a.positionY;
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 export const setPositionZ_ = (a) => (state) => () => {
 	state.units[a.id].main.position.z = a.positionZ;
-	// updateIfCamera(state.units[a.id].main, state.orbitControls);
 };
 // camera
 export const withWorldDirection_ = (a) => (state) => () => {
 	const v3 = new state.THREE.Vector3();
 	state.units[a.id].main.getWorldDirection(v3);
 	a.withWorldDirection(v3)(state)();
-};
-// orbit controls
-export const setTarget_ = (a) => (state) => () => {
-	state.orbitControls.target = a.target;
 };
 
 // perspective camera
