@@ -293,6 +293,26 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 
 	const makeListener = (eventName) => {
 		canvas.addEventListener(eventName, ($e) => {
+			// next step, copy this for touchdown
+			if (eventName === "mouseup") {
+				const vals = Object.values(state.listeners['upformousedown']);
+				vals.forEach((val) => {val();});
+				state.listeners["upformousedown"] = {}
+			}
+			else if (eventName === "touchend") {
+				const vals = Object.values(state.listeners["endfortouchstart"]);
+				vals.forEach((val) => {
+					val();
+				});
+				state.listeners["endfortouchstart"] = {};
+			}
+			else if (eventName === "touchcancel") {
+				const vals = Object.values(state.listeners["cancelfortouchstart"]);
+				vals.forEach((val) => {
+					val();
+				});
+				state.listeners["cancelfortouchstart"] = {};
+			}
 			const entries = Object.entries(state.listeners[eventName]);
 			if (entries.length > 0) {
 				const es =
@@ -305,7 +325,13 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 						const u = state.units[k].main;
 						const intersects = raycaster.intersectObject(u);
 						if (intersects.length > 0) {
-							v(e)();
+							const thunk = v(e)();
+							if (eventName === "mousedown") {
+								state.listeners["upformousedown"][k] = thunk;
+							} else if (eventName === "touchstart") {
+								state.listeners["endfortouchstart"][k] = thunk.end;
+								state.listeners["cancelfortouchstart"][k] = thunk.cancel;
+							}
 						}
 					});
 				});
@@ -817,6 +843,9 @@ export const makeFFIThreeSnapshot =
 				touchendInstanced: {},
 				touchmoveInstanced: {},
 				touchcancelInstanced: {},
+				upformousedown: {},
+				endfortouchstart: {},
+				cancelfortouchstart: {}
 			},
 		};
 	};
