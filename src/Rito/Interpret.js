@@ -293,31 +293,31 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 
 	const makeListener = (eventName) => {
 		canvas.addEventListener(eventName, ($e) => {
-			// next step, copy this for touchdown
-			if (eventName === "mouseup") {
-				const vals = Object.values(state.listeners['upformousedown']);
-				vals.forEach((val) => {val();});
-				state.listeners["upformousedown"] = {}
-			}
-			else if (eventName === "touchend") {
-				const vals = Object.values(state.listeners["endfortouchstart"]);
-				vals.forEach((val) => {
-					val();
-				});
-				state.listeners["endfortouchstart"] = {};
-			}
-			else if (eventName === "touchcancel") {
-				const vals = Object.values(state.listeners["cancelfortouchstart"]);
-				vals.forEach((val) => {
-					val();
-				});
-				state.listeners["cancelfortouchstart"] = {};
-			}
 			const entries = Object.entries(state.listeners[eventName]);
 			if (entries.length > 0) {
 				const es =
 					eventName.indexOf("touch") !== -1 ? getAllTouches($e.touches) : [$e];
 				es.forEach((e) => {
+					// next step, copy this for touchdown
+					if (eventName === "mouseup") {
+						const vals = Object.values(state.listeners["upformousedown"]);
+						vals.forEach((val) => {
+							val(e)();
+						});
+						state.listeners["upformousedown"] = {};
+					} else if (eventName === "touchend") {
+						const vals = Object.values(state.listeners["endfortouchstart"]);
+						vals.forEach((val) => {
+							val(e)();
+						});
+						state.listeners["endfortouchstart"] = {};
+					} else if (eventName === "touchcancel") {
+						const vals = Object.values(state.listeners["cancelfortouchstart"]);
+						vals.forEach((val) => {
+							val(e)();
+						});
+						state.listeners["cancelfortouchstart"] = {};
+					}
 					const x = (e.clientX / window.innerWidth) * 2 - 1;
 					const y = -(e.clientY / window.innerHeight) * 2 + 1;
 					raycaster.setFromCamera({ x, y }, camera);

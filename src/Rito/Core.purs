@@ -460,13 +460,16 @@ type SetBackgroundColor = { id :: String, color :: Color }
 -- listeners
 type SetOnClick = { id :: String, onClick :: MouseEvent -> Effect Unit }
 type SetOnMouseDown =
-  { id :: String, onMouseDown :: MouseEvent -> Effect (Effect Unit) }
+  { id :: String
+  , onMouseDown :: MouseEvent -> Effect (MouseEvent -> Effect Unit)
+  }
 type SetOnMouseUp = { id :: String, onMouseUp :: MouseEvent -> Effect Unit }
 type SetOnMouseMove = { id :: String, onMouseMove :: MouseEvent -> Effect Unit }
 type SetOnTouchStart =
   { id :: String
   , onTouchStart ::
-      Touch -> Effect { end :: Effect Unit, cancel :: Effect Unit }
+      Touch
+      -> Effect { end :: Touch -> Effect Unit, cancel :: Touch -> Effect Unit }
   }
 type SetOnTouchEnd = { id :: String, onTouchEnd :: Touch -> Effect Unit }
 type SetOnTouchMove = { id :: String, onTouchMove :: Touch -> Effect Unit }
@@ -474,14 +477,17 @@ type SetOnTouchCancel =
   { id :: String, onTouchCancel :: Touch -> Effect Unit }
 type RemoveOnClick = { id :: String, onClick :: MouseEvent -> Effect Unit }
 type RemoveOnMouseDown =
-  { id :: String, onMouseDown :: MouseEvent -> Effect (Effect Unit) }
+  { id :: String
+  , onMouseDown :: MouseEvent -> Effect (MouseEvent -> Effect Unit)
+  }
 type RemoveOnMouseUp = { id :: String, onMouseUp :: MouseEvent -> Effect Unit }
 type RemoveOnMouseMove =
   { id :: String, onMouseMove :: MouseEvent -> Effect Unit }
 type RemoveOnTouchStart =
   { id :: String
   , onTouchStart ::
-      Touch -> Effect { end :: Effect Unit, cancel :: Effect Unit }
+      Touch
+      -> Effect { end :: Touch -> Effect Unit, cancel :: Touch -> Effect Unit }
   }
 type RemoveOnTouchEnd =
   { id :: String, onTouchEnd :: Touch -> Effect Unit }
@@ -495,7 +501,7 @@ type SetIMOnClick =
 type SetIMOnMouseDown =
   { id :: String
   , instanceId :: Int
-  , onMouseDown :: MouseEvent -> Effect (Effect Unit)
+  , onMouseDown :: MouseEvent -> Effect (MouseEvent -> Effect Unit)
   }
 type SetIMOnMouseUp =
   { id :: String, instanceId :: Int, onMouseUp :: MouseEvent -> Effect Unit }
@@ -505,7 +511,8 @@ type SetIMOnTouchStart =
   { id :: String
   , instanceId :: Int
   , onTouchStart ::
-      Touch -> Effect { end :: Effect Unit, cancel :: Effect Unit }
+      Touch
+      -> Effect { end :: Touch -> Effect Unit, cancel :: Touch -> Effect Unit }
   }
 type SetIMOnTouchEnd =
   { id :: String, instanceId :: Int, onTouchEnd :: Touch -> Effect Unit }
@@ -518,7 +525,7 @@ type RemoveIMOnClick =
 type RemoveIMOnMouseDown =
   { id :: String
   , instanceId :: Int
-  , onMouseDown :: MouseEvent -> Effect (Effect Unit)
+  , onMouseDown :: MouseEvent -> Effect (MouseEvent -> Effect Unit)
   }
 type RemoveIMOnMouseUp =
   { id :: String, instanceId :: Int, onMouseUp :: MouseEvent -> Effect Unit }
@@ -528,7 +535,7 @@ type RemoveIMOnTouchStart =
   { id :: String
   , instanceId :: Int
   , onTouchStart ::
-      Touch -> Effect { end :: Effect Unit, cancel :: Effect Unit }
+      Touch -> Effect { end :: Touch -> Effect Unit, cancel :: Touch -> Effect Unit }
   }
 type RemoveIMOnTouchEnd =
   { id :: String, instanceId :: Int, onTouchEnd :: Touch -> Effect Unit }

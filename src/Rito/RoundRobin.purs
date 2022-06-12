@@ -29,11 +29,11 @@ import Web.UIEvent.MouseEvent (MouseEvent)
 newtype Instance = Instance
   ( Variant
       ( onClick :: MouseEvent -> Effect Unit
-      , onMouseDown :: MouseEvent -> Effect (Effect Unit)
+      , onMouseDown :: MouseEvent -> Effect (MouseEvent -> Effect Unit)
       , onMouseUp :: MouseEvent -> Effect Unit
       , onMouseMove :: MouseEvent -> Effect Unit
       , onTouchStart ::
-          Touch -> Effect { end :: Effect Unit, cancel :: Effect Unit }
+          Touch -> Effect { end :: Touch -> Effect Unit, cancel :: Touch -> Effect Unit }
       , onTouchEnd :: Touch -> Effect Unit
       , onTouchMove :: Touch -> Effect Unit
       , onTouchCancel :: Touch -> Effect Unit
