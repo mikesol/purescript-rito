@@ -327,7 +327,9 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 			const entries = Object.entries(state.listeners[eventName]);
 			const es =
 				eventName.indexOf("touch") !== -1 ? getAllTouches($e.touches) : [$e];
-			es.forEach((e) => {doFinalThunk(e, eventName, state);})
+			// todo: finesse for touches, some multi touch interactions will
+			// break this
+			doFinalThunk($e, eventName, state);
 			if (entries.length > 0) {
 				es.forEach((e) => {
 					const x = (e.clientX / window.innerWidth) * 2 - 1;

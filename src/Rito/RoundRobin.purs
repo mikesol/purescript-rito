@@ -23,7 +23,7 @@ import Foreign.Object as Object
 import Rito.Color (Color)
 import Rito.Core as C
 import Rito.Matrix4 (Matrix4)
-import Web.TouchEvent (Touch)
+import Web.TouchEvent (Touch, TouchEvent)
 import Web.UIEvent.MouseEvent (MouseEvent)
 
 newtype Instance = Instance
@@ -33,7 +33,7 @@ newtype Instance = Instance
       , onMouseUp :: MouseEvent -> Effect Unit
       , onMouseMove :: MouseEvent -> Effect Unit
       , onTouchStart ::
-          Touch -> Effect { end :: Touch -> Effect Unit, cancel :: Touch -> Effect Unit }
+          Touch -> Effect { end :: TouchEvent -> Effect Unit, cancel :: TouchEvent -> Effect Unit }
       , onTouchEnd :: Touch -> Effect Unit
       , onTouchMove :: Touch -> Effect Unit
       , onTouchCancel :: Touch -> Effect Unit

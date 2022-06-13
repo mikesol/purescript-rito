@@ -29,7 +29,7 @@ import Rito.Vector3 (Vector3)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM as Web.DOM
 import Web.HTML (HTMLCanvasElement)
-import Web.TouchEvent (Touch)
+import Web.TouchEvent (Touch, TouchEvent)
 import Web.UIEvent.MouseEvent (MouseEvent)
 
 class Sceneable ctor where
@@ -469,7 +469,7 @@ type SetOnTouchStart =
   { id :: String
   , onTouchStart ::
       Touch
-      -> Effect { end :: Touch -> Effect Unit, cancel :: Touch -> Effect Unit }
+      -> Effect { end :: TouchEvent -> Effect Unit, cancel :: TouchEvent -> Effect Unit }
   }
 type SetOnTouchEnd = { id :: String, onTouchEnd :: Touch -> Effect Unit }
 type SetOnTouchMove = { id :: String, onTouchMove :: Touch -> Effect Unit }
@@ -487,7 +487,7 @@ type RemoveOnTouchStart =
   { id :: String
   , onTouchStart ::
       Touch
-      -> Effect { end :: Touch -> Effect Unit, cancel :: Touch -> Effect Unit }
+      -> Effect { end :: TouchEvent -> Effect Unit, cancel :: TouchEvent -> Effect Unit }
   }
 type RemoveOnTouchEnd =
   { id :: String, onTouchEnd :: Touch -> Effect Unit }
@@ -512,7 +512,7 @@ type SetIMOnTouchStart =
   , instanceId :: Int
   , onTouchStart ::
       Touch
-      -> Effect { end :: Touch -> Effect Unit, cancel :: Touch -> Effect Unit }
+      -> Effect { end :: TouchEvent -> Effect Unit, cancel :: TouchEvent -> Effect Unit }
   }
 type SetIMOnTouchEnd =
   { id :: String, instanceId :: Int, onTouchEnd :: Touch -> Effect Unit }
@@ -535,7 +535,7 @@ type RemoveIMOnTouchStart =
   { id :: String
   , instanceId :: Int
   , onTouchStart ::
-      Touch -> Effect { end :: Touch -> Effect Unit, cancel :: Touch -> Effect Unit }
+      Touch -> Effect { end :: TouchEvent -> Effect Unit, cancel :: TouchEvent -> Effect Unit }
   }
 type RemoveIMOnTouchEnd =
   { id :: String, instanceId :: Int, onTouchEnd :: Touch -> Effect Unit }

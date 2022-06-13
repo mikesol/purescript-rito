@@ -17,7 +17,7 @@ import Foreign.Object as Object
 import Heterogeneous.Mapping (class Mapping, hmap)
 import Record (union)
 import Rito.Core as C
-import Web.TouchEvent (Touch)
+import Web.TouchEvent (Touch, TouchEvent)
 import Web.UIEvent.MouseEvent (MouseEvent)
 
 ----
@@ -26,7 +26,7 @@ type Mesh' = Variant
   , onMouseDown :: MouseEvent -> Effect (MouseEvent -> Effect Unit)
   , onMouseUp :: MouseEvent -> Effect Unit
   , onMouseMove :: MouseEvent -> Effect Unit
-  , onTouchStart :: Touch -> Effect { end :: Touch -> Effect Unit, cancel :: Touch -> Effect Unit }
+  , onTouchStart :: Touch -> Effect { end :: TouchEvent -> Effect Unit, cancel :: TouchEvent -> Effect Unit }
   , onTouchEnd :: Touch -> Effect Unit
   , onTouchMove :: Touch -> Effect Unit
   , onTouchCancel :: Touch -> Effect Unit
