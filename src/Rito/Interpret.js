@@ -281,6 +281,37 @@ const intersectInstance = (raycaster, mesh, instances, intersects = []) => {
 	return intersects;
 };
 
+const doFinalThunk = (e, eventName, state) => {
+	if (eventName === "mouseup") {
+		const entries = Object.entries(state.listeners["upformousedown"]);
+		entries.forEach(([k, val]) => {
+			val(e)();
+		});
+		state.listeners["upformousedown"] = {};
+	} else if (eventName === "touchend") {
+		const vals = Object.values(state.listeners["endfortouchstart"]);
+		vals.forEach((val) => {
+			val(e)();
+		});
+		state.listeners["endfortouchstart"] = {};
+	} else if (eventName === "touchcancel") {
+		const vals = Object.values(state.listeners["cancelfortouchstart"]);
+		vals.forEach((val) => {
+			val(e)();
+		});
+		state.listeners["cancelfortouchstart"] = {};
+	}
+};
+
+const assignThunk = (k, thunk, eventName, state) => {
+	if (eventName === "mousedown") {
+		state.listeners["upformousedown"][k] = thunk;
+	} else if (eventName === "touchstart") {
+		state.listeners["endfortouchstart"][k] = thunk.end;
+		state.listeners["cancelfortouchstart"][k] = thunk.cancel;
+	}
+};
+
 export const makeWebGLRenderer_ = (a) => (state) => () => {
 	const { id, ...parameters } = a;
 	const canvas = parameters.canvas;
@@ -294,30 +325,11 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 	const makeListener = (eventName) => {
 		canvas.addEventListener(eventName, ($e) => {
 			const entries = Object.entries(state.listeners[eventName]);
+			const es =
+				eventName.indexOf("touch") !== -1 ? getAllTouches($e.touches) : [$e];
+			es.forEach((e) => {doFinalThunk(e, eventName, state);})
 			if (entries.length > 0) {
-				const es =
-					eventName.indexOf("touch") !== -1 ? getAllTouches($e.touches) : [$e];
 				es.forEach((e) => {
-					// next step, copy this for touchdown
-					if (eventName === "mouseup") {
-						const vals = Object.values(state.listeners["upformousedown"]);
-						vals.forEach((val) => {
-							val(e)();
-						});
-						state.listeners["upformousedown"] = {};
-					} else if (eventName === "touchend") {
-						const vals = Object.values(state.listeners["endfortouchstart"]);
-						vals.forEach((val) => {
-							val(e)();
-						});
-						state.listeners["endfortouchstart"] = {};
-					} else if (eventName === "touchcancel") {
-						const vals = Object.values(state.listeners["cancelfortouchstart"]);
-						vals.forEach((val) => {
-							val(e)();
-						});
-						state.listeners["cancelfortouchstart"] = {};
-					}
 					const x = (e.clientX / window.innerWidth) * 2 - 1;
 					const y = -(e.clientY / window.innerHeight) * 2 + 1;
 					raycaster.setFromCamera({ x, y }, camera);
@@ -326,12 +338,7 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 						const intersects = raycaster.intersectObject(u);
 						if (intersects.length > 0) {
 							const thunk = v(e)();
-							if (eventName === "mousedown") {
-								state.listeners["upformousedown"][k] = thunk;
-							} else if (eventName === "touchstart") {
-								state.listeners["endfortouchstart"][k] = thunk.end;
-								state.listeners["cancelfortouchstart"][k] = thunk.cancel;
-							}
+							assignThunk(k, thunk, eventName, state);
 						}
 					});
 				});
@@ -341,8 +348,6 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 				state.listeners[eventName + "Instanced"]
 			);
 			if (instancedEntries.length > 0) {
-				const es =
-					eventName.indexOf("touch") !== -1 ? getAllTouches($e.touches) : [$e];
 				es.forEach((e) => {
 					const x = (e.clientX / window.innerWidth) * 2 - 1;
 					const y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -352,7 +357,8 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 						Object.entries(v).forEach(([kk, vv]) => {
 							const intersects = intersectInstance(raycaster, u, [kk]);
 							if (intersects.length > 0) {
-								vv(e)();
+								const thunk = vv(e)();
+								assignThunk(kk, thunk, eventName, state);
 							}
 						});
 					});
@@ -845,7 +851,7 @@ export const makeFFIThreeSnapshot =
 				touchcancelInstanced: {},
 				upformousedown: {},
 				endfortouchstart: {},
-				cancelfortouchstart: {}
+				cancelfortouchstart: {},
 			},
 		};
 	};
