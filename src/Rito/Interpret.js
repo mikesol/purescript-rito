@@ -869,7 +869,9 @@ export function disconnect_(a) {
 					state.units[ptr].main instanceof state.THREE.BufferGeometry ||
 					state.units[ptr].main instanceof state.THREE.Material
 				) {
-					state.units[ptr].main.dispose();
+					if (!state.units[ptr].main.isScene) {
+						state.units[ptr].main.dispose();
+					}
 				}
 			}
 		};
@@ -879,7 +881,7 @@ export function disconnect_(a) {
 export function deleteFromCache_(a) {
 	return function (state) {
 		return function () {
-			if (state.units[a.id].main.dispose) {
+			if (!state.units[a.id].main.isScene) {
 				state.units[a.id].main.dispose();
 			}
 			if (state.units[a.id].main.removeFromParent) {
