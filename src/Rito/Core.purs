@@ -69,6 +69,9 @@ type ALight lock payload = Entity Void (Light lock payload) Effect lock
 newtype CSS2DObject (lock :: Type) payload = CSS2DObject (Ctor payload)
 type ACSS2DObject lock payload = Entity Void (CSS2DObject lock payload) Effect
   lock
+newtype CSS3DObject (lock :: Type) payload = CSS3DObject (Ctor payload)
+type ACSS3DObject lock payload = Entity Void (CSS3DObject lock payload) Effect
+  lock
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
 newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
@@ -89,6 +92,9 @@ instance Sceneable Light where
   toScene = unsafeCoerce
 
 instance Sceneable CSS2DObject where
+  toScene = unsafeCoerce
+
+instance Sceneable CSS3DObject where
   toScene = unsafeCoerce
 
 instance Sceneable Mesh where
@@ -119,6 +125,9 @@ instance Groupable Sceneful where
   toGroup = unsafeCoerce
 
 instance Groupable CSS2DObject where
+  toGroup = unsafeCoerce
+
+instance Groupable CSS3DObject where
   toGroup = unsafeCoerce
 
 type WebGLRender = { id :: String, scene :: String, camera :: String }
@@ -155,6 +164,15 @@ newtype InitializeWebGLRenderer = InitializeWebGLRenderer
 type CSS2DRender = { id :: String, scene :: String, camera :: String }
 
 type MakeCSS2DRenderer =
+  { id :: String
+  , camera :: String
+  , canvas :: HTMLCanvasElement
+  , element :: Web.DOM.Element
+  }
+
+type CSS3DRender = { id :: String, scene :: String, camera :: String }
+
+type MakeCSS3DRenderer =
   { id :: String
   , camera :: String
   , canvas :: HTMLCanvasElement
@@ -212,6 +230,18 @@ type InitializeCSS2DObject' (nut :: Type) =
   )
 newtype InitializeCSS2DObject = InitializeCSS2DObject
   { | InitializeCSS2DObject' ANut }
+-- css3d
+type MakeCSS3DObject f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | InitializeCSS3DObject' Web.DOM.Element
+  }
+type InitializeCSS3DObject' (nut :: Type) =
+  ( nut :: nut
+  )
+newtype InitializeCSS3DObject = InitializeCSS3DObject
+  { | InitializeCSS3DObject' ANut }
 -- light
 type MakePointLight f s =
   { id :: String
@@ -828,9 +858,11 @@ newtype ThreeInterpret payload = ThreeInterpret
   { ids :: Effect String
   , webGLRender :: WebGLRender -> payload
   , css2DRender :: CSS2DRender -> payload
+  , css3DRender :: CSS3DRender -> payload
   --
   , makeWebGLRenderer :: MakeWebGLRenderer -> payload
   , makeCSS2DRenderer :: MakeCSS2DRenderer -> payload
+  , makeCSS3DRenderer :: MakeCSS3DRenderer -> payload
   , makeGroup :: MakeGroup Maybe Scope -> payload
   , makeScene :: MakeScene Maybe Scope -> payload
   , makeMesh :: MakeMesh Maybe Scope -> payload
@@ -847,6 +879,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
   , makeCSS2DObject :: MakeCSS2DObject Maybe Scope -> payload
+  , makeCSS3DObject :: MakeCSS3DObject Maybe Scope -> payload
   -- scene
   , setBackgroundCubeTexture :: SetBackgroundCubeTexture -> payload
   , setBackgroundTexture :: SetBackgroundTexture -> payload

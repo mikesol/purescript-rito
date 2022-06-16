@@ -5,6 +5,7 @@ module Rito.Interpret
   , threeAff
   , orbitControlsAff
   , css2DRendererAff
+  , css3DRendererAff
   ) where
 
 import Prelude
@@ -49,6 +50,7 @@ threeAff = toAffE three
 foreign import orbitControls :: Effect (Promise THREE.OrbitControls)
 orbitControlsAff :: Aff THREE.OrbitControls
 orbitControlsAff = toAffE orbitControls
+--
 type CSS2DRendererModuleCaps =
   { "CSS2DRenderer" :: THREE.CSS2DRenderer
   , "CSS2DObject" :: THREE.CSS2DObject
@@ -62,6 +64,21 @@ css2DRendererAff :: Aff CSS2DRendererModule
 css2DRendererAff = toAffE css2DRenderer <#>
   \{ "CSS2DRenderer": css2DRenderer', "CSS2DObject": css2DObject } ->
     { css2DRenderer: css2DRenderer', css2DObject }
+--
+type CSS3DRendererModuleCaps =
+  { "CSS3DRenderer" :: THREE.CSS3DRenderer
+  , "CSS3DObject" :: THREE.CSS3DObject
+  }
+type CSS3DRendererModule =
+  { css3DRenderer :: THREE.CSS3DRenderer
+  , css3DObject :: THREE.CSS3DObject
+  }
+foreign import css3DRenderer :: Effect (Promise CSS3DRendererModuleCaps)
+css3DRendererAff :: Aff CSS3DRendererModule
+css3DRendererAff = toAffE css3DRenderer <#>
+  \{ "CSS3DRenderer": css3DRenderer', "CSS3DObject": css3DObject } ->
+    { css3DRenderer: css3DRenderer', css3DObject }
+--
 foreign import makeFFIThreeSnapshot
   :: THREE.ThreeStuff
   -> Effect FFIThreeSnapshot
@@ -69,9 +86,11 @@ foreign import makeFFIThreeSnapshot
 --
 foreign import webGLRender_ :: Core.WebGLRender -> Payload
 foreign import css2DRender_ :: Core.CSS2DRender -> Payload
+foreign import css3DRender_ :: Core.CSS3DRender -> Payload
 --
 foreign import makeWebGLRenderer_ :: Core.MakeWebGLRenderer' -> Payload
 foreign import makeCSS2DRenderer_ :: Core.MakeCSS2DRenderer -> Payload
+foreign import makeCSS3DRenderer_ :: Core.MakeCSS3DRenderer -> Payload
 foreign import makePointLight_
   :: Core.MakePointLight Undefinable (Undefinable String) -> Payload
 foreign import makeAmbientLight_
@@ -102,6 +121,8 @@ foreign import makeMeshBasicMaterial_
   :: Core.MakeMeshBasicMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeCSS2DObject_
   :: Core.MakeCSS2DObject Undefinable (Undefinable String) -> Payload
+foreign import makeCSS3DObject_
+  :: Core.MakeCSS3DObject Undefinable (Undefinable String) -> Payload
 --
 foreign import deleteFromCache_ :: Core.DeleteFromCache -> Payload
 --
@@ -344,9 +365,11 @@ effectfulThreeInterpret = Core.ThreeInterpret
   -- render
   , webGLRender: webGLRender_
   , css2DRender: css2DRender_
+  , css3DRender: css3DRender_
   -- makers
   , makeWebGLRenderer: lcmap ffiize makeWebGLRenderer_
   , makeCSS2DRenderer: lcmap ffiize makeCSS2DRenderer_
+  , makeCSS3DRenderer: lcmap ffiize makeCSS3DRenderer_
   , makeScene: lcmap ffiize makeScene_
   , makeGroup: lcmap ffiize makeGroup_
   , makeMesh: lcmap ffiize makeMesh_
@@ -363,6 +386,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeMeshBasicMaterial: lcmap ffiize makeMeshBasicMaterial_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
   , makeCSS2DObject: lcmap ffiize makeCSS2DObject_
+  , makeCSS3DObject: lcmap ffiize makeCSS3DObject_
   -- scene
   , setBackgroundCubeTexture: setBackgroundCubeTexture_
   , setBackgroundTexture: setBackgroundTexture_

@@ -6,7 +6,10 @@ export const orbitControls = () =>
 export const css2DRenderer = () =>
 	import("three/examples/jsm/renderers/CSS2DRenderer.js");
 
-const GLOBAL_SCOPE = "@global@";
+export const css3DRenderer = () =>
+	import("three/examples/jsm/renderers/CSS3DRenderer.js");
+
+	const GLOBAL_SCOPE = "@global@";
 
 const genericMake_ = (ctor) => (conn) => (a) => (state) => () => {
 	const { id, scope, parent, ...rest } = a;
@@ -20,7 +23,7 @@ const genericMake_ = (ctor) => (conn) => (a) => (state) => () => {
 		parent: parent,
 		scope: $scope,
 		// uggggh
-		main: ctor(state.THREE, rest, state.CSS2DObject),
+		main: ctor(state.THREE, rest, state.CSS2DObject, state.CSS3DObject),
 	};
 	if (parent === undefined) {
 		return;
@@ -218,6 +221,11 @@ export const makeCSS2DObject_ = genericMake_(
 )((x, y) => {
 	y.main.add(x.main);
 });
+export const makeCSS3DObject_ = genericMake_(
+	(_, { nut }, _, CSS3DObject) => new CSS3DObject(nut)
+)((x, y) => {
+	y.main.add(x.main);
+});
 export const makeAmbientLight_ = genericMake_((THREE, { color, intensity }) => {
 	return new THREE.AmbientLight(color, intensity);
 })((x, y) => {
@@ -258,6 +266,12 @@ export const webGLRender_ = (a) => (state) => () => {
 	);
 };
 export const css2DRender_ = (a) => (state) => () => {
+	state.units[a.id].main.render(
+		state.units[a.scene].main,
+		state.units[a.camera].main
+	);
+};
+export const css3DRender_ = (a) => (state) => () => {
 	state.units[a.id].main.render(
 		state.units[a.scene].main,
 		state.units[a.camera].main
@@ -380,6 +394,12 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 export const makeCSS2DRenderer_ = (a) => (state) => () => {
 	const { id, canvas, element } = a;
 	const renderer = new state.CSS2DRenderer({ element });
+	renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+	state.units[id] = { main: renderer };
+};
+export const makeCSS3DRenderer_ = (a) => (state) => () => {
+	const { id, canvas, element } = a;
+	const renderer = new state.CSS3DRenderer({ element });
 	renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
 	state.units[id] = { main: renderer };
 };
@@ -822,13 +842,22 @@ export const setViewOffset_ =
 
 //
 export const makeFFIThreeSnapshot =
-	({ three, orbitControls, css2DRenderer, css2DObject }) =>
+	({
+		three,
+		orbitControls,
+		css2DRenderer,
+		css2DObject,
+		css3DRenderer,
+		css3DObject,
+	}) =>
 	() => {
 		return {
 			THREE: three,
 			OrbitControls: orbitControls,
 			CSS2DRenderer: css2DRenderer,
 			CSS2DObject: css2DObject,
+			CSS3DRenderer: css3DRenderer,
+			CSS3DRenderer: css3DObject,
 			units: {},
 			scopes: {},
 			// it's a bit hackish
