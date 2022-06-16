@@ -222,7 +222,7 @@ export const makeCSS2DObject_ = genericMake_(
 	y.main.add(x.main);
 });
 export const makeCSS3DObject_ = genericMake_(
-	(_, { nut }, _, CSS3DObject) => new CSS3DObject(nut)
+	(_, { nut }, __, CSS3DObject) => new CSS3DObject(nut)
 )((x, y) => {
 	y.main.add(x.main);
 });
