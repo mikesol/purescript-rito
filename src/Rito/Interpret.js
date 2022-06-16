@@ -857,7 +857,7 @@ export const makeFFIThreeSnapshot =
 			CSS2DRenderer: css2DRenderer,
 			CSS2DObject: css2DObject,
 			CSS3DRenderer: css3DRenderer,
-			CSS3DRenderer: css3DObject,
+			CSS3DObject: css3DObject,
 			units: {},
 			scopes: {},
 			// it's a bit hackish
