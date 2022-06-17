@@ -1,8 +1,5 @@
 module Rito.Geometries.Sphere
   ( sphere
-  , sphere_
-  , Sphere(..)
-  , Sphere'
   , class InitialSphere
   , SphereOptions
   , toInitializeSphere
@@ -10,15 +7,13 @@ module Rito.Geometries.Sphere
 
 import Prelude
 
-import Control.Alt ((<|>))
-import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
-import Data.Newtype (class Newtype)
 import Data.Number (pi)
-import Data.Variant (Variant, match)
-import FRP.Event (Event, bang, makeEvent, subscribe)
-import Record (union)
+import FRP.Event (bang, makeEvent, subscribe)
+import Foreign.Object (Object, empty)
+import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
+import Rito.InstancedBufferAttribute (InstancedBufferAttribute)
 import Rito.THREE as THREE
 
 twoPi = pi * 2.0 :: Number
@@ -80,6 +75,21 @@ instance
     Number where
   convertOption _ _ = identity
 
+
+instance
+  ConvertOption SphereOptions
+    "bufferAttributes"
+    (Object BufferAttribute)
+    (Object BufferAttribute) where
+  convertOption _ _ = identity
+
+instance
+  ConvertOption SphereOptions
+    "instancedBufferAttributes"
+    (Object InstancedBufferAttribute)
+    (Object InstancedBufferAttribute) where
+  convertOption _ _ = identity
+
 type SphereOptional =
   ( radius :: Number
   , widthSegments :: Int
@@ -88,6 +98,8 @@ type SphereOptional =
   , phiLength :: Number
   , thetaStart :: Number
   , thetaLength :: Number
+  , bufferAttributes :: Object BufferAttribute
+  , instancedBufferAttributes :: Object InstancedBufferAttribute
   )
 
 type SphereAll =
@@ -102,6 +114,8 @@ defaultSphere =
   , phiLength: twoPi
   , thetaStart: zero
   , thetaLength: twoPi
+  , bufferAttributes: empty
+  , instancedBufferAttributes: empty
   }
 
 class InitialSphere i where
@@ -117,42 +131,20 @@ instance
   toInitializeSphere provided = C.InitializeSphere
     (convertOptionsWithDefaults SphereOptions defaultSphere provided)
 
-type Sphere' = Variant
-  ( radius :: Number
-  , widthSegments :: Int
-  , heightSegments :: Int
-  , phiStart :: Number
-  , phiLength :: Number
-  , thetaStart :: Number
-  , thetaLength :: Number
-  | C.BufferGeometry
-  )
-newtype Sphere = Sphere Sphere'
-instance Newtype Sphere Sphere'
-
 sphere
   :: forall i lock payload
    . InitialSphere i
   => i
-  -> Event Sphere
   -> C.Geometry lock payload
-sphere i' atts = C.Geometry go
+sphere i' = C.Geometry go
   where
   C.InitializeSphere i = toInitializeSphere i'
   go
     parent
-    di@
       ( C.ThreeInterpret
           { ids
           , deleteFromCache
           , makeSphere
-          , setRadius
-          , setWidthSegments
-          , setHeightSegments
-          , setPhiStart
-          , setPhiLength
-          , setThetaStart
-          , setThetaLength
           }
       ) = makeEvent \k -> do
     me <- ids
@@ -171,33 +163,7 @@ sphere i' atts = C.Geometry go
             , phiLength: i.phiLength
             , thetaStart: i.thetaStart
             , thetaLength: i.thetaLength
+            , bufferAttributes: i.bufferAttributes
+            , instancedBufferAttributes: i.instancedBufferAttributes
             }
         )
-        <|>
-          ( map
-              ( \(Sphere e) -> match
-                  ( union
-                      { radius: setRadius <<< { id: me, radius: _ }
-                      , widthSegments: setWidthSegments <<<
-                          { id: me, widthSegments: _ }
-                      , heightSegments: setHeightSegments <<<
-                          { id: me, heightSegments: _ }
-                      , phiStart: setPhiStart <<< { id: me, phiStart: _ }
-                      , phiLength: setPhiLength <<< { id: me, phiLength: _ }
-                      , thetaStart: setThetaStart <<< { id: me, thetaStart: _ }
-                      , thetaLength: setThetaLength <<<
-                          { id: me, thetaLength: _ }
-                      }
-                      (C.bufferGeometry me di)
-                  )
-                  e
-              )
-              atts
-          )
-
-sphere_
-  :: forall i lock payload
-   . InitialSphere i
-  => i
-  -> C.Geometry lock payload
-sphere_ i = sphere i empty

@@ -35,6 +35,8 @@ data TBoxGeometry
 data TCapsuleGeometry
 data TPerspectiveCamera
 data TRaycaster
+data TBufferAttribute
+data TInstancedBufferAttribute
 
 foreign import css2DRenderer :: Effect (Promise TCSS2DRenderer)
 foreign import css2DObject :: Effect (Promise TCSS2DObject)
@@ -67,6 +69,8 @@ foreign import perspectiveCamera :: Effect (Promise TPerspectiveCamera)
 foreign import raycaster :: Effect (Promise TRaycaster)
 foreign import shaderMaterial :: Effect (Promise TShaderMaterial)
 foreign import rawShaderMaterial :: Effect (Promise TRawShaderMaterial)
+foreign import bufferAttribute :: Effect (Promise TBufferAttribute)
+foreign import instancedBufferAttribute :: Effect (Promise TInstancedBufferAttribute)
 
 css2DRendererAff = toAffE css2DRenderer :: Aff TCSS2DRenderer
 css2DObjectAff = toAffE css2DObject :: Aff TCSS2DObject
@@ -99,3 +103,5 @@ perspectiveCameraAff = toAffE perspectiveCamera :: Aff TPerspectiveCamera
 raycasterAff = toAffE raycaster :: Aff TRaycaster
 shaderMaterialAff = toAffE shaderMaterial :: Aff TShaderMaterial
 rawShaderMaterialAff = toAffE rawShaderMaterial :: Aff TRawShaderMaterial
+bufferAttributeAff = toAffE bufferAttribute :: Aff TBufferAttribute
+instancedBufferAttributeAff = toAffE instancedBufferAttribute :: Aff TInstancedBufferAttribute

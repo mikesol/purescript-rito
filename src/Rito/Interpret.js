@@ -60,49 +60,78 @@ export const connectMaterial_ = (a) => (state) => () => {
 	state.units[a.parent].main.material = state.units[a.id].main;
 };
 
+const withAtts = (f) => (ctor) => {
+	const o = f(ctor);
+	const bufferAttributes = Object.entries(ctor.bufferAttributes);
+	for (var i = 0; i < bufferAttributes.length; i++) {
+		o.setAttribute(bufferAttributes[i][0], bufferAttributes[i][1]);
+	}
+	const instancedBufferAttributes = Object.entries(
+		ctor.instancedBufferAttributes
+	);
+	for (var i = 0; i < instancedBufferAttributes.length; i++) {
+		o.setAttribute(
+			instancedBufferAttributes[i][0],
+			instancedBufferAttributes[i][1]
+		);
+	}
+	return o;
+};
+
 export const makeBox_ = genericMake_(
-	(ctor) =>
-		new ctor.box(
-			ctor.width,
-			ctor.height,
-			ctor.depth,
-			ctor.widthSegments,
-			ctor.heightSegments,
-			ctor.depthSegments
-		)
+	withAtts(
+		(ctor) =>
+			new ctor.box(
+				ctor.width,
+				ctor.height,
+				ctor.depth,
+				ctor.widthSegments,
+				ctor.heightSegments,
+				ctor.depthSegments
+			)
+	)
 )((x, y) => {
 	y.main.geometry = x.main;
 });
 export const makePlane_ = genericMake_(
-	(ctor) =>
-		new ctor.plane(ctor.width, ctor.height, ctor.widthSegments, ctor.heightSegments)
+	withAtts(
+		(ctor) =>
+			new ctor.plane(
+				ctor.width,
+				ctor.height,
+				ctor.widthSegments,
+				ctor.heightSegments
+			)
+	)
 )((x, y) => {
 	y.main.geometry = x.main;
 });
 export const makeCapsule_ = genericMake_(
-	(ctor) =>
-		new ctor.capsule(
-			ctor.radius,
-			ctor.length,
-			ctor.capSegments,
-			ctor.radialSegments
-		)
+	withAtts(
+		(ctor) =>
+			new ctor.capsule(
+				ctor.radius,
+				ctor.length,
+				ctor.capSegments,
+				ctor.radialSegments
+			)
+	)
 )((x, y) => {
 	y.main.geometry = x.main;
 });
 export const makeSphere_ = genericMake_(
-	(
-		ctor
-	) =>
-		new ctor.sphere(
-			ctor.radius,
-			ctor.widthSegments,
-			ctor.heightSegments,
-			ctor.phiStart,
-			ctor.phiLength,
-			ctor.thetaStart,
-			ctor.thetaLength
-		)
+	withAtts(
+		(ctor) =>
+			new ctor.sphere(
+				ctor.radius,
+				ctor.widthSegments,
+				ctor.heightSegments,
+				ctor.phiStart,
+				ctor.phiLength,
+				ctor.thetaStart,
+				ctor.thetaLength
+			)
+	)
 )((x, y) => {
 	y.main.geometry = x.main;
 });
@@ -218,12 +247,12 @@ export const makePointLight_ = genericMake_(
 )((x, y) => {
 	y.main.add(x.main);
 });
-export const makeShaderMaterial = genericMake_(
+export const makeShaderMaterial_ = genericMake_(
 	({ makeShaderMaterial, ...options }) => new makeShaderMaterial(options)
 )((x, y) => {
 	y.main.material = x.main;
 });
-export const makeRawShaderMaterial = genericMake_(
+export const makeRawShaderMaterial_ = genericMake_(
 	({ makeRawShaderMaterial, ...options }) => new makeRawShaderMaterial(options)
 )((x, y) => {
 	y.main.material = x.main;
@@ -234,8 +263,7 @@ export const makeMeshBasicMaterial_ = genericMake_(
 	y.main.material = x.main;
 });
 export const makeMeshStandardMaterial_ = genericMake_(
-	({ meshStandardMaterial, ...options }) =>
-		new meshStandardMaterial(options)
+	({ meshStandardMaterial, ...options }) => new meshStandardMaterial(options)
 )((x, y) => {
 	y.main.material = x.main;
 });
@@ -772,8 +800,8 @@ export const setPositionZ_ = (a) => (state) => () => {
 };
 // uniform
 export const setUniform_ = (a) => (state) => () => {
-		state.units[a.id].main.uniforms[a.key].value = a.value;
-}
+	state.units[a.id].main.uniforms[a.key].value = a.value;
+};
 // perspective camera
 export const setAspect_ = (a) => (state) => () => {
 	state.units[a.id].main.aspect = a.aspect;

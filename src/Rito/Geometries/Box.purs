@@ -1,8 +1,5 @@
 module Rito.Geometries.Box
   ( box
-  , box_
-  , Box(..)
-  , Box'
   , class InitialBox
   , BoxOptions
   , toInitializeBox
@@ -10,14 +7,12 @@ module Rito.Geometries.Box
 
 import Prelude
 
-import Control.Alt ((<|>))
-import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
-import Data.Newtype (class Newtype)
-import Data.Variant (Variant, match)
-import FRP.Event (Event, bang, makeEvent, subscribe)
-import Record (union)
+import FRP.Event (bang, makeEvent, subscribe)
+import Foreign.Object (Object, empty)
+import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
+import Rito.InstancedBufferAttribute (InstancedBufferAttribute)
 import Rito.THREE as THREE
 
 data BoxOptions = BoxOptions
@@ -71,6 +66,20 @@ instance
     Int where
   convertOption _ _ = identity
 
+instance
+  ConvertOption BoxOptions
+    "bufferAttributes"
+    (Object BufferAttribute)
+    (Object BufferAttribute) where
+  convertOption _ _ = identity
+
+instance
+  ConvertOption BoxOptions
+    "instancedBufferAttributes"
+    (Object InstancedBufferAttribute)
+    (Object InstancedBufferAttribute) where
+  convertOption _ _ = identity
+
 type BoxOptional =
   ( width :: Number
   , height :: Number
@@ -78,6 +87,8 @@ type BoxOptional =
   , widthSegments :: Int
   , heightSegments :: Int
   , depthSegments :: Int
+  , bufferAttributes :: Object BufferAttribute
+  , instancedBufferAttributes :: Object InstancedBufferAttribute
   )
 
 type BoxAll =
@@ -91,6 +102,8 @@ defaultBox =
   , widthSegments: 1
   , heightSegments: 1
   , depthSegments: 1
+  , bufferAttributes: empty
+  , instancedBufferAttributes: empty
   }
 
 class InitialBox i where
@@ -106,40 +119,20 @@ instance
   toInitializeBox provided = C.InitializeBox
     (convertOptionsWithDefaults BoxOptions defaultBox provided)
 
-type Box' = Variant
-  ( width :: Number
-  , height :: Number
-  , depth :: Number
-  , widthSegments :: Int
-  , heightSegments :: Int
-  , depthSegments :: Int
-  | C.BufferGeometry
-  )
-newtype Box = Box Box'
-instance Newtype Box Box'
-
 box
   :: forall i lock payload
    . InitialBox i
   => i
-  -> Event Box
   -> C.Geometry lock payload
-box i' atts = C.Geometry go
+box i' = C.Geometry go
   where
   C.InitializeBox i = toInitializeBox i'
   go
     parent
-    di@
       ( C.ThreeInterpret
           { ids
           , deleteFromCache
           , makeBox
-          , setWidth
-          , setHeight
-          , setDepth
-          , setWidthSegments
-          , setHeightSegments
-          , setDepthSegments
           }
       ) = makeEvent \k -> do
     me <- ids
@@ -157,32 +150,7 @@ box i' atts = C.Geometry go
             , widthSegments: i.widthSegments
             , heightSegments: i.heightSegments
             , depthSegments: i.depthSegments
+            , bufferAttributes: i.bufferAttributes
+            , instancedBufferAttributes: i.instancedBufferAttributes
             }
         )
-        <|>
-          ( map
-              ( \(Box e) -> match
-                  ( union
-                      { width: setWidth <<< { id: me, width: _ }
-                      , height: setHeight <<< { id: me, height: _ }
-                      , depth: setDepth <<< { id: me, depth: _ }
-                      , widthSegments: setWidthSegments <<<
-                          { id: me, widthSegments: _ }
-                      , heightSegments: setHeightSegments <<<
-                          { id: me, heightSegments: _ }
-                      , depthSegments: setDepthSegments <<<
-                          { id: me, depthSegments: _ }
-                      }
-                      (C.bufferGeometry me di)
-                  )
-                  e
-              )
-              atts
-          )
-
-box_
-  :: forall i lock payload
-   . InitialBox i
-  => i
-  -> C.Geometry lock payload
-box_ i = box i empty

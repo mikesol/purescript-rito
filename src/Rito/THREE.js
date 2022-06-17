@@ -41,45 +41,82 @@ export const quaternion = () =>
 export const matrix4 = () =>
 	import("three/src/math/Matrix4.js").then((r) => r.Matrix4);
 
-export const color = () => import("three/src/math/Color.js").then((r) => r.Color);
+export const color = () =>
+	import("three/src/math/Color.js").then((r) => r.Color);
 
 export const box3 = () => import("three/src/math/Box3.js").then((r) => r.Box3);
 
-export const scene = () => import("three/src/scenes/Scene.js").then((r) => r.Scene);
+export const scene = () =>
+	import("three/src/scenes/Scene.js").then((r) => r.Scene);
 
-export const group = () => import("three/src/objects/Group.js").then((r) => r.Group);
+export const group = () =>
+	import("three/src/objects/Group.js").then((r) => r.Group);
 
-export const webGLRenderer = () => import("three/src/renderers/WebGLRenderer.js").then((r) => r.WebGLRenderer);
+export const webGLRenderer = () =>
+	import("three/src/renderers/WebGLRenderer.js").then((r) => r.WebGLRenderer);
 
-export const mesh = () => import("three/src/objects/Mesh.js").then((r) => r.Mesh);
+export const mesh = () =>
+	import("three/src/objects/Mesh.js").then((r) => r.Mesh);
 
-export const instancedMesh = () => import("three/src/objects/InstancedMesh.js").then((r) => r.InstancedMesh);
+export const instancedMesh = () =>
+	import("three/src/objects/InstancedMesh.js").then((r) => r.InstancedMesh);
 
-export const meshStandardMaterial = () => import("three/src/materials/MeshStandardMaterial.js").then((r) => r.MeshStandardMaterial);
+export const meshStandardMaterial = () =>
+	import("three/src/materials/MeshStandardMaterial.js").then(
+		(r) => r.MeshStandardMaterial
+	);
 
-export const meshBasicMaterial = () => import("three/src/materials/MeshBasicMaterial.js").then((r) => r.MeshBasicMaterial);
+export const meshBasicMaterial = () =>
+	import("three/src/materials/MeshBasicMaterial.js").then(
+		(r) => r.MeshBasicMaterial
+	);
 
-export const pointLight = () => import("three/src/lights/PointLight.js").then((r) => r.PointLight);
+export const pointLight = () =>
+	import("three/src/lights/PointLight.js").then((r) => r.PointLight);
 
-export const directionalLight = () => import("three/src/lights/DirectionalLight.js").then((r) => r.DirectionalLight);
+export const directionalLight = () =>
+	import("three/src/lights/DirectionalLight.js").then(
+		(r) => r.DirectionalLight
+	);
 
-export const ambientLight = () => import("three/src/lights/AmbientLight.js").then((r) => r.AmbientLight);
+export const ambientLight = () =>
+	import("three/src/lights/AmbientLight.js").then((r) => r.AmbientLight);
 
-export const sphereGeometry = () => import("three/src/geometries/SphereGeometry.js").then((r) => r.SphereGeometry);
+export const sphereGeometry = () =>
+	import("three/src/geometries/SphereGeometry.js").then(
+		(r) => r.SphereGeometry
+	);
 
-export const boxGeometry = () => import("three/src/geometries/BoxGeometry.js").then((r) => r.BoxGeometry);
+export const boxGeometry = () =>
+	import("three/src/geometries/BoxGeometry.js").then((r) => r.BoxGeometry);
 
-export const capsuleGeometry = () => import("three/src/geometries/CapsuleGeometry.js").then((r) => r.CapsuleGeometry);
+export const capsuleGeometry = () =>
+	import("three/src/geometries/CapsuleGeometry.js").then(
+		(r) => r.CapsuleGeometry
+	);
 
-export const planeGeometry = () => import("three/src/geometries/PlaneGeometry.js").then((r) => r.PlaneGeometry);
+export const planeGeometry = () =>
+	import("three/src/geometries/PlaneGeometry.js").then((r) => r.PlaneGeometry);
 
-export const perspectiveCamera = () => import("three/src/cameras/PerspectiveCamera.js").then((r) => r.PerspectiveCamera);
+export const perspectiveCamera = () =>
+	import("three/src/cameras/PerspectiveCamera.js").then(
+		(r) => r.PerspectiveCamera
+	);
 
-export const raycaster = () => import("three/src/core/Raycaster.js").then((r) => r.Raycaster);
+export const raycaster = () =>
+	import("three/src/core/Raycaster.js").then((r) => r.Raycaster);
 
-export const shaderMaterial = () => import("three/src/materials/ShaderMaterial.js").then((r) => r.ShaderMaterial);
+export const shaderMaterial = () =>
+	import("three/src/materials/ShaderMaterial.js").then((r) => r.ShaderMaterial);
 
 export const rawShaderMaterial = () =>
 	import("three/src/materials/RawShaderMaterial.js").then(
 		(r) => r.RawShaderMaterial
+	);
+
+export const bufferAttribute = () =>
+	import("three/src/core/BufferAttribute.js").then((r) => r.BufferAttribute);
+export const instancedBufferAttribute = () =>
+	import("three/src/core/InstancedBufferAttribute.js").then(
+		(r) => r.InstancedBufferAttribute
 	);

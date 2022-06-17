@@ -195,7 +195,6 @@ runThree tdi delt canvas iw ih e = do
               , widthSegments: 32
               , heightSegments: 32
               }
-              empty
           )
         )
         \mySphere -> globalScenePortal1

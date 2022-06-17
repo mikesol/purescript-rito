@@ -1,8 +1,5 @@
 module Rito.Geometries.Capsule
   ( capsule
-  , capsule_
-  , Capsule(..)
-  , Capsule'
   , class InitialCapsule
   , CapsuleOptions
   , toInitializeCapsule
@@ -10,14 +7,12 @@ module Rito.Geometries.Capsule
 
 import Prelude
 
-import Control.Alt ((<|>))
-import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
-import Data.Newtype (class Newtype)
-import Data.Variant (Variant, match)
-import FRP.Event (Event, bang, makeEvent, subscribe)
-import Record (union)
+import FRP.Event (bang, makeEvent, subscribe)
+import Foreign.Object (Object, empty)
+import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
+import Rito.InstancedBufferAttribute (InstancedBufferAttribute)
 import Rito.THREE as THREE
 
 data CapsuleOptions = CapsuleOptions
@@ -57,11 +52,27 @@ instance
     Int where
   convertOption _ _ = identity
 
+instance
+  ConvertOption CapsuleOptions
+    "bufferAttributes"
+    (Object BufferAttribute)
+    (Object BufferAttribute) where
+  convertOption _ _ = identity
+
+instance
+  ConvertOption CapsuleOptions
+    "instancedBufferAttributes"
+    (Object InstancedBufferAttribute)
+    (Object InstancedBufferAttribute) where
+  convertOption _ _ = identity
+
 type CapsuleOptional =
   ( radius :: Number
   , length :: Number
   , radialSegments :: Int
   , capSegments :: Int
+  , bufferAttributes :: Object BufferAttribute
+  , instancedBufferAttributes :: Object InstancedBufferAttribute
   )
 
 type CapsuleAll =
@@ -73,6 +84,8 @@ defaultCapsule =
   , length: 1.0
   , radialSegments: 4
   , capSegments: 8
+  , bufferAttributes: empty
+  , instancedBufferAttributes: empty
   }
 
 class InitialCapsule i where
@@ -88,38 +101,22 @@ instance
   toInitializeCapsule provided = C.InitializeCapsule
     (convertOptionsWithDefaults CapsuleOptions defaultCapsule provided)
 
-type Capsule' = Variant
-  ( radius :: Number
-  , length :: Number
-  , radialSegments :: Int
-  , capSegments :: Int
-  | C.BufferGeometry
-  )
-newtype Capsule = Capsule Capsule'
-instance Newtype Capsule Capsule'
-
 capsule
   :: forall i lock payload
    . InitialCapsule i
   => i
-  -> Event Capsule
   -> C.Geometry lock payload
-capsule i' atts = C.Geometry go
+capsule i' = C.Geometry go
   where
   C.InitializeCapsule i = toInitializeCapsule i'
   go
     parent
-    di@
-      ( C.ThreeInterpret
-          { ids
-          , deleteFromCache
-          , makeCapsule
-          , setRadius
-          , setLength
-          , setRadialSegments
-          , setCapSegments
-          }
-      ) = makeEvent \k -> do
+    ( C.ThreeInterpret
+        { ids
+        , deleteFromCache
+        , makeCapsule
+        }
+    ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
@@ -133,29 +130,7 @@ capsule i' atts = C.Geometry go
             , length: i.length
             , radialSegments: i.radialSegments
             , capSegments: i.capSegments
+            , bufferAttributes: i.bufferAttributes
+            , instancedBufferAttributes: i.instancedBufferAttributes
             }
         )
-        <|>
-          ( map
-              ( \(Capsule e) -> match
-                  ( union
-                      { radius: setRadius <<< { id: me, radius: _ }
-                      , length: setLength <<< { id: me, length: _ }
-                      , radialSegments: setRadialSegments <<<
-                          { id: me, radialSegments: _ }
-                      , capSegments: setCapSegments <<<
-                          { id: me, capSegments: _ }
-                      }
-                      (C.bufferGeometry me di)
-                  )
-                  e
-              )
-              atts
-          )
-
-capsule_
-  :: forall i lock payload
-   . InitialCapsule i
-  => i
-  -> C.Geometry lock payload
-capsule_ i = capsule i empty

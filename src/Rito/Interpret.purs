@@ -15,13 +15,16 @@ import Data.Symbol (class IsSymbol)
 import Effect (Effect)
 import Effect.Random as R
 import Foreign (Foreign)
+import Foreign.Object (Object)
 import Prim.Row (class Cons, class Lacks)
 import Prim.RowList (class RowToList)
 import Prim.RowList as RL
 import Record (get)
 import Record.Builder (Builder, insert, build)
+import Rito.BufferAttribute (BufferAttribute)
 import Rito.Color (Color)
 import Rito.Core as Core
+import Rito.InstancedBufferAttribute (InstancedBufferAttribute)
 import Rito.NormalMapTypes (NormalMapType(..))
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
@@ -237,6 +240,15 @@ foreign import disconnect_ :: Core.Disconnect -> Payload
 
 class FFIMe i o | i -> o where
   ffiMe :: i -> o
+
+instance FFIMe BufferAttribute BufferAttribute where
+  ffiMe = identity
+
+instance FFIMe InstancedBufferAttribute InstancedBufferAttribute where
+  ffiMe = identity
+
+instance FFIMe a b => FFIMe (Object a) (Object b) where
+  ffiMe = map ffiMe
 
 instance FFIMe Int Int where
   ffiMe = identity

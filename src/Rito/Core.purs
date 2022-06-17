@@ -10,11 +10,14 @@ import Deku.Core (ANut)
 import Effect (Effect)
 import FRP.Event (Event)
 import Foreign (Foreign)
+import Foreign.Object as Object
 import Record (union)
 import Rito.Box3 as Box3
+import Rito.BufferAttribute (BufferAttribute)
 import Rito.Color (Color)
 import Rito.CubeTexture (CubeTexture)
 import Rito.Euler (Euler)
+import Rito.InstancedBufferAttribute (InstancedBufferAttribute)
 import Rito.Matrix4 (Matrix4)
 import Rito.NormalMapTypes (NormalMapType)
 import Rito.Quaternion (Quaternion)
@@ -228,6 +231,7 @@ type InitializeSphere' =
   , phiLength :: Number
   , thetaStart :: Number
   , thetaLength :: Number
+  | Buffy
   )
 -- css
 type MakeCSS2DObject f s =
@@ -404,6 +408,10 @@ type MakeBox f s =
   , parent :: f String
   | InitializeBox'
   }
+type Buffy =
+  ( bufferAttributes :: Object.Object BufferAttribute
+  , instancedBufferAttributes :: Object.Object InstancedBufferAttribute
+  )
 type InitializeBox' =
   ( box :: THREE.TBoxGeometry
   , width :: Number
@@ -412,6 +420,7 @@ type InitializeBox' =
   , widthSegments :: Int
   , heightSegments :: Int
   , depthSegments :: Int
+  | Buffy
   )
 newtype InitializeBox = InitializeBox { | InitializeBox' }
 
@@ -427,6 +436,7 @@ type InitializeCapsule' =
   , length :: Number
   , capSegments :: Int
   , radialSegments :: Int
+  | Buffy
   )
 newtype InitializeCapsule = InitializeCapsule { | InitializeCapsule' }
 type MakePlane f s =
@@ -441,6 +451,7 @@ type InitializePlane' =
   , height :: Number
   , widthSegments :: Int
   , heightSegments :: Int
+  | Buffy
   )
 newtype InitializePlane = InitializePlane { | InitializePlane' }
 type MakePerspectiveCamera f s =
