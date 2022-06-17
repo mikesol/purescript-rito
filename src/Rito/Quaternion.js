@@ -1,1 +1,4 @@
-export const ctor_ = THREE => ({x,y,z,w}) => new THREE.Quaternion(x,y,z,w);
+export const ctor_ =
+	(quaternion) =>
+	({ x, y, z, w }) =>
+		new quaternion(x, y, z, w);

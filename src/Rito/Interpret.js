@@ -1,15 +1,4 @@
-export const three = () => import("three");
-export const orbitControls = () =>
-	import("three/examples/jsm/controls/OrbitControls.js").then(
-		(r) => r.OrbitControls
-	);
-export const css2DRenderer = () =>
-	import("three/examples/jsm/renderers/CSS2DRenderer.js");
-
-export const css3DRenderer = () =>
-	import("three/examples/jsm/renderers/CSS3DRenderer.js");
-
-	const GLOBAL_SCOPE = "@global@";
+const GLOBAL_SCOPE = "@global@";
 
 const genericMake_ = (ctor) => (conn) => (a) => (state) => () => {
 	const { id, scope, parent, ...rest } = a;
@@ -23,7 +12,7 @@ const genericMake_ = (ctor) => (conn) => (a) => (state) => () => {
 		parent: parent,
 		scope: $scope,
 		// uggggh
-		main: ctor(state.THREE, rest, state.CSS2DObject, state.CSS3DObject),
+		main: ctor(rest),
 	};
 	if (parent === undefined) {
 		return;
@@ -72,68 +61,55 @@ export const connectMaterial_ = (a) => (state) => () => {
 };
 
 export const makeBox_ = genericMake_(
-	(
-		THREE,
-		{ width, height, depth, widthSegments, heightSegments, depthSegments }
-	) =>
-		new THREE.BoxGeometry(
-			width,
-			height,
-			depth,
-			widthSegments,
-			heightSegments,
-			depthSegments
+	(ctor) =>
+		new ctor.box(
+			ctor.width,
+			ctor.height,
+			ctor.depth,
+			ctor.widthSegments,
+			ctor.heightSegments,
+			ctor.depthSegments
 		)
 )((x, y) => {
 	y.main.geometry = x.main;
 });
 export const makePlane_ = genericMake_(
-	(THREE, { width, height, widthSegments, heightSegments }) =>
-		new THREE.PlaneGeometry(width, height, widthSegments, heightSegments)
+	(ctor) =>
+		new ctor.plane(ctor.width, ctor.height, ctor.widthSegments, ctor.heightSegments)
 )((x, y) => {
 	y.main.geometry = x.main;
 });
 export const makeCapsule_ = genericMake_(
-	(THREE, { radius, length, capSegments, radialSegments }) =>
-		new THREE.CapsuleGeometry(radius, length, capSegments, radialSegments)
-)((x, y) => {
-	y.main.geometry = x.main;
-});
-export const makeTorus_ = genericMake_(
-	(THREE, { radius, tube, radialSegments, tubularSegments, arc }) =>
-		new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc)
+	(ctor) =>
+		new ctor.capsule(
+			ctor.radius,
+			ctor.length,
+			ctor.capSegments,
+			ctor.radialSegments
+		)
 )((x, y) => {
 	y.main.geometry = x.main;
 });
 export const makeSphere_ = genericMake_(
 	(
-		THREE,
-		{
-			radius,
-			widthSegments,
-			heightSegments,
-			phiStart,
-			phiLength,
-			thetaStart,
-			thetaLength,
-		}
+		ctor
 	) =>
-		new THREE.SphereGeometry(
-			radius,
-			widthSegments,
-			heightSegments,
-			phiStart,
-			phiLength,
-			thetaStart,
-			thetaLength
+		new ctor.sphere(
+			ctor.radius,
+			ctor.widthSegments,
+			ctor.heightSegments,
+			ctor.phiStart,
+			ctor.phiLength,
+			ctor.thetaStart,
+			ctor.thetaLength
 		)
 )((x, y) => {
 	y.main.geometry = x.main;
 });
 export const makePerspectiveCamera_ = (a) => (state) => () => {
 	genericMake_(
-		(THREE, { fov, aspect, near, far }) =>
-			new THREE.PerspectiveCamera(fov, aspect, near, far)
+		(ctor) =>
+			new ctor.perspectiveCamera(ctor.fov, ctor.aspect, ctor.near, ctor.far)
 	)(() => {})(a)(state)();
 };
 
@@ -143,12 +119,12 @@ const ascSort = function (a, b) {
 // COPY of generic make, needed because indexed mesh is a bit different
 export const makeInstancedMesh_ = (a) => (state) => () => {
 	// ugggghhhh
-	const _instanceLocalMatrix = /*@__PURE__*/ new state.THREE.Matrix4();
-	const _instanceWorldMatrix = /*@__PURE__*/ new state.THREE.Matrix4();
+	const _instanceLocalMatrix = /*@__PURE__*/ new a.matrix4();
+	const _instanceWorldMatrix = /*@__PURE__*/ new a.matrix4();
 
 	const _instanceIntersects = [];
-	const _mesh = /*@__PURE__*/ new state.THREE.Mesh();
-	class MyInstancedMesh extends state.THREE.InstancedMesh {
+	const _mesh = /*@__PURE__*/ new a.mesh();
+	class MyInstancedMesh extends a.instancedMesh {
 		constructor(geometry, material, count) {
 			super(geometry, material, count);
 		}
@@ -213,50 +189,51 @@ export const makeInstancedMesh_ = (a) => (state) => () => {
 	}
 	state.units[parent].main.add(state.units[id].main);
 };
-export const makeMesh_ = genericMake_((THREE) => new THREE.Mesh())((x, y) => {
+export const makeMesh_ = genericMake_((ctor) => new ctor.mesh())((x, y) => {
 	y.main.add(x.main);
 });
 export const makeCSS2DObject_ = genericMake_(
-	(_, { nut }, CSS2DObject) => new CSS2DObject(nut)
+	(ctor) => new ctor.css2DObject(ctor.nut)
 )((x, y) => {
 	y.main.add(x.main);
 });
 export const makeCSS3DObject_ = genericMake_(
-	(_, { nut }, __, CSS3DObject) => new CSS3DObject(nut)
+	(ctor) => new ctor.css3DObject(ctor.nut)
 )((x, y) => {
 	y.main.add(x.main);
 });
-export const makeAmbientLight_ = genericMake_((THREE, { color, intensity }) => {
-	return new THREE.AmbientLight(color, intensity);
+export const makeAmbientLight_ = genericMake_((ctor) => {
+	return new ctor.ambientLight(ctor.color, ctor.intensity);
 })((x, y) => {
 	y.main.add(x.main);
 });
 export const makeDirectionalLight_ = genericMake_(
-	(THREE, { color, intensity }) => new THREE.DirectionalLight(color, intensity)
+	(ctor) => new ctor.directionalLight(ctor.color, ctor.intensity)
 )((x, y) => {
 	y.main.add(x.main);
 });
 export const makePointLight_ = genericMake_(
-	(THREE, { color, intensity, distance, decay }) =>
-		new THREE.PointLight(color, intensity, distance, decay)
+	(ctor) =>
+		new ctor.pointLight(ctor.color, ctor.intensity, ctor.distance, ctor.decay)
 )((x, y) => {
 	y.main.add(x.main);
 });
 export const makeMeshBasicMaterial_ = genericMake_(
-	(THREE, options) => new THREE.MeshBasicMaterial(options)
+	({ meshBasicMaterial, ...options }) => new meshBasicMaterial(options)
 )((x, y) => {
 	y.main.material = x.main;
 });
 export const makeMeshStandardMaterial_ = genericMake_(
-	(THREE, options) => new THREE.MeshStandardMaterial(options)
+	({ meshStandardMaterial, ...options }) =>
+		new meshStandardMaterial(options)
 )((x, y) => {
 	y.main.material = x.main;
 });
 export const setSize_ = (a) => (state) => () => {
 	state.units[a.id].main.setSize(a.width, a.height);
 };
-export const makeScene_ = genericMake_((THREE) => new THREE.Scene())(() => {});
-export const makeGroup_ = genericMake_((THREE) => new THREE.Group())((x, y) => {
+export const makeScene_ = genericMake_((ctor) => new ctor.scene())(() => {});
+export const makeGroup_ = genericMake_((ctor) => new ctor.group())((x, y) => {
 	y.main.add(x.main);
 });
 export const webGLRender_ = (a) => (state) => () => {
@@ -329,11 +306,11 @@ const assignThunk = (k, thunk, eventName, state) => {
 export const makeWebGLRenderer_ = (a) => (state) => () => {
 	const { id, ...parameters } = a;
 	const canvas = parameters.canvas;
-	const renderer = new state.THREE.WebGLRenderer(parameters);
+	const renderer = new a.webGLRenderer(parameters);
 	state.units[a.id] = { main: renderer };
 	renderer.setSize(canvas.width, canvas.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-	const raycaster = new state.THREE.Raycaster();
+	const raycaster = new a.raycaster();
 	const camera = state.units[parameters.camera].main;
 
 	const makeListener = (eventName) => {
@@ -393,13 +370,13 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 };
 export const makeCSS2DRenderer_ = (a) => (state) => () => {
 	const { id, canvas, element } = a;
-	const renderer = new state.CSS2DRenderer({ element });
+	const renderer = new a.css2DRenderer({ element });
 	renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
 	state.units[id] = { main: renderer };
 };
 export const makeCSS3DRenderer_ = (a) => (state) => () => {
 	const { id, canvas, element } = a;
-	const renderer = new state.CSS3DRenderer({ element });
+	const renderer = new a.css3DRenderer({ element });
 	renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
 	state.units[id] = { main: renderer };
 };
@@ -783,12 +760,6 @@ export const setPositionY_ = (a) => (state) => () => {
 export const setPositionZ_ = (a) => (state) => () => {
 	state.units[a.id].main.position.z = a.positionZ;
 };
-// camera
-export const withWorldDirection_ = (a) => (state) => () => {
-	const v3 = new state.THREE.Vector3();
-	state.units[a.id].main.getWorldDirection(v3);
-	a.withWorldDirection(v3)(state)();
-};
 
 // perspective camera
 export const setAspect_ = (a) => (state) => () => {
@@ -841,51 +812,36 @@ export const setViewOffset_ =
 	};
 
 //
-export const makeFFIThreeSnapshot =
-	({
-		three,
-		orbitControls,
-		css2DRenderer,
-		css2DObject,
-		css3DRenderer,
-		css3DObject,
-	}) =>
-	() => {
-		return {
-			THREE: three,
-			OrbitControls: orbitControls,
-			CSS2DRenderer: css2DRenderer,
-			CSS2DObject: css2DObject,
-			CSS3DRenderer: css3DRenderer,
-			CSS3DObject: css3DObject,
-			units: {},
-			scopes: {},
-			// it's a bit hackish
-			// no, not a bit, it's mega hackish
-			// but we hook up our listeners here
-			listeners: {
-				click: {},
-				mousemove: {},
-				mouseup: {},
-				mousedown: {},
-				touchstart: {},
-				touchend: {},
-				touchmove: {},
-				touchcancel: {},
-				clickInstanced: {},
-				mousemoveInstanced: {},
-				mouseupInstanced: {},
-				mousedownInstanced: {},
-				touchstartInstanced: {},
-				touchendInstanced: {},
-				touchmoveInstanced: {},
-				touchcancelInstanced: {},
-				upformousedown: {},
-				endfortouchstart: {},
-				cancelfortouchstart: {},
-			},
-		};
+export const makeFFIThreeSnapshot = () => {
+	return {
+		units: {},
+		scopes: {},
+		// it's a bit hackish
+		// no, not a bit, it's mega hackish
+		// but we hook up our listeners here
+		listeners: {
+			click: {},
+			mousemove: {},
+			mouseup: {},
+			mousedown: {},
+			touchstart: {},
+			touchend: {},
+			touchmove: {},
+			touchcancel: {},
+			clickInstanced: {},
+			mousemoveInstanced: {},
+			mouseupInstanced: {},
+			mousedownInstanced: {},
+			touchstartInstanced: {},
+			touchendInstanced: {},
+			touchmoveInstanced: {},
+			touchcancelInstanced: {},
+			upformousedown: {},
+			endfortouchstart: {},
+			cancelfortouchstart: {},
+		},
 	};
+};
 
 export function disconnect_(a) {
 	return function (state) {
@@ -895,15 +851,10 @@ export function disconnect_(a) {
 			state.units[ptr].main.removeFromParent();
 			if (a.scope !== GLOBAL_SCOPE) {
 				if (
-					state.units[ptr].main instanceof state.THREE.BufferGeometry ||
-					state.units[ptr].main instanceof state.THREE.Material
+					state.units[ptr].main.isBufferGeometry ||
+					state.units[ptr].main.isMaterial
 				) {
-					if (
-						!state.units[ptr].main.isScene &&
-						state.units[a.id].main.dispose
-					) {
-						state.units[ptr].main.dispose();
-					}
+					state.units[ptr].main.dispose();
 				}
 			}
 		};

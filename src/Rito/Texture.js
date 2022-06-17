@@ -1,4 +1,4 @@
-export const loader = (THREE) => () => new THREE.TextureLoader();
+export const loader = (textureLoader) => () => new textureLoader();
 
 export const load = (loader) => (url) => (onLoad) => (onError) => () => {
 	loader.load(

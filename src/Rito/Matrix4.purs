@@ -53,14 +53,14 @@ type Matrix4' =
   , n43 :: Number
   , n44 :: Number
   }
-foreign import ctor_ :: THREE.Three -> Matrix4
+foreign import ctor_ :: THREE.TMatrix4 -> Matrix4
 foreign import equals_ :: Matrix4 -> Matrix4 -> Boolean
-foreign import set_ :: THREE.Three -> Matrix4' -> Matrix4
+foreign import set_ :: THREE.TMatrix4 -> Matrix4' -> Matrix4
 foreign import compose_
-  :: THREE.Three -> Vector3 -> Quaternion -> Vector3 -> Matrix4
+  :: THREE.TMatrix4 -> Vector3 -> Quaternion -> Vector3 -> Matrix4
 foreign import determinant_ :: Matrix4 -> Number
 foreign import invert_ :: Matrix4 -> Matrix4
-foreign import identity_ :: THREE.Three -> Matrix4
+foreign import identity_ :: THREE.TMatrix4 -> Matrix4
 foreign import lookAt_ :: Vector3 -> Vector3 -> Vector3 -> Matrix4 -> Matrix4
 foreign import makeRotationAxis_ :: Vector3 -> Number -> Matrix4 -> Matrix4
 foreign import makeRotationFromEuler_ :: Euler -> Matrix4 -> Matrix4
@@ -88,7 +88,7 @@ foreign import scale_ :: Vector3 -> Matrix4 -> Matrix4
 foreign import setPosition_ :: Vector3 -> Matrix4 -> Matrix4
 foreign import transpose_ :: Matrix4 -> Matrix4
 
-matrix4 :: THREE.Three -> Matrix4' -> Matrix4
+matrix4 :: THREE.TMatrix4 -> Matrix4' -> Matrix4
 matrix4 = set_
 
 data Matrix4
@@ -99,16 +99,16 @@ instance Eq Matrix4 where
 
 --
 
-ctor :: THREE.Three -> Matrix4
+ctor :: THREE.TMatrix4 -> Matrix4
 ctor = ctor_
 
 equals :: Matrix4 -> Matrix4 -> Boolean
 equals = equals_
 
-set :: THREE.Three -> Matrix4' -> Matrix4
+set :: THREE.TMatrix4 -> Matrix4' -> Matrix4
 set = set_
 
-compose :: THREE.Three -> Vector3 -> Quaternion -> Vector3 -> Matrix4
+compose :: THREE.TMatrix4 -> Vector3 -> Quaternion -> Vector3 -> Matrix4
 compose = compose_
 
 determinant :: Matrix4 -> Number
@@ -117,7 +117,7 @@ determinant = determinant_
 invert :: Matrix4 -> Matrix4
 invert = invert_
 
-identity :: THREE.Three -> Matrix4
+identity :: THREE.TMatrix4 -> Matrix4
 identity = identity_
 
 lookAt :: Vector3 -> Vector3 -> Vector3 -> Matrix4 -> Matrix4

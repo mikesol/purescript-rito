@@ -18,8 +18,16 @@ import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
 import Rito.Core as C
+import Rito.THREE as THREE
 
 data CapsuleOptions = CapsuleOptions
+
+instance
+  ConvertOption CapsuleOptions
+    "capsule"
+    THREE.TCapsuleGeometry
+    THREE.TCapsuleGeometry where
+  convertOption _ _ = identity
 
 instance
   ConvertOption CapsuleOptions
@@ -57,7 +65,7 @@ type CapsuleOptional =
   )
 
 type CapsuleAll =
-  (| CapsuleOptional)
+  (capsule :: THREE.TCapsuleGeometry | CapsuleOptional)
 
 defaultCapsule :: { | CapsuleOptional }
 defaultCapsule =
@@ -120,6 +128,7 @@ capsule i' atts = C.Geometry go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , capsule: i.capsule
             , radius: i.radius
             , length: i.length
             , radialSegments: i.radialSegments

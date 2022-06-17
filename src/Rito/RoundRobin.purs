@@ -20,9 +20,11 @@ import Effect.Ref as Ref
 import FRP.Event (Event, makeEvent, subscribe)
 import FRP.Event.Class (bang)
 import Foreign.Object as Object
+import Record (union)
 import Rito.Color (Color)
 import Rito.Core as C
 import Rito.Matrix4 (Matrix4)
+import Rito.THREE as THREE
 import Web.TouchEvent (Touch, TouchEvent)
 import Web.UIEvent.MouseEvent (MouseEvent)
 
@@ -33,7 +35,11 @@ newtype Instance = Instance
       , onMouseUp :: MouseEvent -> Effect Unit
       , onMouseMove :: MouseEvent -> Effect Unit
       , onTouchStart ::
-          Touch -> Effect { end :: TouchEvent -> Effect Unit, cancel :: TouchEvent -> Effect Unit }
+          Touch
+          -> Effect
+               { end :: TouchEvent -> Effect Unit
+               , cancel :: TouchEvent -> Effect Unit
+               }
       , onTouchEnd :: Touch -> Effect Unit
       , onTouchMove :: Touch -> Effect Unit
       , onTouchCancel :: Touch -> Effect Unit
@@ -167,13 +173,17 @@ data Semaphore a = Acquire a | Release
 
 roundRobinInstancedMesh
   :: forall lock payload
-   . Int
+   . { matrix4 :: THREE.TMatrix4
+     , mesh :: THREE.TMesh
+     , instancedMesh :: THREE.TInstancedMesh
+     }
+  -> Int
   -> C.Geometry lock payload
   -> C.Material lock payload
   -> Event
        (Event (Semaphore (InstanceId -> C.Instance lock payload)))
   -> C.AMesh lock payload
-roundRobinInstancedMesh count (C.Geometry geo) (C.Material mat) props =
+roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
   Bolson.Element' $ C.Mesh go
   where
   go
@@ -214,13 +224,14 @@ roundRobinInstancedMesh count (C.Geometry geo) (C.Material mat) props =
       _, Nothing -> empty
       Just gid, Just mid -> oneOf
         [ bang $ makeInstancedMesh
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , geometry: gid
-            , material: mid
-            , count
-            }
+            ( { id: me
+              , parent: parent.parent
+              , scope: parent.scope
+              , geometry: gid
+              , material: mid
+              , count
+              } `union` mmi
+            )
         -- todo: instanced logic is copied a fair bit from bolson's flatten
         -- but it's different enough that it's tough to merge it with flatten
         -- insert instanced logic here

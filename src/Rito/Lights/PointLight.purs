@@ -20,8 +20,16 @@ import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
 import Rito.Color (Color)
 import Rito.Core as C
+import Rito.THREE as THREE
 
 data PointLightOptions = PointLightOptions
+
+instance
+  ConvertOption PointLightOptions
+    "pointLight"
+    THREE.TPointLight
+    THREE.TPointLight where
+  convertOption _ _ = identity
 
 instance
   ConvertOption PointLightOptions
@@ -59,6 +67,7 @@ type PointLightOptional =
 
 type PointLightAll =
   ( color :: Color
+  , pointLight :: THREE.TPointLight
   | PointLightOptional
   )
 
@@ -124,6 +133,7 @@ pointLight i' atts = Bolson.Element' $ C.Light go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , pointLight: i.pointLight
             , color: i.color
             , intensity: i.intensity
             , distance: i.distance

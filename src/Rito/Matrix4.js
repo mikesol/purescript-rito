@@ -1,6 +1,6 @@
-export const ctor_ = (THREE) => new THREE.Matrix4();
+export const ctor_ = (matrix4) => new matrix4();
 export const set_ =
-	(THREE) =>
+	(matrix4) =>
 	({
 		n11,
 		n12,
@@ -19,7 +19,7 @@ export const set_ =
 		n43,
 		n44,
 	}) =>
-		new THREE.Matrix4().set(
+		new matrix4().set(
 			n11,
 			n12,
 			n13,
@@ -38,11 +38,11 @@ export const set_ =
 			n44
 		);
 export const equals_ = (a) => (b) => a.equals(b);
-export const compose_ = (THREE) => (position) => (quaternion) => (scale) =>
-	new THREE.Matrix4().compose(position, quaternion, scale);
+export const compose_ = (matrix4) => (position) => (quaternion) => (scale) =>
+	new matrix4().compose(position, quaternion, scale);
 export const determinant_ = (a) => a.determinant();
 export const invert_ = (a) => a.clone().invert();
-export const identity_ = (THREE) => new THREE.Matrix4().identity();
+export const identity_ = (matrix4) => new matrix4().identity();
 export const lookAt_ = (eye) => (target) => (up) => (a) =>
 	a.clone().lookAt(eye, target, up);
 export const makeRotationAxis_ = (axis) => (a) => (theta) =>

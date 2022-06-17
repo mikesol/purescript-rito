@@ -11,14 +11,12 @@ import Effect (Effect)
 import FRP.Event (subscribe)
 import Rito.Core as C
 import Rito.Interpret (FFIThreeSnapshot, effectfulThreeInterpret, makeFFIThreeSnapshot)
-import Rito.THREE as THREE
 
 run
-  :: THREE.ThreeStuff
-  -> (forall lock. (C.ARenderer lock (FFIThreeSnapshot -> Effect Unit)))
+  :: (forall lock. (C.ARenderer lock (FFIThreeSnapshot -> Effect Unit)))
   -> Effect (Effect Unit)
-run threeStuff s = do
-  ffi <- makeFFIThreeSnapshot threeStuff
+run s = do
+  ffi <- makeFFIThreeSnapshot
   u <- subscribe
     ( flatten
         { doLogic: absurd

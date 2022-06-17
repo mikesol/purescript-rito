@@ -12,7 +12,7 @@ import Rito.THREE as THREE
 data CubeTexture
 data CubeTextureLoader
 
-foreign import loader :: THREE.Three -> Effect CubeTextureLoader
+foreign import loader :: THREE.TCubeTextureLoader -> Effect CubeTextureLoader
 
 foreign import load
   :: CubeTextureLoader

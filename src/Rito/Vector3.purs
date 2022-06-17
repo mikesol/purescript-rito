@@ -5,10 +5,10 @@ import Rito.THREE as THREE
 data Vector3
 type Vector3' = { x :: Number, y :: Number, z :: Number }
 
-vector3 :: THREE.Three -> Vector3' -> Vector3
+vector3 :: THREE.TVector3 -> Vector3' -> Vector3
 vector3 = ctor_
 
-foreign import ctor_ :: THREE.Three -> Vector3' -> Vector3
+foreign import ctor_ :: THREE.TVector3 -> Vector3' -> Vector3
 foreign import add_ :: Vector3 -> Vector3 -> Vector3
 foreign import multiply_ :: Vector3 -> Vector3 -> Vector3
 foreign import divide_ :: Vector3 -> Vector3 -> Vector3

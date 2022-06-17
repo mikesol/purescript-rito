@@ -12,6 +12,7 @@ import Effect.Ref as Ref
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
 import Rito.Core as C
+import Rito.THREE as THREE
 import Web.DOM as Web.DOM
 import Web.HTML (HTMLCanvasElement)
 
@@ -27,7 +28,10 @@ css3DRenderer
   :: forall lock payload
    . C.Scene lock payload
   -> C.Camera lock payload
-  -> { canvas :: HTMLCanvasElement, element :: Web.DOM.Element }
+  -> { canvas :: HTMLCanvasElement
+     , element :: Web.DOM.Element
+     , css3DRenderer :: THREE.TCSS3DRenderer
+     }
   -> Event CSS3DRenderer
   -> C.ARenderer lock payload
 css3DRenderer sne cam make props = Bolson.Element' $ C.Renderer go

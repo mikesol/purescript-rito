@@ -1,4 +1,7 @@
-export const ctor_ = THREE => ({ x, y }) => new THREE.Vector2(x, y);
+export const ctor_ =
+	(vector2) =>
+	({ x, y }) =>
+		new vector2(x, y);
 export const add_ = (a) => (b) => a.clone().add(b);
 export const sub_ = (a) => (b) => a.clone().sub(b);
 export const multiply_ = (a) => (b) => a.clone().multiply(b);

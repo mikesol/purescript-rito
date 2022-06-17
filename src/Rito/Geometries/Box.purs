@@ -18,8 +18,16 @@ import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
 import Rito.Core as C
+import Rito.THREE as THREE
 
 data BoxOptions = BoxOptions
+
+instance
+  ConvertOption BoxOptions
+    "box"
+    THREE.TBoxGeometry
+    THREE.TBoxGeometry where
+  convertOption _ _ = identity
 
 instance
   ConvertOption BoxOptions
@@ -73,7 +81,7 @@ type BoxOptional =
   )
 
 type BoxAll =
-  (| BoxOptional)
+  (box :: THREE.TBoxGeometry | BoxOptional)
 
 defaultBox :: { | BoxOptional }
 defaultBox =
@@ -142,6 +150,7 @@ box i' atts = C.Geometry go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , box: i.box
             , width: i.width
             , height: i.height
             , depth: i.depth

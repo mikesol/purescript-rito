@@ -19,9 +19,17 @@ import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
 import Rito.Core as C
+import Rito.THREE as THREE
 
 twoPi = pi * 2.0 :: Number
 data SphereOptions = SphereOptions
+
+instance
+  ConvertOption SphereOptions
+    "sphere"
+    THREE.TSphereGeometry
+    THREE.TSphereGeometry where
+  convertOption _ _ = identity
 
 instance
   ConvertOption SphereOptions
@@ -83,7 +91,7 @@ type SphereOptional =
   )
 
 type SphereAll =
-  (| SphereOptional)
+  (sphere :: THREE.TSphereGeometry | SphereOptional)
 
 defaultSphere :: { | SphereOptional }
 defaultSphere =
@@ -155,6 +163,7 @@ sphere i' atts = C.Geometry go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , sphere: i.sphere
             , radius: i.radius
             , widthSegments: i.widthSegments
             , heightSegments: i.heightSegments

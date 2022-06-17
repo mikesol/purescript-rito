@@ -10,8 +10,7 @@ import Deku.Core (ANut)
 import Effect (Effect)
 import FRP.Event (Event)
 import Record (union)
-import Rito.Box (Box)
-import Rito.Box as Box
+import Rito.Box3 as Box3
 import Rito.Color (Color)
 import Rito.CubeTexture (CubeTexture)
 import Rito.Euler (Euler)
@@ -20,8 +19,8 @@ import Rito.NormalMapTypes (NormalMapType)
 import Rito.Quaternion (Quaternion)
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
-import Rito.Sphere (Sphere)
 import Rito.Sphere as Sphere
+import Rito.THREE as THREE
 import Rito.Texture (Texture)
 import Rito.Undefinable (Undefinable)
 import Rito.Vector2 (Vector2)
@@ -144,6 +143,8 @@ type MakeWebGLRenderer' =
   }
 type InitializeWebGLRenderer' precision powerPreference =
   ( canvas :: HTMLCanvasElement
+  , webGLRenderer :: THREE.TWebGLRenderer
+  , raycaster :: THREE.TRaycaster
   , precision :: precision
   , alpha :: Boolean
   , premultipliedAlpha :: Boolean
@@ -166,6 +167,7 @@ type CSS2DRender = { id :: String, scene :: String, camera :: String }
 type MakeCSS2DRenderer =
   { id :: String
   , camera :: String
+  , css2DRenderer :: THREE.TCSS2DRenderer
   , canvas :: HTMLCanvasElement
   , element :: Web.DOM.Element
   }
@@ -175,6 +177,7 @@ type CSS3DRender = { id :: String, scene :: String, camera :: String }
 type MakeCSS3DRenderer =
   { id :: String
   , camera :: String
+  , css3DRenderer :: THREE.TCSS3DRenderer
   , canvas :: HTMLCanvasElement
   , element :: Web.DOM.Element
   }
@@ -183,16 +186,19 @@ type MakeScene f s =
   { id :: String
   , scope :: s
   , parent :: f String
+  , scene :: THREE.TScene
   }
 type MakeGroup f s =
   { id :: String
   , scope :: s
   , parent :: f String
+  , group :: THREE.TGroup
   }
 type MakeMesh f s =
   { id :: String
   , scope :: s
   , parent :: f String
+  , mesh :: THREE.TMesh
   }
 type MakeInstancedMesh f s =
   { id :: String
@@ -201,6 +207,9 @@ type MakeInstancedMesh f s =
   , geometry :: String
   , material :: String
   , count :: Int
+  , instancedMesh :: THREE.TInstancedMesh
+  , matrix4 :: THREE.TMatrix4
+  , mesh :: THREE.TMesh
   }
 type MakeSphere f s =
   { id :: String
@@ -210,7 +219,8 @@ type MakeSphere f s =
   }
 newtype InitializeSphere = InitializeSphere { | InitializeSphere' }
 type InitializeSphere' =
-  ( radius :: Number
+  ( sphere :: THREE.TSphereGeometry
+  , radius :: Number
   , widthSegments :: Int
   , heightSegments :: Int
   , phiStart :: Number
@@ -226,7 +236,8 @@ type MakeCSS2DObject f s =
   | InitializeCSS2DObject' Web.DOM.Element
   }
 type InitializeCSS2DObject' (nut :: Type) =
-  ( nut :: nut
+  ( css2DObject :: THREE.TCSS2DObject
+  , nut :: nut
   )
 newtype InitializeCSS2DObject = InitializeCSS2DObject
   { | InitializeCSS2DObject' ANut }
@@ -235,10 +246,12 @@ type MakeCSS3DObject f s =
   { id :: String
   , scope :: s
   , parent :: f String
+
   | InitializeCSS3DObject' Web.DOM.Element
   }
 type InitializeCSS3DObject' (nut :: Type) =
-  ( nut :: nut
+  ( css3DObject :: THREE.TCSS3DObject
+  , nut :: nut
   )
 newtype InitializeCSS3DObject = InitializeCSS3DObject
   { | InitializeCSS3DObject' ANut }
@@ -250,7 +263,8 @@ type MakePointLight f s =
   | InitializePointLight'
   }
 type InitializePointLight' =
-  ( color :: Color
+  ( pointLight :: THREE.TPointLight
+  , color :: Color
   , intensity :: Number
   , distance :: Number
   , decay :: Number
@@ -263,7 +277,8 @@ type MakeAmbientLight f s =
   | InitializeAmbientLight'
   }
 type InitializeAmbientLight' =
-  ( color :: Color
+  ( ambientLight :: THREE.TAmbientLight
+  , color :: Color
   , intensity :: Number
   )
 newtype InitializeAmbientLight = InitializeAmbientLight
@@ -275,7 +290,8 @@ type MakeDirectionalLight f s =
   | InitializeDirectionalLight'
   }
 type InitializeDirectionalLight' =
-  ( color :: Color
+  ( directionalLight :: THREE.TDirectionalLight
+  , color :: Color
   , intensity :: Number
   )
 newtype InitializeDirectionalLight = InitializeDirectionalLight
@@ -293,7 +309,8 @@ type MakeMeshStandardMaterial' f s =
   | (InitializeMeshStandardMaterial' Undefinable Int)
   }
 type InitializeMeshStandardMaterial' (opt :: Type -> Type) normalMapType =
-  ( color :: opt Color
+  ( meshStandardMaterial :: THREE.TMeshStandardMaterial
+  , color :: opt Color
   , roughness :: opt Number
   , metalness :: opt Number
   , map :: opt Texture
@@ -336,7 +353,8 @@ type MakeMeshBasicMaterial' f s =
   | (InitializeMeshBasicMaterial' Undefinable)
   }
 type InitializeMeshBasicMaterial' (opt :: Type -> Type) =
-  ( color :: opt Color
+  ( meshBasicMaterial :: THREE.TMeshBasicMaterial
+  , color :: opt Color
   , map :: opt Texture
   , lightMap :: opt Texture
   , lightMapIntensity :: opt Number
@@ -356,7 +374,8 @@ type MakeBox f s =
   | InitializeBox'
   }
 type InitializeBox' =
-  ( width :: Number
+  ( box :: THREE.TBoxGeometry
+  , width :: Number
   , height :: Number
   , depth :: Number
   , widthSegments :: Int
@@ -364,20 +383,7 @@ type InitializeBox' =
   , depthSegments :: Int
   )
 newtype InitializeBox = InitializeBox { | InitializeBox' }
-type MakeTorus f s =
-  { id :: String
-  , scope :: s
-  , parent :: f String
-  | InitializeTorus'
-  }
-type InitializeTorus' =
-  ( radius :: Number
-  , tube :: Number
-  , radialSegments :: Number
-  , tubularSegments :: Number
-  , arc :: Number
-  )
-newtype InitializeTorus = InitializeTorus { | InitializeTorus' }
+
 type MakeCapsule f s =
   { id :: String
   , scope :: s
@@ -385,7 +391,8 @@ type MakeCapsule f s =
   | InitializeCapsule'
   }
 type InitializeCapsule' =
-  ( radius :: Number
+  ( capsule :: THREE.TCapsuleGeometry
+  , radius :: Number
   , length :: Number
   , capSegments :: Int
   , radialSegments :: Int
@@ -398,7 +405,8 @@ type MakePlane f s =
   | InitializePlane'
   }
 type InitializePlane' =
-  ( width :: Number
+  ( plane :: THREE.TPlaneGeometry
+  , width :: Number
   , height :: Number
   , widthSegments :: Int
   , heightSegments :: Int
@@ -412,7 +420,8 @@ type MakePerspectiveCamera f s =
   }
 
 type InitializePerspectiveCamera' =
-  ( fov :: Number
+  ( perspectiveCamera :: THREE.TPerspectiveCamera
+  , fov :: Number
   , aspect :: Number
   , near :: Number
   , far :: Number
@@ -444,7 +453,7 @@ type SetTranslate = { id :: String, x :: Number, y :: Number, z :: Number }
 type SetScale = { id :: String, x :: Number, y :: Number, z :: Number }
 type SetLookAt = { id :: String, v :: Vector3 }
 type SetCenter = { id :: String }
-type GetBoundingBox = { id :: String, box :: Box.Box -> Effect Unit }
+type GetBoundingBox = { id :: String, box :: Box3.Box3 -> Effect Unit }
 type GetBoundingSphere =
   { id :: String, sphere :: Sphere.Sphere -> Effect Unit }
 type SetInstancedMeshMatrix4 =
@@ -499,7 +508,10 @@ type SetOnTouchStart =
   { id :: String
   , onTouchStart ::
       Touch
-      -> Effect { end :: TouchEvent -> Effect Unit, cancel :: TouchEvent -> Effect Unit }
+      -> Effect
+           { end :: TouchEvent -> Effect Unit
+           , cancel :: TouchEvent -> Effect Unit
+           }
   }
 type SetOnTouchEnd = { id :: String, onTouchEnd :: Touch -> Effect Unit }
 type SetOnTouchMove = { id :: String, onTouchMove :: Touch -> Effect Unit }
@@ -517,7 +529,10 @@ type RemoveOnTouchStart =
   { id :: String
   , onTouchStart ::
       Touch
-      -> Effect { end :: TouchEvent -> Effect Unit, cancel :: TouchEvent -> Effect Unit }
+      -> Effect
+           { end :: TouchEvent -> Effect Unit
+           , cancel :: TouchEvent -> Effect Unit
+           }
   }
 type RemoveOnTouchEnd =
   { id :: String, onTouchEnd :: Touch -> Effect Unit }
@@ -542,7 +557,10 @@ type SetIMOnTouchStart =
   , instanceId :: Int
   , onTouchStart ::
       Touch
-      -> Effect { end :: TouchEvent -> Effect Unit, cancel :: TouchEvent -> Effect Unit }
+      -> Effect
+           { end :: TouchEvent -> Effect Unit
+           , cancel :: TouchEvent -> Effect Unit
+           }
   }
 type SetIMOnTouchEnd =
   { id :: String, instanceId :: Int, onTouchEnd :: Touch -> Effect Unit }
@@ -565,7 +583,11 @@ type RemoveIMOnTouchStart =
   { id :: String
   , instanceId :: Int
   , onTouchStart ::
-      Touch -> Effect { end :: TouchEvent -> Effect Unit, cancel :: TouchEvent -> Effect Unit }
+      Touch
+      -> Effect
+           { end :: TouchEvent -> Effect Unit
+           , cancel :: TouchEvent -> Effect Unit
+           }
   }
 type RemoveIMOnTouchEnd =
   { id :: String, instanceId :: Int, onTouchEnd :: Touch -> Effect Unit }
@@ -591,9 +613,6 @@ type SetScaleZ = { id :: String, scaleZ :: Number }
 type SetTranslateX = { id :: String, translateX :: Number }
 type SetTranslateY = { id :: String, translateY :: Number }
 type SetTranslateZ = { id :: String, translateZ :: Number }
--- camera
-type WithWorldDirection payload =
-  { id :: String, withWorldDirection :: Vector3 -> payload }
 -- perspective camera
 type SetAspect = { id :: String, aspect :: Number }
 type SetFar = { id :: String, far :: Number }
@@ -669,7 +688,7 @@ type BufferGeometry =
   , scale :: { x :: Number, y :: Number, z :: Number }
   , lookAt :: Vector3
   , center :: Unit
-  , boundingBox :: Box.Box -> Effect Unit
+  , boundingBox :: Box3.Box3 -> Effect Unit
   , boundingSphere :: Sphere.Sphere -> Effect Unit
   )
 
@@ -702,8 +721,8 @@ bufferGeometry
   :: forall payload
    . String
   -> ThreeInterpret payload
-  -> { boundingBox :: (Box -> Effect Unit) -> payload
-     , boundingSphere :: (Sphere -> Effect Unit) -> payload
+  -> { boundingBox :: (Box3.Box3 -> Effect Unit) -> payload
+     , boundingSphere :: (Sphere.Sphere -> Effect Unit) -> payload
      , center :: Unit -> payload
      , lookAt :: Vector3 -> payload
      , matrix4 :: Matrix4 -> payload
@@ -870,7 +889,6 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeSphere :: MakeSphere Maybe Scope -> payload
   , makeBox :: MakeBox Maybe Scope -> payload
   , makeCapsule :: MakeCapsule Maybe Scope -> payload
-  , makeTorus :: MakeTorus Maybe Scope -> payload
   , makePlane :: MakePlane Maybe Scope -> payload
   , makeDirectionalLight :: MakeDirectionalLight Maybe Scope -> payload
   , makeAmbientLight :: MakeAmbientLight Maybe Scope -> payload
@@ -997,9 +1015,6 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setScaleX :: SetScaleX -> payload
   , setScaleY :: SetScaleY -> payload
   , setScaleZ :: SetScaleZ -> payload
-  -- camera
-  , withWorldDirection :: WithWorldDirection payload -> payload
-  -- orbit controls
   -- perspective camera
   , setAspect :: SetAspect -> payload
   , setFar :: SetFar -> payload

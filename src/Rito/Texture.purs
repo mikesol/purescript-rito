@@ -11,7 +11,7 @@ import Rito.THREE as THREE
 data Texture
 data TextureLoader
 
-foreign import loader :: THREE.Three -> Effect TextureLoader
+foreign import loader :: THREE.TTextureLoader -> Effect TextureLoader
 
 foreign import load
   :: TextureLoader

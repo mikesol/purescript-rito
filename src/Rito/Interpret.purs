@@ -2,23 +2,17 @@ module Rito.Interpret
   ( FFIThreeSnapshot
   , effectfulThreeInterpret
   , makeFFIThreeSnapshot
-  , threeAff
-  , orbitControlsAff
-  , css2DRendererAff
-  , css3DRendererAff
   ) where
 
 import Prelude
 
 import Bolson.Core (Scope(..))
-import Control.Promise (Promise, toAffE)
 import Data.Lens (over)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
 import Data.Symbol (class IsSymbol)
 import Effect (Effect)
-import Effect.Aff (Aff)
 import Effect.Random as R
 import Prim.Row (class Cons, class Lacks)
 import Prim.RowList (class RowToList)
@@ -43,45 +37,7 @@ type Payload = FFIThreeSnapshot -> Effect Unit
 
 -- foreign
 data FFIThreeSnapshot
-
-foreign import three :: Effect (Promise THREE.Three)
-threeAff :: Aff THREE.Three
-threeAff = toAffE three
-foreign import orbitControls :: Effect (Promise THREE.OrbitControls)
-orbitControlsAff :: Aff THREE.OrbitControls
-orbitControlsAff = toAffE orbitControls
---
-type CSS2DRendererModuleCaps =
-  { "CSS2DRenderer" :: THREE.CSS2DRenderer
-  , "CSS2DObject" :: THREE.CSS2DObject
-  }
-type CSS2DRendererModule =
-  { css2DRenderer :: THREE.CSS2DRenderer
-  , css2DObject :: THREE.CSS2DObject
-  }
-foreign import css2DRenderer :: Effect (Promise CSS2DRendererModuleCaps)
-css2DRendererAff :: Aff CSS2DRendererModule
-css2DRendererAff = toAffE css2DRenderer <#>
-  \{ "CSS2DRenderer": css2DRenderer', "CSS2DObject": css2DObject } ->
-    { css2DRenderer: css2DRenderer', css2DObject }
---
-type CSS3DRendererModuleCaps =
-  { "CSS3DRenderer" :: THREE.CSS3DRenderer
-  , "CSS3DObject" :: THREE.CSS3DObject
-  }
-type CSS3DRendererModule =
-  { css3DRenderer :: THREE.CSS3DRenderer
-  , css3DObject :: THREE.CSS3DObject
-  }
-foreign import css3DRenderer :: Effect (Promise CSS3DRendererModuleCaps)
-css3DRendererAff :: Aff CSS3DRendererModule
-css3DRendererAff = toAffE css3DRenderer <#>
-  \{ "CSS3DRenderer": css3DRenderer', "CSS3DObject": css3DObject } ->
-    { css3DRenderer: css3DRenderer', css3DObject }
---
-foreign import makeFFIThreeSnapshot
-  :: THREE.ThreeStuff
-  -> Effect FFIThreeSnapshot
+foreign import makeFFIThreeSnapshot :: Effect FFIThreeSnapshot
 
 --
 foreign import webGLRender_ :: Core.WebGLRender -> Payload
@@ -111,8 +67,6 @@ foreign import makeSphere_
   :: Core.MakeSphere Undefinable (Undefinable String) -> Payload
 foreign import makeBox_
   :: Core.MakeBox Undefinable (Undefinable String) -> Payload
-foreign import makeTorus_
-  :: Core.MakeTorus Undefinable (Undefinable String) -> Payload
 foreign import makePlane_
   :: Core.MakePlane Undefinable (Undefinable String) -> Payload
 foreign import makeMeshStandardMaterial_
@@ -254,8 +208,6 @@ foreign import setScaleY_ :: Core.SetScaleY -> Payload
 foreign import setScaleZ_ :: Core.SetScaleZ -> Payload
 -- renderer
 foreign import setSize_ :: Core.SetSize -> Payload
--- camera
-foreign import withWorldDirection_ :: Core.WithWorldDirection Payload -> Payload
 -- perspective camera
 foreign import setAspect_ :: Core.SetAspect -> Payload
 foreign import setFar_ :: Core.SetFar -> Payload
@@ -330,6 +282,95 @@ instance FFIMe WPP.WebGLRenderingPowerPreference String where
   ffiMe WPP.Default = "default"
   ffiMe WPP.Low = "low-power"
 
+--- threeeeeeee
+instance FFIMe THREE.TCSS2DRenderer THREE.TCSS2DRenderer where
+  ffiMe = identity
+
+instance FFIMe THREE.TCSS2DObject THREE.TCSS2DObject where
+  ffiMe = identity
+
+instance FFIMe THREE.TCSS3DRenderer THREE.TCSS3DRenderer where
+  ffiMe = identity
+
+instance FFIMe THREE.TCSS3DObject THREE.TCSS3DObject where
+  ffiMe = identity
+
+instance FFIMe THREE.TVector2 THREE.TVector2 where
+  ffiMe = identity
+
+instance FFIMe THREE.TVector3 THREE.TVector3 where
+  ffiMe = identity
+
+instance FFIMe THREE.TTextureLoader THREE.TTextureLoader where
+  ffiMe = identity
+
+instance FFIMe THREE.TQuaternion THREE.TQuaternion where
+  ffiMe = identity
+
+instance FFIMe THREE.TCubeTextureLoader THREE.TCubeTextureLoader where
+  ffiMe = identity
+
+instance FFIMe THREE.TSphere THREE.TSphere where
+  ffiMe = identity
+
+instance FFIMe THREE.TMatrix4 THREE.TMatrix4 where
+  ffiMe = identity
+
+instance FFIMe THREE.TColor THREE.TColor where
+  ffiMe = identity
+
+instance FFIMe THREE.TBox3 THREE.TBox3 where
+  ffiMe = identity
+
+instance FFIMe THREE.TScene THREE.TScene where
+  ffiMe = identity
+
+instance FFIMe THREE.TWebGLRenderer THREE.TWebGLRenderer where
+  ffiMe = identity
+
+instance FFIMe THREE.TMesh THREE.TMesh where
+  ffiMe = identity
+
+instance FFIMe THREE.TInstancedMesh THREE.TInstancedMesh where
+  ffiMe = identity
+
+instance FFIMe THREE.TMeshStandardMaterial THREE.TMeshStandardMaterial where
+  ffiMe = identity
+
+instance FFIMe THREE.TMeshBasicMaterial THREE.TMeshBasicMaterial where
+  ffiMe = identity
+
+instance FFIMe THREE.TPointLight THREE.TPointLight where
+  ffiMe = identity
+
+instance FFIMe THREE.TDirectionalLight THREE.TDirectionalLight where
+  ffiMe = identity
+
+instance FFIMe THREE.TAmbientLight THREE.TAmbientLight where
+  ffiMe = identity
+
+instance FFIMe THREE.TGroup THREE.TGroup where
+  ffiMe = identity
+
+instance FFIMe THREE.TPlaneGeometry THREE.TPlaneGeometry where
+  ffiMe = identity
+
+instance FFIMe THREE.TSphereGeometry THREE.TSphereGeometry where
+  ffiMe = identity
+
+instance FFIMe THREE.TBoxGeometry THREE.TBoxGeometry where
+  ffiMe = identity
+
+instance FFIMe THREE.TCapsuleGeometry THREE.TCapsuleGeometry where
+  ffiMe = identity
+
+instance FFIMe THREE.TPerspectiveCamera THREE.TPerspectiveCamera where
+  ffiMe = identity
+
+instance FFIMe THREE.TRaycaster THREE.TRaycaster where
+  ffiMe = identity
+
+---
 instance FFIMe a b => FFIMe (Maybe a) (Undefinable b) where
   ffiMe = m2u <<< map ffiMe
 
@@ -377,7 +418,6 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeCapsule: lcmap ffiize makeCapsule_
   , makeSphere: lcmap ffiize makeSphere_
   , makeBox: lcmap ffiize makeBox_
-  , makeTorus: lcmap ffiize makeTorus_
   , makePlane: lcmap ffiize makePlane_
   , makeDirectionalLight: lcmap ffiize makeDirectionalLight_
   , makeAmbientLight: lcmap ffiize makeAmbientLight_
@@ -509,8 +549,6 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setDecay: setDecay_
   , setDistance: setDistance_
   , setIntensity: setIntensity_
-  -- camera
-  , withWorldDirection: withWorldDirection_
   -- perspective camera
   , setAspect: setAspect_
   , setFar: setFar_

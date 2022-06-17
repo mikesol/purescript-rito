@@ -5,7 +5,7 @@ import Prelude
 import Data.Newtype (class Newtype, wrap)
 import Data.Variant (Variant, inj)
 import Effect (Effect)
-import Rito.Box as Box
+import Rito.Box3 as Box3
 import Rito.Color (Color)
 import Rito.Color as Color
 import Rito.InstancedMesh (InstancedMesh, Setter)
@@ -146,8 +146,8 @@ center = wrap $ inj (Proxy :: Proxy "center") unit
 
 boundingBox
   :: forall nt r
-   . Newtype nt (Variant (boundingBox :: Box.Box -> Effect Unit | r))
-  => (Box.Box -> Effect Unit)
+   . Newtype nt (Variant (boundingBox :: Box3.Box3 -> Effect Unit | r))
+  => (Box3.Box3 -> Effect Unit)
   -> nt
 boundingBox = wrap <<< inj (Proxy :: Proxy "boundingBox")
 
