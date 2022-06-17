@@ -23,6 +23,8 @@ data TMesh
 data TInstancedMesh
 data TMeshStandardMaterial
 data TMeshBasicMaterial
+data TShaderMaterial
+data TRawShaderMaterial
 data TPointLight
 data TDirectionalLight
 data TAmbientLight
@@ -63,6 +65,8 @@ foreign import boxGeometry :: Effect (Promise TBoxGeometry)
 foreign import capsuleGeometry :: Effect (Promise TCapsuleGeometry)
 foreign import perspectiveCamera :: Effect (Promise TPerspectiveCamera)
 foreign import raycaster :: Effect (Promise TRaycaster)
+foreign import shaderMaterial :: Effect (Promise TShaderMaterial)
+foreign import rawShaderMaterial :: Effect (Promise TRawShaderMaterial)
 
 css2DRendererAff = toAffE css2DRenderer :: Aff TCSS2DRenderer
 css2DObjectAff = toAffE css2DObject :: Aff TCSS2DObject
@@ -93,3 +97,5 @@ boxGeometryAff = toAffE boxGeometry :: Aff TBoxGeometry
 capsuleGeometryAff = toAffE capsuleGeometry :: Aff TCapsuleGeometry
 perspectiveCameraAff = toAffE perspectiveCamera :: Aff TPerspectiveCamera
 raycasterAff = toAffE raycaster :: Aff TRaycaster
+shaderMaterialAff = toAffE shaderMaterial :: Aff TShaderMaterial
+rawShaderMaterialAff = toAffE rawShaderMaterial :: Aff TRawShaderMaterial

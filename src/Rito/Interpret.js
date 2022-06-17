@@ -218,6 +218,16 @@ export const makePointLight_ = genericMake_(
 )((x, y) => {
 	y.main.add(x.main);
 });
+export const makeShaderMaterial = genericMake_(
+	({ makeShaderMaterial, ...options }) => new makeShaderMaterial(options)
+)((x, y) => {
+	y.main.material = x.main;
+});
+export const makeRawShaderMaterial = genericMake_(
+	({ makeRawShaderMaterial, ...options }) => new makeRawShaderMaterial(options)
+)((x, y) => {
+	y.main.material = x.main;
+});
 export const makeMeshBasicMaterial_ = genericMake_(
 	({ meshBasicMaterial, ...options }) => new meshBasicMaterial(options)
 )((x, y) => {
@@ -760,7 +770,10 @@ export const setPositionY_ = (a) => (state) => () => {
 export const setPositionZ_ = (a) => (state) => () => {
 	state.units[a.id].main.position.z = a.positionZ;
 };
-
+// uniform
+export const setUniform_ = (a) => (state) => () => {
+		state.units[a.id].main.uniforms[a.key].value = a.value;
+}
 // perspective camera
 export const setAspect_ = (a) => (state) => () => {
 	state.units[a.id].main.aspect = a.aspect;

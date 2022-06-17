@@ -9,6 +9,7 @@ import Data.Newtype (class Newtype)
 import Deku.Core (ANut)
 import Effect (Effect)
 import FRP.Event (Event)
+import Foreign (Foreign)
 import Record (union)
 import Rito.Box3 as Box3
 import Rito.Color (Color)
@@ -296,6 +297,36 @@ type InitializeDirectionalLight' =
   )
 newtype InitializeDirectionalLight = InitializeDirectionalLight
   { | InitializeDirectionalLight' }
+---- material
+type MakeRawShaderMaterial f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | InitializeRawShaderMaterial' Foreign
+  }
+type InitializeRawShaderMaterial' u =
+  ( rawShaderMaterial :: THREE.TRawShaderMaterial
+  , uniforms :: u
+  , fragmentShader :: String
+  , vertexShader :: String
+  )
+newtype InitializeRawShaderMaterial u = InitializeRawShaderMaterial
+  { | (InitializeRawShaderMaterial' u) }
+type MakeShaderMaterial f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | InitializeShaderMaterial' Foreign
+  }
+type InitializeShaderMaterial' u =
+  ( shaderMaterial :: THREE.TShaderMaterial
+  , uniforms :: u
+  , fragmentShader :: String
+  , vertexShader :: String
+  )
+newtype InitializeShaderMaterial u = InitializeShaderMaterial
+  { | (InitializeShaderMaterial' u) }
+--
 type MakeMeshStandardMaterial f s =
   { id :: String
   , scope :: s
@@ -429,6 +460,8 @@ type InitializePerspectiveCamera' =
 newtype InitializePerspectiveCamera = InitializePerspectiveCamera
   { | InitializePerspectiveCamera' }
 
+--
+type SetUniform = { id :: String, key :: String, value :: Foreign }
 --
 type SetWidth = { id :: String, width :: Number }
 type SetHeight = { id :: String, height :: Number }
@@ -893,6 +926,8 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeDirectionalLight :: MakeDirectionalLight Maybe Scope -> payload
   , makeAmbientLight :: MakeAmbientLight Maybe Scope -> payload
   , makePointLight :: MakePointLight Maybe Scope -> payload
+  , makeRawShaderMaterial :: MakeRawShaderMaterial Maybe Scope -> payload
+  , makeShaderMaterial :: MakeShaderMaterial Maybe Scope -> payload
   , makeMeshBasicMaterial :: MakeMeshBasicMaterial Maybe Scope -> payload
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
@@ -965,6 +1000,8 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setCenter :: SetCenter -> payload
   , getBoundingBox :: GetBoundingBox -> payload
   , getBoundingSphere :: GetBoundingSphere -> payload
+  -- RawShaderMaterial and ShaderMaterial
+  , setUniform :: SetUniform -> payload
   -- InstancedMesh
   , setInstancedMeshMatrix4 :: SetInstancedMeshMatrix4 -> payload
   , setInstancedMeshColor :: SetInstancedMeshColor -> payload

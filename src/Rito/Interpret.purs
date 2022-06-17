@@ -14,6 +14,7 @@ import Data.Profunctor (lcmap)
 import Data.Symbol (class IsSymbol)
 import Effect (Effect)
 import Effect.Random as R
+import Foreign (Foreign)
 import Prim.Row (class Cons, class Lacks)
 import Prim.RowList (class RowToList)
 import Prim.RowList as RL
@@ -71,6 +72,10 @@ foreign import makePlane_
   :: Core.MakePlane Undefinable (Undefinable String) -> Payload
 foreign import makeMeshStandardMaterial_
   :: Core.MakeMeshStandardMaterial' Undefinable (Undefinable String) -> Payload
+foreign import makeRawShaderMaterial_
+  :: Core.MakeRawShaderMaterial Undefinable (Undefinable String) -> Payload
+foreign import makeShaderMaterial_
+  :: Core.MakeShaderMaterial Undefinable (Undefinable String) -> Payload
 foreign import makeMeshBasicMaterial_
   :: Core.MakeMeshBasicMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeCSS2DObject_
@@ -119,6 +124,8 @@ foreign import getBoundingSphere_ :: Core.GetBoundingSphere -> Payload
 foreign import setDecay_ :: Core.SetDecay -> Payload
 foreign import setIntensity_ :: Core.SetIntensity -> Payload
 foreign import setDistance_ :: Core.SetDistance -> Payload
+-- raw shader and shader material
+foreign import setUniform_ :: Core.SetUniform -> Payload
 -- mesh standard material
 foreign import setColor_ :: Core.SetColor -> Payload
 foreign import setRoughness_ :: Core.SetRoughness -> Payload
@@ -234,6 +241,9 @@ class FFIMe i o | i -> o where
 instance FFIMe Int Int where
   ffiMe = identity
 
+instance FFIMe Foreign Foreign where
+  ffiMe = identity
+
 instance FFIMe Web.DOM.Element Web.DOM.Element where
   ffiMe = identity
 
@@ -283,6 +293,12 @@ instance FFIMe WPP.WebGLRenderingPowerPreference String where
   ffiMe WPP.Low = "low-power"
 
 --- threeeeeeee
+instance FFIMe THREE.TShaderMaterial THREE.TShaderMaterial where
+  ffiMe = identity
+
+instance FFIMe THREE.TRawShaderMaterial THREE.TRawShaderMaterial where
+  ffiMe = identity
+
 instance FFIMe THREE.TCSS2DRenderer THREE.TCSS2DRenderer where
   ffiMe = identity
 
@@ -423,6 +439,8 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeAmbientLight: lcmap ffiize makeAmbientLight_
   , makePointLight: lcmap ffiize makePointLight_
   , makePerspectiveCamera: lcmap ffiize makePerspectiveCamera_
+  , makeRawShaderMaterial: lcmap ffiize makeRawShaderMaterial_
+  , makeShaderMaterial: lcmap ffiize makeShaderMaterial_
   , makeMeshBasicMaterial: lcmap ffiize makeMeshBasicMaterial_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
   , makeCSS2DObject: lcmap ffiize makeCSS2DObject_
@@ -494,6 +512,8 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setCenter: setCenter_
   , getBoundingBox: getBoundingBox_
   , getBoundingSphere: getBoundingSphere_
+  -- shader and raw shader
+  , setUniform: setUniform_
   -- instancedMesh
   , setInstancedMeshMatrix4: setInstancedMeshMatrix4_
   , setInstancedMeshColor: setInstancedMeshColor_

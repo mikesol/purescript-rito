@@ -76,3 +76,10 @@ export const planeGeometry = () => import("three/src/geometries/PlaneGeometry.js
 export const perspectiveCamera = () => import("three/src/cameras/PerspectiveCamera.js").then((r) => r.PerspectiveCamera);
 
 export const raycaster = () => import("three/src/core/Raycaster.js").then((r) => r.Raycaster);
+
+export const shaderMaterial = () => import("three/src/materials/ShaderMaterial.js").then((r) => r.ShaderMaterial);
+
+export const rawShaderMaterial = () =>
+	import("three/src/materials/RawShaderMaterial.js").then(
+		(r) => r.RawShaderMaterial
+	);
