@@ -19,9 +19,17 @@ import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Color (Color)
 import Rito.Core as C
+import Rito.THREE as THREE
 import Rito.Texture (Texture)
 
 data MeshBasicMaterialOptions = MeshBasicMaterialOptions
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "meshBasicMaterial"
+    THREE.TMeshBasicMaterial
+    THREE.TMeshBasicMaterial where
+  convertOption _ _ = identity
 
 instance
   ConvertOption MeshBasicMaterialOptions
@@ -107,7 +115,7 @@ type MeshBasicMaterialOptional =
   )
 
 type MeshBasicMaterialAll =
-  (| MeshBasicMaterialOptional)
+  (meshBasicMaterial :: THREE.TMeshBasicMaterial | MeshBasicMaterialOptional)
 
 defaultMeshBasicMaterial :: { | MeshBasicMaterialOptional }
 defaultMeshBasicMaterial =
@@ -192,6 +200,7 @@ meshBasicMaterial i' atts = C.Material go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , meshBasicMaterial: i.meshBasicMaterial
             , color: i.color
             , map: i.map
             , lightMap: i.lightMap

@@ -14,6 +14,7 @@ import Record (union)
 import Rito.Color as Col
 import Rito.Core as C
 import Rito.CubeTexture as CT
+import Rito.THREE as THREE
 import Rito.Texture as T
 
 data Background
@@ -28,10 +29,11 @@ derive instance Newtype Scene _
 
 scene
   :: forall lock payload
-   . Event Scene
+   . { scene :: THREE.TScene }
+  -> Event Scene
   -> Array (C.ASceneful lock payload)
   -> C.Scene lock payload
-scene props kidz = C.Scene go
+scene ctor props kidz = C.Scene go
   where
   go
     parent
@@ -53,6 +55,7 @@ scene props kidz = C.Scene go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , scene: ctor.scene
             }
         , props <#>
             ( \(Scene msh) ->

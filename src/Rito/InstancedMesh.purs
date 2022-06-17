@@ -25,6 +25,7 @@ import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Color (Color)
 import Rito.Core as C
 import Rito.Matrix4 (Matrix4)
+import Rito.THREE as THREE
 import Type.Proxy (Proxy(..))
 
 ----
@@ -49,7 +50,11 @@ setter f = Setter $ mkExists
 instancedMesh
   :: forall n lock payload
    . Reflectable n Int
-  => C.Geometry lock payload
+  => { matrix4 :: THREE.TMatrix4
+     , mesh :: THREE.TMesh
+     , instancedMesh :: THREE.TInstancedMesh
+     }
+  -> C.Geometry lock payload
   -> C.Material lock payload
   -> Event (InstancedMesh n)
   -> C.AMesh lock payload
@@ -59,13 +64,18 @@ instancedMesh'
   :: forall n lock payload
    . Reflectable n Int
   => Proxy n
+  -> { matrix4 :: THREE.TMatrix4
+     , mesh :: THREE.TMesh
+     , instancedMesh :: THREE.TInstancedMesh
+     }
   -> C.Geometry lock payload
   -> C.Material lock payload
   -> Event (InstancedMesh n)
   -> C.AMesh lock payload
-instancedMesh' _ (C.Geometry geo) (C.Material mat) props = Bolson.Element' $
-  C.Mesh
-    go
+instancedMesh' _ imsh (C.Geometry geo) (C.Material mat) props = Bolson.Element'
+  $
+    C.Mesh
+      go
   where
   go
     parent
@@ -112,6 +122,9 @@ instancedMesh' _ (C.Geometry geo) (C.Material mat) props = Bolson.Element' $
             , scope: parent.scope
             , geometry: gid
             , material: mid
+            , instancedMesh: imsh.instancedMesh
+            , matrix4: imsh.matrix4
+            , mesh: imsh.mesh
             , count: reflectType (Proxy :: _ n)
             }
         , props <#>

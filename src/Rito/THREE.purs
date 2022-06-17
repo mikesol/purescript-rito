@@ -1,16 +1,95 @@
 module Rito.THREE where
 
-data Three
-data OrbitControls
-data CSS2DRenderer
-data CSS2DObject
-data CSS3DRenderer
-data CSS3DObject
-type ThreeStuff =
-  { three :: Three
-  , orbitControls :: OrbitControls
-  , css2DRenderer :: CSS2DRenderer
-  , css2DObject :: CSS2DObject
-  , css3DRenderer :: CSS3DRenderer
-  , css3DObject :: CSS3DObject
-  }
+import Control.Promise (Promise, toAffE)
+import Effect (Effect)
+import Effect.Aff (Aff)
+
+data TCSS2DRenderer
+data TCSS2DObject
+data TCSS3DRenderer
+data TCSS3DObject
+data TVector2
+data TVector3
+data TTextureLoader
+data TQuaternion
+data TCubeTextureLoader
+data TSphere
+data TMatrix4
+data TColor
+data TBox3
+data TScene
+data TWebGLRenderer
+data TMesh
+data TInstancedMesh
+data TMeshStandardMaterial
+data TMeshBasicMaterial
+data TPointLight
+data TDirectionalLight
+data TAmbientLight
+data TGroup
+data TPlaneGeometry
+data TSphereGeometry
+data TBoxGeometry
+data TCapsuleGeometry
+data TPerspectiveCamera
+data TRaycaster
+
+foreign import css2DRenderer :: Effect (Promise TCSS2DRenderer)
+foreign import css2DObject :: Effect (Promise TCSS2DObject)
+foreign import css3DRenderer :: Effect (Promise TCSS3DRenderer)
+foreign import css3DObject :: Effect (Promise TCSS3DObject)
+foreign import vector2 :: Effect (Promise TVector2)
+foreign import vector3 :: Effect (Promise TVector3)
+foreign import textureLoader :: Effect (Promise TTextureLoader)
+foreign import cubeTextureLoader :: Effect (Promise TCubeTextureLoader)
+foreign import sphere :: Effect (Promise TSphere)
+foreign import quaternion :: Effect (Promise TQuaternion)
+foreign import matrix4 :: Effect (Promise TMatrix4)
+foreign import color :: Effect (Promise TColor)
+foreign import box3 :: Effect (Promise TBox3)
+foreign import scene :: Effect (Promise TScene)
+foreign import webGLRenderer :: Effect (Promise TWebGLRenderer)
+foreign import mesh :: Effect (Promise TMesh)
+foreign import meshStandardMaterial :: Effect (Promise TMeshStandardMaterial)
+foreign import meshBasicMaterial :: Effect (Promise TMeshBasicMaterial)
+foreign import pointLight :: Effect (Promise TPointLight)
+foreign import directionalLight :: Effect (Promise TDirectionalLight)
+foreign import ambientLight :: Effect (Promise TAmbientLight)
+foreign import group :: Effect (Promise TGroup)
+foreign import instancedMesh :: Effect (Promise TInstancedMesh)
+foreign import planeGeometry :: Effect (Promise TPlaneGeometry)
+foreign import sphereGeometry :: Effect (Promise TSphereGeometry)
+foreign import boxGeometry :: Effect (Promise TBoxGeometry)
+foreign import capsuleGeometry :: Effect (Promise TCapsuleGeometry)
+foreign import perspectiveCamera :: Effect (Promise TPerspectiveCamera)
+foreign import raycaster :: Effect (Promise TRaycaster)
+
+css2DRendererAff = toAffE css2DRenderer :: Aff TCSS2DRenderer
+css2DObjectAff = toAffE css2DObject :: Aff TCSS2DObject
+css3DRendererAff = toAffE css3DRenderer :: Aff TCSS3DRenderer
+css3DObjectAff = toAffE css3DObject :: Aff TCSS3DObject
+vector2Aff = toAffE vector2 :: Aff TVector2
+vector3Aff = toAffE vector3 :: Aff TVector3
+textureLoaderAff = toAffE textureLoader :: Aff TTextureLoader
+cubeTextureLoaderAff = toAffE cubeTextureLoader :: Aff TCubeTextureLoader
+sphereAff = toAffE sphere :: Aff TSphere
+quaternionAff = toAffE quaternion :: Aff TQuaternion
+matrix4Aff = toAffE matrix4 :: Aff TMatrix4
+colorAff = toAffE color :: Aff TColor
+box3Aff = toAffE box3 :: Aff TBox3
+sceneAff = toAffE scene :: Aff TScene
+webGLRendererAff = toAffE webGLRenderer :: Aff TWebGLRenderer
+meshAff = toAffE mesh :: Aff TMesh
+meshStandardMaterialAff = toAffE meshStandardMaterial :: Aff TMeshStandardMaterial
+meshBasicMaterialAff = toAffE meshBasicMaterial :: Aff TMeshBasicMaterial
+pointLightAff = toAffE pointLight :: Aff TPointLight
+directionalLightAff = toAffE directionalLight :: Aff TDirectionalLight
+ambientLightAff = toAffE ambientLight :: Aff TAmbientLight
+groupAff = toAffE group :: Aff TGroup
+instancedMeshAff = toAffE instancedMesh :: Aff TInstancedMesh
+planeGeometryAff = toAffE planeGeometry :: Aff TPlaneGeometry
+sphereGeometryAff = toAffE sphereGeometry :: Aff TSphereGeometry
+boxGeometryAff = toAffE boxGeometry :: Aff TBoxGeometry
+capsuleGeometryAff = toAffE capsuleGeometry :: Aff TCapsuleGeometry
+perspectiveCameraAff = toAffE perspectiveCamera :: Aff TPerspectiveCamera
+raycasterAff = toAffE raycaster :: Aff TRaycaster

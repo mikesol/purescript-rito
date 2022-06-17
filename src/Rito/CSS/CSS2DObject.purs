@@ -14,6 +14,7 @@ import Deku.Core (ANut(..))
 import Deku.Toplevel (runInElement')
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Core as C
+import Rito.THREE as THREE
 import Web.DOM.Document (createElement)
 import Web.HTML (window)
 import Web.HTML.HTMLDocument (toDocument)
@@ -28,10 +29,10 @@ instance Newtype CSS2DObject CSS2DObject'
 
 css2DObject
   :: forall lock payload
-   .  { nut :: ANut }
+   . { css2DObject :: THREE.TCSS2DObject, nut :: ANut }
   -> Event CSS2DObject
   -> C.ACSS2DObject lock payload
-css2DObject { nut: ANut nut } atts = Bolson.Element' $ C.CSS2DObject go
+css2DObject ipt@{ nut: ANut nut } atts = Bolson.Element' $ C.CSS2DObject go
   where
   go
     parent
@@ -53,10 +54,12 @@ css2DObject { nut: ANut nut } atts = Bolson.Element' $ C.CSS2DObject go
             , parent: parent.parent
             , scope: parent.scope
             , nut: elt
+            , css2DObject: ipt.css2DObject
+
             }
         )
         <|>
           ( map
-              ( \(CSS2DObject e) -> match (C.object3D me di) e              )
+              (\(CSS2DObject e) -> match (C.object3D me di) e)
               atts
           )

@@ -19,9 +19,16 @@ import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
 import Rito.Core (object3D)
 import Rito.Core as C
-import Rito.Vector3 (Vector3)
+import Rito.THREE as THREE
 
 data PerspectiveCameraOptions = PerspectiveCameraOptions
+
+instance
+  ConvertOption PerspectiveCameraOptions
+    "perspectiveCamera"
+    THREE.TPerspectiveCamera
+    THREE.TPerspectiveCamera where
+  convertOption _ _ = identity
 
 instance
   ConvertOption PerspectiveCameraOptions
@@ -59,7 +66,7 @@ type PerspectiveCameraOptional =
   )
 
 type PerspectiveCameraAll =
-  (| PerspectiveCameraOptional)
+  (perspectiveCamera :: THREE.TPerspectiveCamera | PerspectiveCameraOptional)
 
 defaultPerspectiveCamera :: { | PerspectiveCameraOptional }
 defaultPerspectiveCamera =
@@ -105,7 +112,6 @@ type PerspectiveCamera' = Variant
       , width :: Number
       , height :: Number
       }
-  , withWorldDirection :: Vector3 -> PerspectiveCamera
   | C.Object3D
   )
 newtype PerspectiveCamera = PerspectiveCamera PerspectiveCamera'
@@ -137,7 +143,6 @@ perspectiveCamera i' atts = C.Camera go
           , setZoom
           , setFocalLength
           , setViewOffset
-          , withWorldDirection
           }
       ) = makeEvent \k -> do
     me <- ids
@@ -148,6 +153,7 @@ perspectiveCamera i' atts = C.Camera go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , perspectiveCamera: i.perspectiveCamera
             , aspect: i.aspect
             , far: i.far
             , fov: i.fov
@@ -186,9 +192,6 @@ perspectiveCamera i' atts = C.Camera go
                               , width
                               , height
                               }
-                        , withWorldDirection: withWorldDirection
-                            <<< { id: me, withWorldDirection: _ }
-                            <<< map fn
                         }
                         (object3D me di)
                     )

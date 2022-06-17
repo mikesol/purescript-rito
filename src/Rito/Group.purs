@@ -11,6 +11,7 @@ import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Core as C
+import Rito.THREE as THREE
 import Unsafe.Coerce (unsafeCoerce)
 
 newtype Group = Group
@@ -20,10 +21,11 @@ derive instance Newtype Group _
 
 group
   :: forall lock payload
-   . Event Group
+   . { group :: THREE.TGroup }
+  -> Event Group
   -> Array (C.AGroupful lock payload)
   -> C.AGroup lock payload
-group props kidz = Element' $ C.Group go
+group gp props kidz = Element' $ C.Group go
   where
   go
     parent
@@ -42,6 +44,7 @@ group props kidz = Element' $ C.Group go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , group: gp.group
             }
         , props <#>
             ( \(Group msh) ->

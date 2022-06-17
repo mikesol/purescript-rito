@@ -7,12 +7,12 @@ import Rito.THREE as THREE
 
 data Color
 
-foreign import ctor_ :: forall rep. THREE.Three -> rep -> Color
+foreign import ctor_ :: forall rep. THREE.TColor -> rep -> Color
 foreign import ctorRGB_
-  :: THREE.Three -> { r :: Number, g :: Number, b :: Number } -> Color
+  :: THREE.TColor -> { r :: Number, g :: Number, b :: Number } -> Color
 
 class ColorRepresentation rep where
-  color :: THREE.Three -> rep -> Color
+  color :: THREE.TColor -> rep -> Color
 
 data RGB = RGB Number Number Number
 

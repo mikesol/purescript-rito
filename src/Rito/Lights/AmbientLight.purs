@@ -20,8 +20,16 @@ import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
 import Rito.Color (Color)
 import Rito.Core as C
+import Rito.THREE as THREE
 
 data AmbientLightOptions = AmbientLightOptions
+
+instance
+  ConvertOption AmbientLightOptions
+    "ambientLight"
+    THREE.TAmbientLight
+    THREE.TAmbientLight where
+  convertOption _ _ = identity
 
 instance
   ConvertOption AmbientLightOptions
@@ -43,6 +51,7 @@ type AmbientLightOptional =
 
 type AmbientLightAll =
   ( color :: Color
+  , ambientLight :: THREE.TAmbientLight
   | AmbientLightOptional
   )
 
@@ -104,6 +113,7 @@ ambientLight i' atts = Bolson.Element' $ C.Light go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , ambientLight: i.ambientLight
             , color: i.color
             , intensity: i.intensity
             }

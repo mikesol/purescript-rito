@@ -4,7 +4,7 @@ import Prelude
 
 import Bolson.Core (Element(..), envy, fixed)
 import Control.Alt ((<|>))
-import Control.Parallel (parTraverse)
+import Control.Parallel (parTraverse, parallel, sequential)
 import Control.Plus (empty)
 import Data.Array (zip, (!!), (..))
 import Data.Array.NonEmpty (fromArray, singleton)
@@ -22,6 +22,7 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
 import Data.Number (cos, pi, sin, (%))
 import Data.Profunctor.Strong (second)
+import Data.Symbol (class IsSymbol)
 import Data.Traversable (traverse)
 import Data.Tuple.Nested (type (/\), (/\))
 import Data.UInt (toNumber)
@@ -31,7 +32,7 @@ import Deku.Core (ANut(..))
 import Deku.DOM as D
 import Deku.Toplevel (runInBody1)
 import Effect (Effect)
-import Effect.Aff (launchAff_)
+import Effect.Aff (Aff, ParAff, launchAff_)
 import Effect.Class (liftEffect)
 import Effect.Random (randomInt)
 import Effect.Random as Random
@@ -42,15 +43,16 @@ import FRP.Event.Animate (animationFrameEvent)
 import FRP.Event.Time (withTime)
 import FRP.Event.VBus (V, vbus)
 import Foreign.Object (fromHomogeneous, values)
+import Heterogeneous.Folding (class FoldingWithIndex, hfoldlWithIndex)
+import Prim.Row (class Cons, class Lacks)
 import Random.LCG (mkSeed)
-import Record (union)
+import Record (insert, union)
 import Rito.CSS.CSS2DObject (css2DObject)
 import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Color (RGB(..), color)
 import Rito.Core (Renderer(..), toScene)
 import Rito.Geometries.Sphere (sphere)
 import Rito.InstancedMesh (instancedMesh, setter)
-import Rito.Interpret (css2DRendererAff, css3DRendererAff, orbitControlsAff, threeAff)
 import Rito.Lights.PointLight (pointLight)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
 import Rito.Matrix4 (ctor, scale, setPosition)
@@ -60,7 +62,7 @@ import Rito.Renderers.CSS2D (css2DRenderer)
 import Rito.Renderers.WebGL (webGLRenderer)
 import Rito.Run as Rito.Run
 import Rito.Scene (scene)
-import Rito.THREE (ThreeStuff)
+import Rito.THREE as THREE
 import Rito.Vector3 (vector3)
 import Test.QuickCheck.Gen (elements, evalGen)
 import Type.Proxy (Proxy(..))
@@ -80,6 +82,23 @@ import Web.HTML.HTMLCanvasElement as HTMLCanvasElement
 import Web.HTML.HTMLInputElement (fromEventTarget, valueAsNumber)
 import Web.HTML.Window (innerHeight, innerWidth)
 
+type ThreeDI =
+  { scene :: THREE.TScene
+  , vector3 :: THREE.TVector3
+  , meshStandardMaterial :: THREE.TMeshStandardMaterial
+  , pointLight :: THREE.TPointLight
+  , css2DObject :: THREE.TCSS2DObject
+  , webGLRenderer :: THREE.TWebGLRenderer
+  , color :: THREE.TColor
+  , instancedMesh :: THREE.TInstancedMesh
+  , raycaster :: THREE.TRaycaster
+  , mesh :: THREE.TMesh
+  , perspectiveCamera :: THREE.TPerspectiveCamera
+  , matrix4 :: THREE.TMatrix4
+  , sphereGeometry :: THREE.TSphereGeometry
+  , css2DRenderer :: THREE.TCSS2DRenderer
+  }
+
 type StartStop = V (start :: Unit, stop :: Effect Unit)
 type CanvasInfo = { x :: Number, y :: Number } /\ Number
 type UIEvents = V
@@ -94,10 +113,11 @@ e2e e = makeEvent \k -> do
   e >>= k
   pure (pure unit)
 
-buffers' :: { pluck0 :: String
-, pluck1 :: String
-, strum0 :: String
-}
+buffers'
+  :: { pluck0 :: String
+  , pluck1 :: String
+  , strum0 :: String
+  }
 buffers' =
   { pluck0: "https://freesound.org/data/previews/493/493016_10350281-lq.mp3"
   , pluck1: "https://freesound.org/data/previews/141/141524_2558140-lq.mp3"
@@ -160,25 +180,30 @@ denv s e = bang
 ttap (o /\ n) = AudioNumeric { o: o + 0.04, n, t: _linear }
 
 runThree
-  :: ThreeStuff
+  :: ThreeDI
   -> Event Web.DOM.Element
   -> Event (Array CanvasInfo)
   -> Number
   -> Number
   -> HTMLCanvasElement
   -> Effect Unit
-runThree ts@{ three } delt canvas iw ih e = do
-  _ <- Rito.Run.run ts
+runThree tdi delt canvas iw ih e = do
+  _ <- Rito.Run.run
     ( globalGeometryPortal1
-        ( ( sphere { widthSegments: 32, heightSegments: 32 }
+        ( ( sphere
+              { sphere: tdi.sphereGeometry
+              , widthSegments: 32
+              , heightSegments: 32
+              }
               empty
           )
         )
         \mySphere -> globalScenePortal1
-          ( ( scene empty
+          ( ( scene { scene: tdi.scene } empty
                 [ toScene
                     $ css2DObject
-                      { nut: ANut
+                      { css2DObject: tdi.css2DObject
+                      , nut: ANut
                           ( D.span
                               (bang (D.Class := "text-white font-bold text-xl"))
                               [ text_ "Hello world" ]
@@ -186,7 +211,10 @@ runThree ts@{ three } delt canvas iw ih e = do
                       }
                       empty
                 , toScene
-                    $ pointLight { color: color three $ RGB 1.0 1.0 1.0 }
+                    $ pointLight
+                      { pointLight: tdi.pointLight
+                      , color: color tdi.color $ RGB 1.0 1.0 1.0
+                      }
                       ( oneOfMap bang
                           [ positionX 1.0
                           , positionY (-0.5)
@@ -194,9 +222,14 @@ runThree ts@{ three } delt canvas iw ih e = do
                           ]
                       )
                 , toScene $ instancedMesh
+                    { instancedMesh: tdi.instancedMesh
+                    , matrix4: tdi.matrix4
+                    , mesh: tdi.mesh
+                    }
                     mySphere
                     ( meshStandardMaterial
-                        { color: color three $ RGB 1.0 1.0 1.0
+                        { meshStandardMaterial: tdi.meshStandardMaterial
+                        , color: color tdi.color $ RGB 1.0 1.0 1.0
                         , metalness: 1.0
                         }
                         empty
@@ -218,14 +251,14 @@ runThree ts@{ three } delt canvas iw ih e = do
                                   fromMaybe ({ x: 0.0, y: 0.0 } /\ 0.0)
                                     (a !! i) # \({ x, y } /\ n) -> do
                                     scale
-                                      ( vector3 three
+                                      ( vector3 tdi.vector3
                                           { x: (n * 0.1)
                                           , y: (n * 0.1)
                                           , z: (n * 0.1)
                                           }
                                       )
                                       ( setPosition
-                                          ( vector3 three
+                                          ( vector3 tdi.vector3
                                               { x:
                                                   sin
                                                     ( 0.2 * tni40 * time *
@@ -250,7 +283,7 @@ runThree ts@{ three } delt canvas iw ih e = do
                                                     * 1.0
                                               }
                                           )
-                                          (ctor three)
+                                          (ctor tdi.matrix4)
                                       )
                               if time % 1.0 < 0.25
                               then setMatrixAt $ (setter :: FV.Vect 40 _ -> _) $ mapWithIndex (#) $ pure f
@@ -274,7 +307,8 @@ runThree ts@{ three } delt canvas iw ih e = do
           )
           \myScene -> globalCameraPortal1
             ( ( perspectiveCamera
-                  { fov: 75.0
+                  { perspectiveCamera: tdi.perspectiveCamera
+                  , fov: 75.0
                   , aspect: iw / ih
                   , near: 0.1
                   , far: 100.0
@@ -292,7 +326,10 @@ runThree ts@{ three } delt canvas iw ih e = do
                   [ webGLRenderer
                       myScene
                       myCamera
-                      { canvas: e }
+                      { canvas: e
+                      , webGLRenderer: tdi.webGLRenderer
+                      , raycaster: tdi.raycaster
+                      }
                       ( oneOf
                           [ bang (size { width: iw, height: ih })
                           , bang render
@@ -303,7 +340,10 @@ runThree ts@{ three } delt canvas iw ih e = do
                       ( \element -> css2DRenderer
                           myScene
                           myCamera
-                          { canvas: e, element }
+                          { canvas: e
+                          , element
+                          , css2DRenderer: tdi.css2DRenderer
+                          }
                           ( oneOf
                               [ bang (size { width: iw, height: ih })
                               , bang render
@@ -317,13 +357,38 @@ runThree ts@{ three } delt canvas iw ih e = do
     )
   pure unit
 
+data ParFold = ParFold
+
+instance showProps ::
+  ( Cons sym a x' x
+  , IsSymbol sym
+  , Lacks sym x'
+  ) =>
+  FoldingWithIndex ParFold
+    (Proxy sym)
+    (ParAff { | x' })
+    (Aff a)
+    (ParAff { | x }) where
+  foldingWithIndex ParFold prop x' affA = insert prop <$> parallel affA <*> x'
+
 main :: Effect Unit
 main = launchAff_ do
-  three <- threeAff
-  orbitControls <- orbitControlsAff
-  css2DThings <- css2DRendererAff
-  css3DThings <- css3DRendererAff
-  let threeStuff = union (union { three, orbitControls } css2DThings) css3DThings
+  three <- sequential $ hfoldlWithIndex ParFold (pure {} :: ParAff {})
+    { scene: THREE.sceneAff
+    , vector3: THREE.vector3Aff
+    , meshStandardMaterial: THREE.meshStandardMaterialAff
+    , pointLight: THREE.pointLightAff
+    , css2DObject: THREE.css2DObjectAff
+    , webGLRenderer: THREE.webGLRendererAff
+    , color: THREE.colorAff
+    , instancedMesh: THREE.instancedMeshAff
+    , raycaster: THREE.raycasterAff
+    , mesh: THREE.meshAff
+    , perspectiveCamera: THREE.perspectiveCameraAff
+    , matrix4: THREE.matrix4Aff
+    , sphereGeometry: THREE.sphereGeometryAff
+    , css2DRenderer: THREE.css2DRendererAff
+    }
   w <- liftEffect $ window
   iw <- liftEffect $ Int.toNumber <$> innerWidth w
   ih <- liftEffect $ Int.toNumber <$> innerHeight w
@@ -451,7 +516,7 @@ main = launchAff_ do
                         , D.Style := "width: 100%;position:absolute;top:0px;"
                         , D.Self := HTMLCanvasElement.fromElement >>>
                             traverse_
-                              ( runThree threeStuff event.renderElement
+                              ( runThree three event.renderElement
                                   event.canvas
                                   iw
                                   ih

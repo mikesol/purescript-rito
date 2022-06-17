@@ -20,8 +20,16 @@ import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
 import Rito.Color (Color)
 import Rito.Core as C
+import Rito.THREE as THREE
 
 data DirectionalLightOptions = DirectionalLightOptions
+
+instance
+  ConvertOption DirectionalLightOptions
+    "directionalLight"
+    THREE.TDirectionalLight
+    THREE.TDirectionalLight where
+  convertOption _ _ = identity
 
 instance
   ConvertOption DirectionalLightOptions
@@ -43,6 +51,7 @@ type DirectionalLightOptional =
 
 type DirectionalLightAll =
   ( color :: Color
+  , directionalLight :: THREE.TDirectionalLight
   | DirectionalLightOptional
   )
 
@@ -104,6 +113,7 @@ directionalLight i' atts = Bolson.Element' $ C.Light go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , directionalLight: i.directionalLight
             , color: i.color
             , intensity: i.intensity
             }

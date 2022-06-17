@@ -20,10 +20,18 @@ import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Color (Color)
 import Rito.Core as C
 import Rito.NormalMapTypes (NormalMapType)
+import Rito.THREE as THREE
 import Rito.Texture (Texture)
 import Rito.Vector2 (Vector2)
 
 data MeshStandardMaterialOptions = MeshStandardMaterialOptions
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "meshStandardMaterial"
+    THREE.TMeshStandardMaterial
+    THREE.TMeshStandardMaterial where
+  convertOption _ _ = identity
 
 instance
   ConvertOption MeshStandardMaterialOptions
@@ -245,7 +253,7 @@ type MeshStandardMaterialOptional =
   )
 
 type MeshStandardMaterialAll =
-  (| MeshStandardMaterialOptional)
+  (meshStandardMaterial :: THREE.TMeshStandardMaterial | MeshStandardMaterialOptional)
 
 defaultMeshStandardMaterial :: { | MeshStandardMaterialOptional }
 defaultMeshStandardMaterial =
@@ -381,6 +389,7 @@ meshStandardMaterial i' atts = C.Material go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , meshStandardMaterial: i.meshStandardMaterial
             , color: i.color
             , roughness: i.roughness
             , metalness: i.metalness

@@ -14,6 +14,7 @@ import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Core as C
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
+import Rito.THREE as THREE
 import Web.HTML (HTMLCanvasElement)
 
 data WebGLRendererOptions = WebGLRendererOptions
@@ -23,6 +24,20 @@ instance
     "canvas"
     HTMLCanvasElement
     HTMLCanvasElement where
+  convertOption _ _ = identity
+
+instance
+  ConvertOption WebGLRendererOptions
+    "raycaster"
+    THREE.TRaycaster
+    THREE.TRaycaster where
+  convertOption _ _ = identity
+
+instance
+  ConvertOption WebGLRendererOptions
+    "webGLRenderer"
+    THREE.TWebGLRenderer
+    THREE.TWebGLRenderer where
   convertOption _ _ = identity
 
 instance
@@ -109,7 +124,11 @@ type WebGLRendererOptional =
   )
 
 type WebGLRendererAll =
-  (canvas :: HTMLCanvasElement | WebGLRendererOptional)
+  ( canvas :: HTMLCanvasElement
+  , webGLRenderer :: THREE.TWebGLRenderer
+  , raycaster :: THREE.TRaycaster
+  | WebGLRendererOptional
+  )
 
 defaultWebGLRenderer :: { | WebGLRendererOptional }
 defaultWebGLRenderer =
@@ -203,6 +222,8 @@ webGLRenderer sne cam i' props = Bolson.Element' $ C.Renderer go
           ( oneOf
               [ bang $ makeWebGLRenderer
                   { id: me
+                  , webGLRenderer: i.webGLRenderer
+                  , raycaster: i.raycaster
                   , canvas: i.canvas
                   , camera: cameraId
                   , precision: i.precision

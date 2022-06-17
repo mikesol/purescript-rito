@@ -1,5 +1,5 @@
-export const ctor_ = THREE => (rep) => new THREE.Color(rep);
+export const ctor_ = (color) => (rep) => new color(rep);
 export const ctorRGB_ =
-	(THREE) =>
+	(color) =>
 	({ r, g, b }) =>
-		new THREE.Color(r, g, b);
+		new color(r, g, b);

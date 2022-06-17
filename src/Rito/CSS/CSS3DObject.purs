@@ -14,6 +14,7 @@ import Deku.Core (ANut(..))
 import Deku.Toplevel (runInElement')
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Core as C
+import Rito.THREE as THREE
 import Web.DOM.Document (createElement)
 import Web.HTML (window)
 import Web.HTML.HTMLDocument (toDocument)
@@ -28,10 +29,10 @@ instance Newtype CSS3DObject CSS3DObject'
 
 css3DObject
   :: forall lock payload
-   .  { nut :: ANut }
+   .  { css3DObject :: THREE.TCSS3DObject, nut :: ANut }
   -> Event CSS3DObject
   -> C.ACSS3DObject lock payload
-css3DObject { nut: ANut nut } atts = Bolson.Element' $ C.CSS3DObject go
+css3DObject ipt@{ nut: ANut nut } atts = Bolson.Element' $ C.CSS3DObject go
   where
   go
     parent
@@ -52,6 +53,7 @@ css3DObject { nut: ANut nut } atts = Bolson.Element' $ C.CSS3DObject go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , css3DObject: ipt.css3DObject
             , nut: elt
             }
         )

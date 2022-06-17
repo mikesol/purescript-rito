@@ -18,8 +18,16 @@ import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import Record (union)
 import Rito.Core as C
+import Rito.THREE as THREE
 
 data PlaneOptions = PlaneOptions
+
+instance
+  ConvertOption PlaneOptions
+    "plane"
+    THREE.TPlaneGeometry
+    THREE.TPlaneGeometry where
+  convertOption _ _ = identity
 
 instance
   ConvertOption PlaneOptions
@@ -57,7 +65,7 @@ type PlaneOptional =
   )
 
 type PlaneAll =
-  (| PlaneOptional)
+  (plane :: THREE.TPlaneGeometry | PlaneOptional)
 
 defaultPlane :: { | PlaneOptional }
 defaultPlane =
@@ -120,6 +128,7 @@ plane i' atts = C.Geometry go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , plane: i.plane
             , width: i.width
             , height: i.height
             , widthSegments: i.widthSegments

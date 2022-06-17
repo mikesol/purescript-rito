@@ -17,6 +17,7 @@ import Foreign.Object as Object
 import Heterogeneous.Mapping (class Mapping, hmap)
 import Record (union)
 import Rito.Core as C
+import Rito.THREE as THREE
 import Web.TouchEvent (Touch, TouchEvent)
 import Web.UIEvent.MouseEvent (MouseEvent)
 
@@ -49,12 +50,13 @@ withRemoval' p s attach remove = do
 
 mesh'
   :: forall lock payload
-   . C.Geometry lock payload
+   . { mesh :: THREE.TMesh }
+  -> C.Geometry lock payload
   -> C.Material lock payload
   -> Event Mesh
   -> Array (C.AMesh lock payload)
   -> C.AMesh lock payload
-mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
+mesh' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
   where
   go
     parent
@@ -89,6 +91,7 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
             { id: me
             , parent: parent.parent
             , scope: parent.scope
+            , mesh: mshhhh.mesh
             }
         , geo
             { parent: Just me
@@ -182,8 +185,9 @@ mesh' (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Mesh go
 
 mesh
   :: forall lock payload
-   . C.Geometry lock payload
+   . { mesh :: THREE.TMesh }
+  -> C.Geometry lock payload
   -> C.Material lock payload
   -> Event Mesh
   -> C.AMesh lock payload
-mesh geo mat props = mesh' geo mat props []
+mesh msh geo mat props = mesh' msh geo mat props []
