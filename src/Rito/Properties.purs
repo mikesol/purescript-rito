@@ -315,3 +315,10 @@ background
   => Background
   -> nt
 background = wrap <<< inj (Proxy :: Proxy "background")
+
+uniform
+  :: forall nt r uniform
+   . Newtype nt (Variant (uniform :: uniform | r))
+  => uniform
+  -> nt
+uniform = wrap <<< inj (Proxy :: Proxy "uniform")

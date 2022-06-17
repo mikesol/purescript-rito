@@ -248,12 +248,12 @@ export const makePointLight_ = genericMake_(
 	y.main.add(x.main);
 });
 export const makeShaderMaterial_ = genericMake_(
-	({ makeShaderMaterial, ...options }) => new makeShaderMaterial(options)
+	({ shaderMaterial, ...options }) => new shaderMaterial(options)
 )((x, y) => {
 	y.main.material = x.main;
 });
 export const makeRawShaderMaterial_ = genericMake_(
-	({ makeRawShaderMaterial, ...options }) => new makeRawShaderMaterial(options)
+	({ rawShaderMaterial, ...options }) => new rawShaderMaterial(options)
 )((x, y) => {
 	y.main.material = x.main;
 });

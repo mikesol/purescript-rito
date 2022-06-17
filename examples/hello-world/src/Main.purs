@@ -26,6 +26,7 @@ import Data.Symbol (class IsSymbol)
 import Data.Traversable (traverse)
 import Data.Tuple.Nested (type (/\), (/\))
 import Data.UInt (toNumber)
+import Data.Variant (inj)
 import Deku.Attribute (attr, cb, (:=))
 import Deku.Control (text, text_)
 import Deku.Core (ANut(..))
@@ -40,6 +41,7 @@ import Effect.Ref (new, read, write)
 import FRP.Behavior (behavior)
 import FRP.Event (Event, bang, makeEvent, subscribe)
 import FRP.Event.Animate (animationFrameEvent)
+import FRP.Event.Class (biSampleOn)
 import FRP.Event.Time (withTime)
 import FRP.Event.VBus (V, vbus)
 import Foreign.Object (fromHomogeneous, values)
@@ -51,13 +53,17 @@ import Rito.CSS.CSS2DObject (css2DObject)
 import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Color (RGB(..), color)
 import Rito.Core (Renderer(..), toScene)
+import Rito.Geometries.Plane (plane)
 import Rito.Geometries.Sphere (sphere)
 import Rito.InstancedMesh (instancedMesh, setter)
 import Rito.Lights.PointLight (pointLight)
+import Rito.Materials.MeshBasicMaterial (meshBasicMaterial)
 import Rito.Materials.MeshStandardMaterial (meshStandardMaterial)
+import Rito.Materials.ShaderMaterial (shaderMaterial)
 import Rito.Matrix4 (ctor, scale, setPosition)
+import Rito.Mesh (mesh)
 import Rito.Portal (globalCameraPortal1, globalGeometryPortal1, globalScenePortal1)
-import Rito.Properties (positionX, positionY, positionZ, render, setMatrixAt, size)
+import Rito.Properties (positionX, positionY, uniform, positionZ, render, setMatrixAt, size)
 import Rito.Renderers.CSS2D (css2DRenderer)
 import Rito.Renderers.WebGL (webGLRenderer)
 import Rito.Run as Rito.Run
@@ -85,6 +91,8 @@ import Web.HTML.Window (innerHeight, innerWidth)
 type ThreeDI =
   { scene :: THREE.TScene
   , vector3 :: THREE.TVector3
+  , shaderMaterial :: THREE.TShaderMaterial
+  , meshBasicMaterial :: THREE.TMeshBasicMaterial
   , meshStandardMaterial :: THREE.TMeshStandardMaterial
   , pointLight :: THREE.TPointLight
   , css2DObject :: THREE.TCSS2DObject
@@ -95,6 +103,7 @@ type ThreeDI =
   , mesh :: THREE.TMesh
   , perspectiveCamera :: THREE.TPerspectiveCamera
   , matrix4 :: THREE.TMatrix4
+  , planeGeometry :: THREE.TPlaneGeometry
   , sphereGeometry :: THREE.TSphereGeometry
   , css2DRenderer :: THREE.TCSS2DRenderer
   }
@@ -220,6 +229,53 @@ runThree tdi delt canvas iw ih e = do
                           , positionZ 1.0
                           ]
                       )
+                , toScene $ mesh { mesh: tdi.mesh }
+                    (plane { plane: tdi.planeGeometry })
+                    ( shaderMaterial
+                        { shaderMaterial: tdi.shaderMaterial
+                        , vertexShader:
+                            """
+varying vec2 vUv;
+varying float vTime;
+uniform float uTime;
+
+void main()
+{
+    vUv = uv;
+    vTime = uTime;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+"""
+                        , fragmentShader:
+                            """
+varying vec2 vUv;
+varying float vTime;
+
+#define PI 3.1416
+
+void main()
+{
+    float c = mod(vUv.x * vUv.y * (10.0 * cos(vTime * PI * 0.25) + 10.5), 1.0);
+    gl_FragColor = vec4(c,c,c,1.0);
+}
+                        """
+                        , uniforms:
+                            { uTime: 15.0
+                            }
+                        }
+                        ( biSampleOn (withTime (bang unit))
+                            ( { now: _, start: _ } <$> withTime
+                                ((canvas $> unit) <|> bang unit)
+                            )
+                            <#>
+                              \{ now: { time: timeN }, start: { time: timeS } } ->
+                                uniform
+                                  ( inj (Proxy :: _ "uTime")
+                                      ((unwrap (unInstant timeN) / 1000.0) - (unwrap (unInstant timeS) / 1000.0))
+                                  )
+                        )
+                    )
+                    empty
                 , toScene $ instancedMesh
                     { instancedMesh: tdi.instancedMesh
                     , matrix4: tdi.matrix4
@@ -375,6 +431,8 @@ main = launchAff_ do
   three <- sequential $ hfoldlWithIndex ParFold (pure {} :: ParAff {})
     { scene: THREE.sceneAff
     , vector3: THREE.vector3Aff
+    , shaderMaterial: THREE.shaderMaterialAff
+    , meshBasicMaterial: THREE.meshBasicMaterialAff
     , meshStandardMaterial: THREE.meshStandardMaterialAff
     , pointLight: THREE.pointLightAff
     , css2DObject: THREE.css2DObjectAff
@@ -385,6 +443,7 @@ main = launchAff_ do
     , mesh: THREE.meshAff
     , perspectiveCamera: THREE.perspectiveCameraAff
     , matrix4: THREE.matrix4Aff
+    , planeGeometry: THREE.planeGeometryAff
     , sphereGeometry: THREE.sphereGeometryAff
     , css2DRenderer: THREE.css2DRendererAff
     }

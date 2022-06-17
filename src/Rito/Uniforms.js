@@ -3,4 +3,5 @@ export const toUniformDeclImpl = (i) => {
 	Object.keys(o).forEach((k) => {
 		o[k] = { value: o[k] };
 	});
+	return o;
 };
