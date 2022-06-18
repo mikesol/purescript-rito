@@ -39,6 +39,7 @@ data TRaycaster
 data TBufferAttribute
 data TInstancedBufferAttribute
 data TPoints
+data TBufferGeometry
 
 foreign import css2DRenderer :: Effect (Promise TCSS2DRenderer)
 foreign import css2DObject :: Effect (Promise TCSS2DObject)
@@ -75,6 +76,7 @@ foreign import rawShaderMaterial :: Effect (Promise TRawShaderMaterial)
 foreign import bufferAttribute :: Effect (Promise TBufferAttribute)
 foreign import instancedBufferAttribute :: Effect (Promise TInstancedBufferAttribute)
 foreign import points :: Effect (Promise TPoints)
+foreign import bufferGeometry :: Effect (Promise TBufferGeometry)
 
 css2DRendererAff = toAffE css2DRenderer :: Aff TCSS2DRenderer
 css2DObjectAff = toAffE css2DObject :: Aff TCSS2DObject
@@ -111,3 +113,4 @@ bufferAttributeAff = toAffE bufferAttribute :: Aff TBufferAttribute
 instancedBufferAttributeAff = toAffE instancedBufferAttribute :: Aff TInstancedBufferAttribute
 pointsAff = toAffE points :: Aff TPoints
 meshPhongMaterialAff = toAffE meshPhongMaterial :: Aff TMeshPhongMaterial
+bufferGeometryAff = toAffE bufferGeometry :: Aff TBufferGeometry

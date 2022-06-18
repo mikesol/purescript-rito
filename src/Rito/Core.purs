@@ -515,6 +515,17 @@ type InitializePlane' =
   | Buffy
   )
 newtype InitializePlane = InitializePlane { | InitializePlane' }
+type MakeBufferGeometry f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | InitializeBufferGeometry'
+  }
+type InitializeBufferGeometry' =
+  ( bufferGeometry :: THREE.TBufferGeometry
+  | Buffy
+  )
+newtype InitializeBufferGeometry = InitializeBufferGeometry { | InitializeBufferGeometry' }
 type MakePerspectiveCamera f s =
   { id :: String
   , scope :: s
@@ -1009,6 +1020,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeBox :: MakeBox Maybe Scope -> payload
   , makeCapsule :: MakeCapsule Maybe Scope -> payload
   , makePlane :: MakePlane Maybe Scope -> payload
+  , makeBufferGeometry :: MakeBufferGeometry Maybe Scope -> payload
   , makeDirectionalLight :: MakeDirectionalLight Maybe Scope -> payload
   , makeAmbientLight :: MakeAmbientLight Maybe Scope -> payload
   , makePointLight :: MakePointLight Maybe Scope -> payload

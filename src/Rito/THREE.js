@@ -98,6 +98,8 @@ export const capsuleGeometry = () =>
 export const planeGeometry = () =>
 	import("three/src/geometries/PlaneGeometry.js").then((r) => r.PlaneGeometry);
 
+export const bufferGeometry = () => import("three/src/core/BufferGeometry.js").then((r) => r.BufferGeometry);
+
 export const perspectiveCamera = () =>
 	import("three/src/cameras/PerspectiveCamera.js").then(
 		(r) => r.PerspectiveCamera

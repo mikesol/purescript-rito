@@ -76,6 +76,8 @@ foreign import makeBox_
   :: Core.MakeBox Undefinable (Undefinable String) -> Payload
 foreign import makePlane_
   :: Core.MakePlane Undefinable (Undefinable String) -> Payload
+foreign import makeBufferGeometry_
+  :: Core.MakeBufferGeometry Undefinable (Undefinable String) -> Payload
 foreign import makeMeshStandardMaterial_
   :: Core.MakeMeshStandardMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeRawShaderMaterial_
@@ -417,6 +419,9 @@ instance FFIMe THREE.TAmbientLight THREE.TAmbientLight where
 instance FFIMe THREE.TGroup THREE.TGroup where
   ffiMe = identity
 
+instance FFIMe THREE.TBufferGeometry THREE.TBufferGeometry where
+  ffiMe = identity
+
 instance FFIMe THREE.TPlaneGeometry THREE.TPlaneGeometry where
   ffiMe = identity
 
@@ -485,6 +490,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeSphere: lcmap ffiize makeSphere_
   , makeBox: lcmap ffiize makeBox_
   , makePlane: lcmap ffiize makePlane_
+  , makeBufferGeometry: lcmap ffiize makeBufferGeometry_
   , makeDirectionalLight: lcmap ffiize makeDirectionalLight_
   , makeAmbientLight: lcmap ffiize makeAmbientLight_
   , makePointLight: lcmap ffiize makePointLight_

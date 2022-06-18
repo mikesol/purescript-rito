@@ -106,6 +106,11 @@ export const makePlane_ = genericMake_(
 )((x, y) => {
 	y.main.geometry = x.main;
 });
+export const makeBufferGeometry_ = genericMake_(
+	withAtts((ctor) => new ctor.bufferGeometry())
+)((x, y) => {
+	y.main.geometry = x.main;
+});
 export const makeCapsule_ = genericMake_(
 	withAtts(
 		(ctor) =>
@@ -677,31 +682,31 @@ export const setSingleInstancedMeshColor_ = (a) => (state) => () => {
 // mesh phong material
 export const setCombine_ = (a) => (state) => () => {
 	state.units[a.id].main.combine = a.combine;
-}
+};
 export const setFog_ = (a) => (state) => () => {
 	state.units[a.id].main.fog = a.fog;
-}
+};
 export const setReflectivity_ = (a) => (state) => () => {
 	state.units[a.id].main.reflectivity = a.reflectivity;
-}
+};
 export const setRefractionRatio_ = (a) => (state) => () => {
 	state.units[a.id].main.refractionRatio = a.refractionRatio;
-}
+};
 export const setShininess_ = (a) => (state) => () => {
 	state.units[a.id].main.shininess = a.shininess;
-}
+};
 export const setSpecular_ = (a) => (state) => () => {
 	state.units[a.id].main.specular = a.specular;
-}
+};
 export const setSpecularMap_ = (a) => (state) => () => {
 	state.units[a.id].main.specularMap = a.specularMap;
-}
+};
 export const setWireframeLinecap_ = (a) => (state) => () => {
 	state.units[a.id].main.wireframeLinecap = a.wireframeLinecap;
-}
+};
 export const setWireframeLinejoin_ = (a) => (state) => () => {
 	state.units[a.id].main.wireframeLinejoin = a.wireframeLinejoin;
-}
+};
 // mesh standard material
 export const setColor_ = (a) => (state) => () => {
 	state.units[a.id].main.color = a.color;
