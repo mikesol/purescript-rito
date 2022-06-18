@@ -111,10 +111,16 @@ instance Sceneable Mesh where
 instance Sceneable Camera where
   toScene = unsafeCoerce
 
+instance Sceneable Points where
+  toScene = unsafeCoerce
+
 instance Sceneable Group where
   toScene = unsafeCoerce
 
 instance Groupable Light where
+  toGroup = unsafeCoerce
+
+instance Groupable Points where
   toGroup = unsafeCoerce
 
 instance Groupable Mesh where
