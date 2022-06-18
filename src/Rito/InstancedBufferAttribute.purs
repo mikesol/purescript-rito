@@ -21,8 +21,9 @@ instancedBufferAttribute
    . Reflectable m Int
   => Reflectable n Int
   => Mul m n mn
-  => THREE.TInstancedBufferAttribute
+  => Proxy m
+  -> THREE.TInstancedBufferAttribute
   -> (Int -> Vect.Vect n Number)
   -> InstancedBufferAttribute
-instancedBufferAttribute = instancedBufferAttributeImpl (reflectType (Proxy :: _ m))
+instancedBufferAttribute px = instancedBufferAttributeImpl (reflectType px)
   (reflectType (Proxy :: _ n))
