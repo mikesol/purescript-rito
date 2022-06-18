@@ -125,7 +125,7 @@ export const instancedBufferAttribute = () =>
 export const points = () =>
 	import("three/src/objects/Points.js").then((r) => r.Points);
 
-export const meshPhongMagerial = () =>
+export const meshPhongMaterial = () =>
 	import("three/src/materials/MeshPhongMaterial.js").then(
 		(r) => r.MeshPhongMaterial
 	);
