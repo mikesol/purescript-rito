@@ -1,4 +1,10 @@
-module Rito.BufferAttribute (bufferAttribute, bufferAttributes, class BufferAttributes, internalDoNotUseBA, BufferAttribute) where
+module Rito.BufferAttribute
+  ( bufferAttribute
+  , bufferAttributes
+  , class BufferAttributes
+  , internalDoNotUseBA
+  , BufferAttribute
+  ) where
 
 import Data.Array as Array
 import Data.FastVect.FastVect as Vect
@@ -36,7 +42,7 @@ bufferAttribute px = bufferAttributeImpl (reflectType px)
 class
   BufferAttributes (i :: RL.RowList Type) (o :: RL.RowList Type)
   | i -> o where
-  internalDoNotUseBA :: Proxy i -> (Array {k :: String, n :: Int}) /\ Proxy o
+  internalDoNotUseBA :: Proxy i -> (Array { k :: String, n :: Int }) /\ Proxy o
 
 instance BufferAttributes RL.Nil RL.Nil where
   internalDoNotUseBA _ = [] /\ Proxy
@@ -48,27 +54,32 @@ instance
   ) =>
   BufferAttributes (RL.Cons i (Vect.Vect n Number) restI)
     (RL.Cons i BufferAttribute restO) where
-  internalDoNotUseBA _ = Array.cons {k: reflectSymbol (Proxy :: _ i), n: reflectType (Proxy :: _ n)} tail /\ Proxy
+  internalDoNotUseBA _ =
+    Array.cons
+      { k: reflectSymbol (Proxy :: _ i), n: reflectType (Proxy :: _ n) }
+      tail /\ Proxy
     where
     tail /\ _ = internalDoNotUseBA (Proxy :: _ restI)
 
 foreign import bufferAttributesImpl
-  :: forall i o
+  :: forall a i o
    . Int
   -> Array { k :: String, n :: Int }
   -> THREE.TBufferAttribute
-  -> (Int -> { | i })
+  -> a
+  -> (Int -> a -> { | i } /\ a)
   -> { | o }
 
-bufferAttributes ::
-    forall m i ir o or
-     . Reflectable m Int
-    => RL.RowToList i ir
-    => RL.RowToList o or
-    => BufferAttributes ir or
-    => Proxy m
-    -> THREE.TBufferAttribute
-    -> (Int -> { | i })
-    -> { | o }
+bufferAttributes
+  :: forall a m i ir o or
+   . Reflectable m Int
+  => RL.RowToList i ir
+  => RL.RowToList o or
+  => BufferAttributes ir or
+  => Proxy m
+  -> THREE.TBufferAttribute
+  -> a
+  -> (Int -> a -> { | i } /\ a)
+  -> { | o }
 bufferAttributes px = bufferAttributesImpl (reflectType px)
   (fst (internalDoNotUseBA (Proxy :: _ ir)))
