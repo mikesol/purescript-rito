@@ -221,6 +221,9 @@ export const makeInstancedMesh_ = (a) => (state) => () => {
 export const makeMesh_ = genericMake_((ctor) => new ctor.mesh())((x, y) => {
 	y.main.add(x.main);
 });
+export const makePoints_ = genericMake_((ctor) => new ctor.points())((x, y) => {
+	y.main.add(x.main);
+});
 export const makeCSS2DObject_ = genericMake_(
 	(ctor) => new ctor.css2DObject(ctor.nut)
 )((x, y) => {

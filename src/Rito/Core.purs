@@ -80,6 +80,8 @@ newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
 newtype Instance (lock :: Type) payload = Instance (SimpleCtor payload)
 type AMesh lock payload = Entity Void (Mesh lock payload) Effect lock
+newtype Points (lock :: Type) payload = Points (Ctor payload)
+type APoints lock payload = Entity Void (Points lock payload) Effect lock
 newtype Group (lock :: Type) payload = Group (Ctor payload)
 type AGroup lock payload = Entity Void (Group lock payload) Effect lock
 newtype Scene (lock :: Type) payload = Scene (Ctor payload)
@@ -203,6 +205,12 @@ type MakeMesh f s =
   , scope :: s
   , parent :: f String
   , mesh :: THREE.TMesh
+  }
+type MakePoints f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  , points :: THREE.TPoints
   }
 type MakeInstancedMesh f s =
   { id :: String
@@ -929,6 +937,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeGroup :: MakeGroup Maybe Scope -> payload
   , makeScene :: MakeScene Maybe Scope -> payload
   , makeMesh :: MakeMesh Maybe Scope -> payload
+  , makePoints :: MakePoints Maybe Scope -> payload
   , makeInstancedMesh :: MakeInstancedMesh Maybe Scope -> payload
   , makeSphere :: MakeSphere Maybe Scope -> payload
   , makeBox :: MakeBox Maybe Scope -> payload

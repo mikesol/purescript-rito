@@ -63,6 +63,8 @@ foreign import makeGroup_
   :: Core.MakeGroup Undefinable (Undefinable String) -> Payload
 foreign import makeMesh_
   :: Core.MakeMesh Undefinable (Undefinable String) -> Payload
+foreign import makePoints_
+  :: Core.MakePoints Undefinable (Undefinable String) -> Payload
 foreign import makeInstancedMesh_
   :: Core.MakeInstancedMesh Undefinable (Undefinable String) -> Payload
 foreign import makeCapsule_
@@ -359,6 +361,9 @@ instance FFIMe THREE.TWebGLRenderer THREE.TWebGLRenderer where
 instance FFIMe THREE.TMesh THREE.TMesh where
   ffiMe = identity
 
+instance FFIMe THREE.TPoints THREE.TPoints where
+  ffiMe = identity
+
 instance FFIMe THREE.TInstancedMesh THREE.TInstancedMesh where
   ffiMe = identity
 
@@ -442,6 +447,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeScene: lcmap ffiize makeScene_
   , makeGroup: lcmap ffiize makeGroup_
   , makeMesh: lcmap ffiize makeMesh_
+  , makePoints: lcmap ffiize makePoints_
   , makeInstancedMesh: lcmap ffiize makeInstancedMesh_
   , makeCapsule: lcmap ffiize makeCapsule_
   , makeSphere: lcmap ffiize makeSphere_

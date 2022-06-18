@@ -116,7 +116,11 @@ export const rawShaderMaterial = () =>
 
 export const bufferAttribute = () =>
 	import("three/src/core/BufferAttribute.js").then((r) => r.BufferAttribute);
+
 export const instancedBufferAttribute = () =>
 	import("three/src/core/InstancedBufferAttribute.js").then(
 		(r) => r.InstancedBufferAttribute
 	);
+
+export const points = () =>
+	import("three/src/objects/Points.js").then((r) => r.Points);
