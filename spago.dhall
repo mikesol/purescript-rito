@@ -23,7 +23,6 @@
   , "numbers"
   , "prelude"
   , "profunctor"
-  , "profunctor-lenses"
   , "random"
   , "record"
   , "refs"

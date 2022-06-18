@@ -22,6 +22,7 @@ data TWebGLRenderer
 data TMesh
 data TInstancedMesh
 data TMeshStandardMaterial
+data TMeshPhongMaterial
 data TMeshBasicMaterial
 data TShaderMaterial
 data TRawShaderMaterial
@@ -56,6 +57,7 @@ foreign import scene :: Effect (Promise TScene)
 foreign import webGLRenderer :: Effect (Promise TWebGLRenderer)
 foreign import mesh :: Effect (Promise TMesh)
 foreign import meshStandardMaterial :: Effect (Promise TMeshStandardMaterial)
+foreign import meshPhongMaterial :: Effect (Promise TMeshPhongMaterial)
 foreign import meshBasicMaterial :: Effect (Promise TMeshBasicMaterial)
 foreign import pointLight :: Effect (Promise TPointLight)
 foreign import directionalLight :: Effect (Promise TDirectionalLight)
@@ -108,3 +110,4 @@ rawShaderMaterialAff = toAffE rawShaderMaterial :: Aff TRawShaderMaterial
 bufferAttributeAff = toAffE bufferAttribute :: Aff TBufferAttribute
 instancedBufferAttributeAff = toAffE instancedBufferAttribute :: Aff TInstancedBufferAttribute
 pointsAff = toAffE points :: Aff TPoints
+meshPhongMaterialAff = toAffE meshPhongMaterial :: Aff TMeshPhongMaterial

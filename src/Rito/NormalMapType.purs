@@ -1,5 +1,3 @@
-module Rito.NormalMapTypes where
-
-import Prelude
+module Rito.NormalMapType where
 
 data NormalMapType = TangentSpaceNormalMap | ObjectSpaceNormalMap

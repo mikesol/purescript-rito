@@ -15,11 +15,12 @@ import Record (union)
 import Rito.Box3 as Box3
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Color (Color)
+import Rito.CombineOperation (CombineOperation)
 import Rito.CubeTexture (CubeTexture)
 import Rito.Euler (Euler)
 import Rito.InstancedBufferAttribute (InstancedBufferAttribute)
 import Rito.Matrix4 (Matrix4)
-import Rito.NormalMapTypes (NormalMapType)
+import Rito.NormalMapType (NormalMapType)
 import Rito.Quaternion (Quaternion)
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
@@ -29,6 +30,8 @@ import Rito.Texture (Texture)
 import Rito.Undefinable (Undefinable)
 import Rito.Vector2 (Vector2)
 import Rito.Vector3 (Vector3)
+import Rito.WireframeLinecap (WireframeLinecap)
+import Rito.WireframeLinejoin (WireframeLinejoin)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM as Web.DOM
 import Web.HTML (HTMLCanvasElement)
@@ -383,6 +386,56 @@ type InitializeMeshStandardMaterial' (opt :: Type -> Type) normalMapType =
   )
 newtype InitializeMeshStandardMaterial = InitializeMeshStandardMaterial
   { | (InitializeMeshStandardMaterial' Maybe NormalMapType) }
+-- phong
+type MakeMeshPhongMaterial f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | (InitializeMeshPhongMaterial' Maybe CombineOperation NormalMapType WireframeLinecap WireframeLinejoin)
+  }
+type MakeMeshPhongMaterial' f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | (InitializeMeshPhongMaterial' Undefinable Int Int String String)
+  }
+type InitializeMeshPhongMaterial' (opt :: Type -> Type) combineOperation normalMapType wireframeLinecap wireframeLinejoin =
+  ( meshPhongMaterial :: THREE.TMeshPhongMaterial
+   , alphaMap :: opt Texture
+   , aoMap :: opt Texture
+   ,aoMapIntensity :: opt Number
+   , bumpMap :: opt Texture
+   , bumpScale :: opt Number
+   , color :: opt Color
+   , combine :: opt combineOperation -- THREE.MultiplyOperation (default), THREE.MixOperation, THREE.AddOperation.
+   , displacementMap :: opt Texture
+   , displacementScale :: opt Number
+   , displacementBias :: opt Number
+   , emissive :: opt Color
+  , emissiveMap :: opt Texture
+  , emissiveIntensity :: opt Number
+  , envMap :: opt Texture
+  , flatShading :: opt Boolean
+  , fog :: opt Boolean
+  , lightMap :: opt Texture
+  , lightMapIntensity :: opt Number
+  , map :: opt Texture
+  , normalMap :: opt Texture
+  , normalMapType :: opt normalMapType
+  , normalScale :: opt Vector2
+  , reflectivity :: opt Number
+  , refractionRatio :: opt Number
+  , shininess :: opt Number
+  , specular :: opt Color
+  , specularMap :: opt Texture
+  , wireframe :: opt Boolean
+  , wireframeLinecap :: opt wireframeLinecap
+  , wireframeLinejoin :: opt wireframeLinejoin
+  , wireframeLinewidth :: opt Number
+  )
+newtype InitializeMeshPhongMaterial = InitializeMeshPhongMaterial
+  { | (InitializeMeshPhongMaterial' Maybe CombineOperation NormalMapType WireframeLinecap WireframeLinejoin) }
+--
 type MakeMeshBasicMaterial f s =
   { id :: String
   , scope :: s
@@ -544,6 +597,19 @@ type SetEnvMapIntensity = { id :: String, envMapIntensity :: Number }
 type SetWireframe = { id :: String, wireframe :: Boolean }
 type SetWireframeLinewidth = { id :: String, wireframeLinewidth :: Number }
 type SetFlatShading = { id :: String, flatShading :: Boolean }
+-- phong
+type SetCombine = { id :: String, combine :: CombineOperation }
+type SetCombine' = { id :: String, combine :: Int }
+type SetFog = { id :: String, fog :: Boolean }
+type SetReflectivity = { id :: String, reflectivity :: Number }
+type SetRefractionRatio = { id :: String, refractionRatio :: Number }
+type SetShininess = { id :: String, shininess :: Number }
+type SetSpecular = { id :: String, specular :: Color }
+type SetSpecularMap = { id :: String, specularMap :: Texture }
+type SetWireframeLinecap = { id :: String, wireframeLinecap :: WireframeLinecap }
+type SetWireframeLinecap' = { id :: String, wireframeLinecap :: String }
+type SetWireframeLinejoin = { id :: String, wireframeLinejoin :: WireframeLinejoin }
+type SetWireframeLinejoin' = { id :: String, wireframeLinejoin :: String }
 -- scene
 type SetBackgroundCubeTexture = { id :: String, cubeTexture :: CubeTexture }
 type SetBackgroundTexture = { id :: String, texture :: Texture }
@@ -950,6 +1016,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeShaderMaterial :: MakeShaderMaterial Maybe Scope -> payload
   , makeMeshBasicMaterial :: MakeMeshBasicMaterial Maybe Scope -> payload
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
+  , makeMeshPhongMaterial :: MakeMeshPhongMaterial Maybe Scope -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
   , makeCSS2DObject :: MakeCSS2DObject Maybe Scope -> payload
   , makeCSS3DObject :: MakeCSS3DObject Maybe Scope -> payload
@@ -1027,7 +1094,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setInstancedMeshColor :: SetInstancedMeshColor -> payload
   , setSingleInstancedMeshMatrix4 :: SetSingleInstancedMeshMatrix4 -> payload
   , setSingleInstancedMeshColor :: SetSingleInstancedMeshColor -> payload
-  -- MeshStandardMaterial
+  -- MeshStandardMaterial / MeshPhongMaterial
   , setColor :: SetColor -> payload
   , setRoughness :: SetRoughness -> payload
   , setMetalness :: SetMetalness -> payload
@@ -1055,6 +1122,16 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setWireframe :: SetWireframe -> payload
   , setWireframeLinewidth :: SetWireframeLinewidth -> payload
   , setFlatShading :: SetFlatShading -> payload
+  -- Phong only
+  , setCombine :: SetCombine  -> payload
+  , setFog :: SetFog  -> payload
+  , setReflectivity :: SetReflectivity  -> payload
+  , setRefractionRatio :: SetRefractionRatio  -> payload
+  , setShininess :: SetShininess  -> payload
+  , setSpecular :: SetSpecular  -> payload
+  , setSpecularMap :: SetSpecularMap  -> payload
+  , setWireframeLinecap :: SetWireframeLinecap  -> payload
+  , setWireframeLinejoin :: SetWireframeLinejoin  -> payload
   -- mesh
   , setRotationFromAxisAngle :: SetRotationFromAxisAngle -> payload
   , setRotationFromEuler :: SetRotationFromEuler -> payload

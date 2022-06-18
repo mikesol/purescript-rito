@@ -265,6 +265,11 @@ export const makeMeshBasicMaterial_ = genericMake_(
 )((x, y) => {
 	y.main.material = x.main;
 });
+export const makeMeshPhongMaterial_ = genericMake_(
+	({ meshPhongMaterial, ...options }) => new meshPhongMaterial(options)
+)((x, y) => {
+	y.main.material = x.main;
+});
 export const makeMeshStandardMaterial_ = genericMake_(
 	({ meshStandardMaterial, ...options }) => new meshStandardMaterial(options)
 )((x, y) => {
@@ -669,6 +674,34 @@ export const setSingleInstancedMeshColor_ = (a) => (state) => () => {
 	u.setColorAt(a.instanceId, a.color);
 	u.instanceColor.needsUpdate = true;
 };
+// mesh phong material
+export const setCombine_ = (a) => (state) => () => {
+	state.units[a.id].main.combine = a.combine;
+}
+export const setFog_ = (a) => (state) => () => {
+	state.units[a.id].main.fog = a.fog;
+}
+export const setReflectivity_ = (a) => (state) => () => {
+	state.units[a.id].main.reflectivity = a.reflectivity;
+}
+export const setRefractionRatio_ = (a) => (state) => () => {
+	state.units[a.id].main.refractionRatio = a.refractionRatio;
+}
+export const setShininess_ = (a) => (state) => () => {
+	state.units[a.id].main.shininess = a.shininess;
+}
+export const setSpecular_ = (a) => (state) => () => {
+	state.units[a.id].main.specular = a.specular;
+}
+export const setSpecularMap_ = (a) => (state) => () => {
+	state.units[a.id].main.specularMap = a.specularMap;
+}
+export const setWireframeLinecap_ = (a) => (state) => () => {
+	state.units[a.id].main.wireframeLinecap = a.wireframeLinecap;
+}
+export const setWireframeLinejoin_ = (a) => (state) => () => {
+	state.units[a.id].main.wireframeLinejoin = a.wireframeLinejoin;
+}
 // mesh standard material
 export const setColor_ = (a) => (state) => () => {
 	state.units[a.id].main.color = a.color;

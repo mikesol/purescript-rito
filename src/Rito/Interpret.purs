@@ -7,8 +7,6 @@ module Rito.Interpret
 import Prelude
 
 import Bolson.Core (Scope(..))
-import Data.Lens (over)
-import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
 import Data.Symbol (class IsSymbol)
@@ -23,9 +21,10 @@ import Record (get)
 import Record.Builder (Builder, insert, build)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Color (Color)
+import Rito.CombineOperation (CombineOperation(..))
 import Rito.Core as Core
 import Rito.InstancedBufferAttribute (InstancedBufferAttribute)
-import Rito.NormalMapTypes (NormalMapType(..))
+import Rito.NormalMapType (NormalMapType(..))
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
 import Rito.THREE as THREE
@@ -33,6 +32,8 @@ import Rito.Texture (Texture)
 import Rito.Undefinable (Undefinable, m2u)
 import Rito.Vector2 (Vector2)
 import Rito.Vector3 (Vector3)
+import Rito.WireframeLinecap as WLC
+import Rito.WireframeLinejoin as WLJ
 import Type.Proxy (Proxy(..))
 import Web.DOM as Web.DOM
 import Web.HTML (HTMLCanvasElement)
@@ -81,6 +82,8 @@ foreign import makeRawShaderMaterial_
   :: Core.MakeRawShaderMaterial Undefinable (Undefinable String) -> Payload
 foreign import makeShaderMaterial_
   :: Core.MakeShaderMaterial Undefinable (Undefinable String) -> Payload
+foreign import makeMeshPhongMaterial_
+  :: Core.MakeMeshPhongMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeMeshBasicMaterial_
   :: Core.MakeMeshBasicMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeCSS2DObject_
@@ -161,8 +164,19 @@ foreign import setEnvMapIntensity_ :: Core.SetEnvMapIntensity -> Payload
 foreign import setWireframe_ :: Core.SetWireframe -> Payload
 foreign import setWireframeLinewidth_ :: Core.SetWireframeLinewidth -> Payload
 foreign import setFlatShading_ :: Core.SetFlatShading -> Payload
+-- phong
+foreign import setCombine_ :: Core.SetCombine' -> Payload
+foreign import setFog_ :: Core.SetFog -> Payload
+foreign import setReflectivity_ :: Core.SetReflectivity -> Payload
+foreign import setRefractionRatio_ :: Core.SetRefractionRatio -> Payload
+foreign import setShininess_ :: Core.SetShininess -> Payload
+foreign import setSpecular_ :: Core.SetSpecular -> Payload
+foreign import setSpecularMap_ :: Core.SetSpecularMap -> Payload
+foreign import setWireframeLinecap_ :: Core.SetWireframeLinecap' -> Payload
+foreign import setWireframeLinejoin_ :: Core.SetWireframeLinejoin' -> Payload
 -- scene
-foreign import setBackgroundCubeTexture_ :: Core.SetBackgroundCubeTexture -> Payload
+foreign import setBackgroundCubeTexture_
+  :: Core.SetBackgroundCubeTexture -> Payload
 foreign import setBackgroundTexture_ :: Core.SetBackgroundTexture -> Payload
 foreign import setBackgroundColor_ :: Core.SetBackgroundColor -> Payload
 -- (faux) listeners
@@ -296,6 +310,21 @@ instance FFIMe NormalMapType Int where
   ffiMe TangentSpaceNormalMap = 0
   ffiMe ObjectSpaceNormalMap = 1
 
+instance FFIMe CombineOperation Int where
+  ffiMe MultiplyOperation = 0
+  ffiMe MixOperation = 1
+  ffiMe AddOperation = 2
+
+instance FFIMe WLC.WireframeLinecap String where
+  ffiMe WLC.Butt = "butt"
+  ffiMe WLC.Round = "round"
+  ffiMe WLC.Square = "square"
+
+instance FFIMe WLJ.WireframeLinejoin String where
+  ffiMe WLJ.Round = "round"
+  ffiMe WLJ.Bevel = "bevel"
+  ffiMe WLJ.Miter = "miter"
+
 instance FFIMe WRP.WebGLRenderingPrecision String where
   ffiMe WRP.High = "highp"
   ffiMe WRP.Medium = "mediump"
@@ -371,6 +400,9 @@ instance FFIMe THREE.TMeshStandardMaterial THREE.TMeshStandardMaterial where
   ffiMe = identity
 
 instance FFIMe THREE.TMeshBasicMaterial THREE.TMeshBasicMaterial where
+  ffiMe = identity
+
+instance FFIMe THREE.TMeshPhongMaterial THREE.TMeshPhongMaterial where
   ffiMe = identity
 
 instance FFIMe THREE.TPointLight THREE.TPointLight where
@@ -459,6 +491,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makePerspectiveCamera: lcmap ffiize makePerspectiveCamera_
   , makeRawShaderMaterial: lcmap ffiize makeRawShaderMaterial_
   , makeShaderMaterial: lcmap ffiize makeShaderMaterial_
+  , makeMeshPhongMaterial: lcmap ffiize makeMeshPhongMaterial_
   , makeMeshBasicMaterial: lcmap ffiize makeMeshBasicMaterial_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
   , makeCSS2DObject: lcmap ffiize makeCSS2DObject_
@@ -552,8 +585,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setBumpMap: setBumpMap_
   , setBumpScale: setBumpScale_
   , setNormalMap: setNormalMap_
-  , setNormalMapType: lcmap (over (prop (Proxy :: _ "normalMapType")) ffiMe)
-      setNormalMapType_
+  , setNormalMapType: lcmap ffiize setNormalMapType_
   , setNormalScale: setNormalScale_
   , setDisplacementMap: setDisplacementMap_
   , setDisplacementScale: setDisplacementScale_
@@ -583,6 +615,16 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setScaleX: setScaleX_
   , setScaleY: setScaleY_
   , setScaleZ: setScaleZ_
+  -- phong
+  , setCombine: lcmap ffiize setCombine_
+  , setFog: setFog_
+  , setReflectivity: setReflectivity_
+  , setRefractionRatio: setRefractionRatio_
+  , setShininess: setShininess_
+  , setSpecular: setSpecular_
+  , setSpecularMap: setSpecularMap_
+  , setWireframeLinecap: lcmap ffiize setWireframeLinecap_
+  , setWireframeLinejoin: lcmap ffiize setWireframeLinejoin_
   -- point light
   , setDecay: setDecay_
   , setDistance: setDistance_
