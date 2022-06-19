@@ -4,7 +4,7 @@ import Prelude
 
 import Bolson.Core (Entity, Scope)
 import Bolson.Core as Bolson
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Deku.Core (ANut)
 import Effect (Effect)
@@ -12,18 +12,25 @@ import FRP.Event (Event)
 import Foreign (Foreign)
 import Foreign.Object as Object
 import Record (union)
+import Rito.BlendDst (BlendDst)
+import Rito.BlendEquation (BlendEquation)
+import Rito.BlendSrc (BlendSrc)
+import Rito.Blending (Blending)
 import Rito.Box3 as Box3
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Color (Color)
 import Rito.CombineOperation (CombineOperation)
 import Rito.CubeTexture (CubeTexture)
+import Rito.DepthMode (DepthMode)
 import Rito.Euler (Euler)
 import Rito.InstancedBufferAttribute (InstancedBufferAttribute)
 import Rito.Matrix4 (Matrix4)
 import Rito.NormalMapType (NormalMapType)
+import Rito.Precision (Precision)
 import Rito.Quaternion (Quaternion)
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
+import Rito.Side (Side)
 import Rito.Sphere as Sphere
 import Rito.THREE as THREE
 import Rito.Texture (Texture)
@@ -323,44 +330,109 @@ type MakeRawShaderMaterial f s =
   { id :: String
   , scope :: s
   , parent :: f String
-  | InitializeRawShaderMaterial' Foreign
+  , parameters :: { | InitializeRawShaderMaterial' Foreign () }
+  , materialParameters ::
+      { | AllMaterials Maybe BlendDst BlendEquation Blending
+          BlendSrc
+          DepthMode
+          Precision
+          Side
+      }
   }
-type InitializeRawShaderMaterial' u =
+type MakeRawShaderMaterial' f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  , parameters :: { | InitializeRawShaderMaterial' Foreign () }
+  , materialParameters ::
+      { | AllMaterials Undefinable Int Int Int Int Int String Int
+      }
+  }
+type InitializeRawShaderMaterial'
+  u
+  r =
   ( rawShaderMaterial :: THREE.TRawShaderMaterial
   , uniforms :: u
   , fragmentShader :: String
   , vertexShader :: String
+  | r
   )
 newtype InitializeRawShaderMaterial u = InitializeRawShaderMaterial
-  { | (InitializeRawShaderMaterial' u) }
+  { | InitializeRawShaderMaterial' u
+      ( AllMaterials Maybe BlendDst BlendEquation Blending
+          BlendSrc
+          DepthMode
+          Precision
+          Side
+      )
+  }
 type MakeShaderMaterial f s =
   { id :: String
   , scope :: s
   , parent :: f String
-  | InitializeShaderMaterial' Foreign
+  , parameters :: { | InitializeShaderMaterial' Foreign () }
+  , materialParameters ::
+      { | AllMaterials Maybe BlendDst BlendEquation Blending
+          BlendSrc
+          DepthMode
+          Precision
+          Side
+      }
   }
-type InitializeShaderMaterial' u =
+type MakeShaderMaterial' f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  , parameters :: { | InitializeShaderMaterial' Foreign () }
+  , materialParameters ::
+      { | AllMaterials Undefinable Int Int Int Int Int String Int
+      }
+  }
+type InitializeShaderMaterial'
+  u
+  r =
   ( shaderMaterial :: THREE.TShaderMaterial
   , uniforms :: u
   , fragmentShader :: String
   , vertexShader :: String
+  | r
   )
 newtype InitializeShaderMaterial u = InitializeShaderMaterial
-  { | (InitializeShaderMaterial' u) }
+  { | InitializeShaderMaterial' u
+      ( AllMaterials Maybe BlendDst BlendEquation Blending
+          BlendSrc
+          DepthMode
+          Precision
+          Side
+      )
+  }
 --
 type MakeMeshStandardMaterial f s =
   { id :: String
   , scope :: s
   , parent :: f String
-  | (InitializeMeshStandardMaterial' Maybe NormalMapType)
+  , parameters :: { | InitializeMeshStandardMaterial' Maybe NormalMapType () }
+  , materialParameters ::
+      { | AllMaterials Maybe BlendDst BlendEquation
+          Blending
+          BlendSrc
+          DepthMode
+          Precision
+          Side
+      }
   }
 type MakeMeshStandardMaterial' f s =
   { id :: String
   , scope :: s
   , parent :: f String
-  | (InitializeMeshStandardMaterial' Undefinable Int)
+  , parameters :: { | InitializeMeshStandardMaterial' Undefinable Int () }
+  , materialParameters ::
+      { | AllMaterials Undefinable Int Int Int Int Int String Int }
   }
-type InitializeMeshStandardMaterial' (opt :: Type -> Type) normalMapType =
+type InitializeMeshStandardMaterial'
+  (opt :: Type -> Type)
+  normalMapType
+  r =
   ( meshStandardMaterial :: THREE.TMeshStandardMaterial
   , color :: opt Color
   , roughness :: opt Number
@@ -389,35 +461,72 @@ type InitializeMeshStandardMaterial' (opt :: Type -> Type) normalMapType =
   , wireframe :: opt Boolean
   , wireframeLinewidth :: opt Number
   , flatShading :: opt Boolean
+  | r
   )
 newtype InitializeMeshStandardMaterial = InitializeMeshStandardMaterial
-  { | (InitializeMeshStandardMaterial' Maybe NormalMapType) }
+  { | InitializeMeshStandardMaterial' Maybe NormalMapType
+      ( AllMaterials Maybe BlendDst BlendEquation
+          Blending
+          BlendSrc
+          DepthMode
+          Precision
+          Side
+      )
+  }
 -- phong
 type MakeMeshPhongMaterial f s =
   { id :: String
   , scope :: s
   , parent :: f String
-  | (InitializeMeshPhongMaterial' Maybe CombineOperation NormalMapType WireframeLinecap WireframeLinejoin)
+  , parameters ::
+      { | InitializeMeshPhongMaterial' Maybe CombineOperation NormalMapType
+          WireframeLinecap
+          WireframeLinejoin
+          ()
+      }
+  , materialParameters ::
+      { | AllMaterials Maybe BlendDst
+          BlendEquation
+          Blending
+          BlendSrc
+          DepthMode
+          Precision
+          Side
+      }
   }
 type MakeMeshPhongMaterial' f s =
   { id :: String
   , scope :: s
   , parent :: f String
-  | (InitializeMeshPhongMaterial' Undefinable Int Int String String)
+  , parameters ::
+      { | InitializeMeshPhongMaterial' Undefinable Int Int String String () }
+  , materialParameters ::
+      { | AllMaterials Undefinable Int Int Int
+          Int
+          Int
+          String
+          Int
+      }
   }
-type InitializeMeshPhongMaterial' (opt :: Type -> Type) combineOperation normalMapType wireframeLinecap wireframeLinejoin =
+type InitializeMeshPhongMaterial'
+  (opt :: Type -> Type)
+  combineOperation
+  normalMapType
+  wireframeLinecap
+  wireframeLinejoin
+  r =
   ( meshPhongMaterial :: THREE.TMeshPhongMaterial
-   , alphaMap :: opt Texture
-   , aoMap :: opt Texture
-   ,aoMapIntensity :: opt Number
-   , bumpMap :: opt Texture
-   , bumpScale :: opt Number
-   , color :: opt Color
-   , combine :: opt combineOperation -- THREE.MultiplyOperation (default), THREE.MixOperation, THREE.AddOperation.
-   , displacementMap :: opt Texture
-   , displacementScale :: opt Number
-   , displacementBias :: opt Number
-   , emissive :: opt Color
+  , alphaMap :: opt Texture
+  , aoMap :: opt Texture
+  , aoMapIntensity :: opt Number
+  , bumpMap :: opt Texture
+  , bumpScale :: opt Number
+  , color :: opt Color
+  , combine :: opt combineOperation
+  , displacementMap :: opt Texture
+  , displacementScale :: opt Number
+  , displacementBias :: opt Number
+  , emissive :: opt Color
   , emissiveMap :: opt Texture
   , emissiveIntensity :: opt Number
   , envMap :: opt Texture
@@ -438,23 +547,188 @@ type InitializeMeshPhongMaterial' (opt :: Type -> Type) combineOperation normalM
   , wireframeLinecap :: opt wireframeLinecap
   , wireframeLinejoin :: opt wireframeLinejoin
   , wireframeLinewidth :: opt Number
+  | r
   )
 newtype InitializeMeshPhongMaterial = InitializeMeshPhongMaterial
-  { | (InitializeMeshPhongMaterial' Maybe CombineOperation NormalMapType WireframeLinecap WireframeLinejoin) }
+  { | InitializeMeshPhongMaterial' Maybe CombineOperation NormalMapType
+      WireframeLinecap
+      WireframeLinejoin
+      ( AllMaterials Maybe BlendDst BlendEquation
+          Blending
+          BlendSrc
+          DepthMode
+          Precision
+          Side
+      )
+  }
+-- ALL MATERIALS
+type AllMaterials'
+  (a :: Type -> Type)
+  blendDst
+  blendEquation
+  blending
+  blendSrc
+  depthMode
+  precision
+  side
+  r =
+  ( alphaTest :: a Number
+  , alphaToCoverage :: a Number
+  , blendDst :: a blendDst
+  , blendDstAlpha :: a blendDst
+  , blendEquation :: a blendEquation
+  , blendEquationAlpha :: a blendEquation
+  , blending :: a blending
+  , blendSrc :: a blendSrc
+  , blendSrcAlpha :: a blendSrc
+  , clipIntersection :: a Boolean
+  , clipShadows :: a Boolean
+  , colorWrite :: a Boolean
+  , depthFunc :: a depthMode
+  , depthTest :: a Boolean
+  , depthWrite :: a Boolean
+  , opacity :: a Number
+  , polygonOffset :: a Boolean
+  , polygonOffsetFactor :: a Int
+  , polygonOffsetUnits :: a Int
+  , precision :: a precision
+  , premultipliedAlpha :: a Boolean
+  , dithering :: a Boolean
+  , shadowSide :: a side
+  , side :: a side
+  , toneMapped :: a Boolean
+  , transparent :: a Boolean
+  , vertexColors :: a Boolean
+  , visible :: a Boolean
+  | r
+  )
+type AllMaterials
+  (a :: Type -> Type)
+  blendDst
+  blendEquation
+  blending
+  blendSrc
+  depthMode
+  precision
+  side =
+  ( | AllMaterials' a blendDst blendEquation blending blendSrc depthMode
+      precision
+      side
+      ()
+
+  )
+defaultMaterials
+  :: forall blendDst blendEquation blending blendSrc depthMode precision side
+   . { | AllMaterials Maybe blendDst blendEquation blending blendSrc depthMode
+         precision
+         side
+     }
+defaultMaterials =
+  { alphaTest: Nothing
+  , alphaToCoverage: Nothing
+  , blendDst: Nothing
+  , blendDstAlpha: Nothing
+  , blendEquation: Nothing
+  , blendEquationAlpha: Nothing
+  , blending: Nothing
+  , blendSrc: Nothing
+  , blendSrcAlpha: Nothing
+  , clipIntersection: Nothing
+  , clipShadows: Nothing
+  , colorWrite: Nothing
+  , depthFunc: Nothing
+  , depthTest: Nothing
+  , depthWrite: Nothing
+  , opacity: Nothing
+  , polygonOffset: Nothing
+  , polygonOffsetFactor: Nothing
+  , polygonOffsetUnits: Nothing
+  , precision: Nothing
+  , premultipliedAlpha: Nothing
+  , dithering: Nothing
+  , shadowSide: Nothing
+  , side: Nothing
+  , toneMapped: Nothing
+  , transparent: Nothing
+  , vertexColors: Nothing
+  , visible: Nothing
+  }
+initializeDefaultMaterials
+  :: forall opt blendDst blendEquation blending blendSrc
+       depthMode precision side r
+   . { | AllMaterials' opt blendDst blendEquation
+         blending
+         blendSrc
+         depthMode
+         precision
+         side
+         r
+     }
+  -> { | AllMaterials opt blendDst blendEquation
+         blending
+         blendSrc
+         depthMode
+         precision
+         side
+     }
+initializeDefaultMaterials i =
+  { alphaTest: i.alphaTest
+  , alphaToCoverage: i.alphaToCoverage
+  , blendDst: i.blendDst
+  , blendDstAlpha: i.blendDstAlpha
+  , blendEquation: i.blendEquation
+  , blendEquationAlpha: i.blendEquationAlpha
+  , blending: i.blending
+  , blendSrc: i.blendSrc
+  , blendSrcAlpha: i.blendSrcAlpha
+  , clipIntersection: i.clipIntersection
+  , clipShadows: i.clipShadows
+  , colorWrite: i.colorWrite
+  , depthFunc: i.depthFunc
+  , depthTest: i.depthTest
+  , depthWrite: i.depthWrite
+  , opacity: i.opacity
+  , polygonOffset: i.polygonOffset
+  , polygonOffsetFactor: i.polygonOffsetFactor
+  , polygonOffsetUnits: i.polygonOffsetUnits
+  , precision: i.precision
+  , premultipliedAlpha: i.premultipliedAlpha
+  , dithering: i.dithering
+  , shadowSide: i.shadowSide
+  , side: i.side
+  , toneMapped: i.toneMapped
+  , transparent: i.transparent
+  , vertexColors: i.vertexColors
+  , visible: i.visible
+  }
 --
 type MakeMeshBasicMaterial f s =
   { id :: String
   , scope :: s
   , parent :: f String
-  | (InitializeMeshBasicMaterial' Maybe)
+  , parameters :: { | InitializeMeshBasicMaterial' Maybe () }
+  , materialParameters ::
+      { | AllMaterials Maybe BlendDst BlendEquation Blending BlendSrc
+          DepthMode
+          Precision
+          Side
+      }
   }
 type MakeMeshBasicMaterial' f s =
   { id :: String
   , scope :: s
   , parent :: f String
-  | (InitializeMeshBasicMaterial' Undefinable)
+  , parameters :: { | InitializeMeshBasicMaterial' Undefinable () }
+  , materialParameters ::
+      { | AllMaterials Undefinable Int Int Int Int
+          Int
+          String
+          Int
+      }
   }
-type InitializeMeshBasicMaterial' (opt :: Type -> Type) =
+type InitializeMeshBasicMaterial'
+  (opt :: Type -> Type)
+  r =
   ( meshBasicMaterial :: THREE.TMeshBasicMaterial
   , color :: opt Color
   , map :: opt Texture
@@ -466,9 +740,17 @@ type InitializeMeshBasicMaterial' (opt :: Type -> Type) =
   , envMap :: opt Texture
   , wireframe :: opt Boolean
   , wireframeLinewidth :: opt Number
+  | r
   )
 newtype InitializeMeshBasicMaterial = InitializeMeshBasicMaterial
-  { | (InitializeMeshBasicMaterial' Maybe) }
+  { | InitializeMeshBasicMaterial' Maybe
+      ( AllMaterials Maybe BlendDst BlendEquation Blending
+          BlendSrc
+          DepthMode
+          Precision
+          Side
+      )
+  }
 type MakeBox f s =
   { id :: String
   , scope :: s
@@ -531,7 +813,8 @@ type InitializeBufferGeometry' =
   ( bufferGeometry :: THREE.TBufferGeometry
   | Buffy
   )
-newtype InitializeBufferGeometry = InitializeBufferGeometry { | InitializeBufferGeometry' }
+newtype InitializeBufferGeometry = InitializeBufferGeometry
+  { | InitializeBufferGeometry' }
 type MakePerspectiveCamera f s =
   { id :: String
   , scope :: s
@@ -551,6 +834,36 @@ newtype InitializePerspectiveCamera = InitializePerspectiveCamera
 
 --
 type SetUniform = { id :: String, key :: String, value :: Foreign }
+-- All materials
+type SetAlphaTest = { id :: String, alphaTest :: Number }
+type SetAlphaToCoverage = { id :: String, alphaToCoverage :: Number }
+type SetBlendDst = { id :: String, blendDst :: BlendDst }
+type SetBlendDstAlpha = { id :: String, blendDstAlpha :: BlendDst }
+type SetBlendEquation = { id :: String, blendEquation :: BlendEquation }
+type SetBlendEquationAlpha =
+  { id :: String, blendEquationAlpha :: BlendEquation }
+type SetBlending = { id :: String, blending :: Blending }
+type SetBlendSrc = { id :: String, blendSrc :: BlendSrc }
+type SetBlendSrcAlpha = { id :: String, blendSrcAlpha :: BlendSrc }
+type SetClipIntersection = { id :: String, clipIntersection :: Boolean }
+type SetClipShadows = { id :: String, clipShadows :: Boolean }
+type SetColorWrite = { id :: String, colorWrite :: Boolean }
+type SetDepthFunc = { id :: String, depthFunc :: DepthMode }
+type SetDepthTest = { id :: String, depthTest :: Boolean }
+type SetDepthWrite = { id :: String, depthWrite :: Boolean }
+type SetOpacity = { id :: String, opacity :: Number }
+type SetPolygonOffset = { id :: String, polygonOffset :: Boolean }
+type SetPolygonOffsetFactor = { id :: String, polygonOffsetFactor :: Int }
+type SetPolygonOffsetUnits = { id :: String, polygonOffsetUnits :: Int }
+type SetPrecision = { id :: String, precision :: Precision }
+type SetPremultipliedAlpha = { id :: String, premultipliedAlpha :: Boolean }
+type SetDithering = { id :: String, dithering :: Boolean }
+type SetShadowSide = { id :: String, shadowSide :: Side }
+type SetSide = { id :: String, side :: Side }
+type SetToneMapped = { id :: String, toneMapped :: Boolean }
+type SetTransparent = { id :: String, transparent :: Boolean }
+type SetVertexColors = { id :: String, vertexColors :: Boolean }
+type SetVisible = { id :: String, visible :: Boolean }
 --
 type SetWidth = { id :: String, width :: Number }
 type SetHeight = { id :: String, height :: Number }
@@ -623,9 +936,11 @@ type SetRefractionRatio = { id :: String, refractionRatio :: Number }
 type SetShininess = { id :: String, shininess :: Number }
 type SetSpecular = { id :: String, specular :: Color }
 type SetSpecularMap = { id :: String, specularMap :: Texture }
-type SetWireframeLinecap = { id :: String, wireframeLinecap :: WireframeLinecap }
+type SetWireframeLinecap =
+  { id :: String, wireframeLinecap :: WireframeLinecap }
 type SetWireframeLinecap' = { id :: String, wireframeLinecap :: String }
-type SetWireframeLinejoin = { id :: String, wireframeLinejoin :: WireframeLinejoin }
+type SetWireframeLinejoin =
+  { id :: String, wireframeLinejoin :: WireframeLinejoin }
 type SetWireframeLinejoin' = { id :: String, wireframeLinejoin :: String }
 -- scene
 type SetBackgroundCubeTexture = { id :: String, cubeTexture :: CubeTexture }
@@ -1105,13 +1420,42 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setCenter :: SetCenter -> payload
   , getBoundingBox :: GetBoundingBox -> payload
   , getBoundingSphere :: GetBoundingSphere -> payload
-  -- RawShaderMaterial and ShaderMaterial
-  , setUniform :: SetUniform -> payload
   -- InstancedMesh
   , setInstancedMeshMatrix4 :: SetInstancedMeshMatrix4 -> payload
   , setInstancedMeshColor :: SetInstancedMeshColor -> payload
   , setSingleInstancedMeshMatrix4 :: SetSingleInstancedMeshMatrix4 -> payload
   , setSingleInstancedMeshColor :: SetSingleInstancedMeshColor -> payload
+  -- All Meshes
+  , setAlphaTest :: SetAlphaTest -> payload
+  , setAlphaToCoverage :: SetAlphaToCoverage -> payload
+  , setBlendDst :: SetBlendDst -> payload
+  , setBlendDstAlpha :: SetBlendDstAlpha -> payload
+  , setBlendEquation :: SetBlendEquation -> payload
+  , setBlendEquationAlpha :: SetBlendEquationAlpha -> payload
+  , setBlending :: SetBlending -> payload
+  , setBlendSrc :: SetBlendSrc -> payload
+  , setBlendSrcAlpha :: SetBlendSrcAlpha -> payload
+  , setClipIntersection :: SetClipIntersection -> payload
+  , setClipShadows :: SetClipShadows -> payload
+  , setColorWrite :: SetColorWrite -> payload
+  , setDepthFunc :: SetDepthFunc -> payload
+  , setDepthTest :: SetDepthTest -> payload
+  , setDepthWrite :: SetDepthWrite -> payload
+  , setOpacity :: SetOpacity -> payload
+  , setPolygonOffset :: SetPolygonOffset -> payload
+  , setPolygonOffsetFactor :: SetPolygonOffsetFactor -> payload
+  , setPolygonOffsetUnits :: SetPolygonOffsetUnits -> payload
+  , setPrecision :: SetPrecision -> payload
+  , setPremultipliedAlpha :: SetPremultipliedAlpha -> payload
+  , setDithering :: SetDithering -> payload
+  , setShadowSide :: SetShadowSide -> payload
+  , setSide :: SetSide -> payload
+  , setToneMapped :: SetToneMapped -> payload
+  , setTransparent :: SetTransparent -> payload
+  , setVertexColors :: SetVertexColors -> payload
+  , setVisible :: SetVisible -> payload
+  -- RawShaderMaterial and ShaderMaterial
+  , setUniform :: SetUniform -> payload
   -- MeshStandardMaterial / MeshPhongMaterial
   , setColor :: SetColor -> payload
   , setRoughness :: SetRoughness -> payload
@@ -1141,15 +1485,15 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setWireframeLinewidth :: SetWireframeLinewidth -> payload
   , setFlatShading :: SetFlatShading -> payload
   -- Phong only
-  , setCombine :: SetCombine  -> payload
-  , setFog :: SetFog  -> payload
-  , setReflectivity :: SetReflectivity  -> payload
-  , setRefractionRatio :: SetRefractionRatio  -> payload
-  , setShininess :: SetShininess  -> payload
-  , setSpecular :: SetSpecular  -> payload
-  , setSpecularMap :: SetSpecularMap  -> payload
-  , setWireframeLinecap :: SetWireframeLinecap  -> payload
-  , setWireframeLinejoin :: SetWireframeLinejoin  -> payload
+  , setCombine :: SetCombine -> payload
+  , setFog :: SetFog -> payload
+  , setReflectivity :: SetReflectivity -> payload
+  , setRefractionRatio :: SetRefractionRatio -> payload
+  , setShininess :: SetShininess -> payload
+  , setSpecular :: SetSpecular -> payload
+  , setSpecularMap :: SetSpecularMap -> payload
+  , setWireframeLinecap :: SetWireframeLinecap -> payload
+  , setWireframeLinejoin :: SetWireframeLinejoin -> payload
   -- mesh
   , setRotationFromAxisAngle :: SetRotationFromAxisAngle -> payload
   , setRotationFromEuler :: SetRotationFromEuler -> payload

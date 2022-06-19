@@ -17,8 +17,17 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
+import Record (union)
+import Rito.BlendDst (BlendDst)
+import Rito.BlendEquation (BlendEquation)
+import Rito.BlendSrc (BlendSrc)
+import Rito.Blending (Blending)
 import Rito.Color (Color)
+import Rito.Core (AllMaterials, defaultMaterials, initializeDefaultMaterials)
 import Rito.Core as C
+import Rito.DepthMode (DepthMode)
+import Rito.Precision (Precision)
+import Rito.Side (Side)
 import Rito.THREE as THREE
 import Rito.Texture (Texture)
 
@@ -101,6 +110,202 @@ instance
     (Maybe Number) where
   convertOption _ _ = Just
 
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "alphaTest"
+    Number
+    (Maybe Number) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "alphaToCoverage"
+    Number
+    (Maybe Number) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "blendDst"
+    BlendDst
+    (Maybe BlendDst) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "blendDstAlpha"
+    BlendDst
+    (Maybe BlendDst) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "blendEquation"
+    BlendEquation
+    (Maybe BlendEquation) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "blendEquationAlpha"
+    BlendEquation
+    (Maybe BlendEquation) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "blending"
+    Blending
+    (Maybe Blending) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "blendSrc"
+    BlendSrc
+    (Maybe BlendSrc) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "blendSrcAlpha"
+    BlendSrc
+    (Maybe BlendSrc) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "clipIntersection"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "clipShadows"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "colorWrite"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "depthFunc"
+    DepthMode
+    (Maybe DepthMode) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "depthTest"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "depthWrite"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "opacity"
+    Number
+    (Maybe Number) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "polygonOffset"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "polygonOffsetFactor"
+    Int
+    (Maybe Int) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "polygonOffsetUnits"
+    Int
+    (Maybe Int) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "precision"
+    Precision
+    (Maybe Precision) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "premultipliedAlpha"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "dithering"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "shadowSide"
+    Side
+    (Maybe Side) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "side"
+    Side
+    (Maybe Side) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "toneMapped"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "transparent"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "vertexColors"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshBasicMaterialOptions
+    "visible"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
 type MeshBasicMaterialOptional =
   ( color :: Maybe Color
   , map :: Maybe Texture
@@ -112,6 +317,11 @@ type MeshBasicMaterialOptional =
   , envMap :: Maybe Texture
   , wireframe :: Maybe Boolean
   , wireframeLinewidth :: Maybe Number
+  | AllMaterials Maybe BlendDst BlendEquation Blending
+      BlendSrc
+      DepthMode
+      Precision
+      Side
   )
 
 type MeshBasicMaterialAll =
@@ -129,7 +339,7 @@ defaultMeshBasicMaterial =
   , envMap: Nothing
   , wireframe: Nothing
   , wireframeLinewidth: Nothing
-  }
+  } `union` defaultMaterials
 
 class InitialMeshBasicMaterial i where
   toInitializeMeshBasicMaterial :: i -> C.InitializeMeshBasicMaterial
@@ -197,21 +407,25 @@ meshBasicMaterial i' atts = C.Material go
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
       bang
         ( makeMeshBasicMaterial
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , meshBasicMaterial: i.meshBasicMaterial
-            , color: i.color
-            , map: i.map
-            , lightMap: i.lightMap
-            , lightMapIntensity: i.lightMapIntensity
-            , aoMap: i.aoMap
-            , aoMapIntensity: i.aoMapIntensity
-            , alphaMap: i.alphaMap
-            , envMap: i.envMap
-            , wireframe: i.wireframe
-            , wireframeLinewidth: i.wireframeLinewidth
-            }
+            ( { id: me
+              , parent: parent.parent
+              , scope: parent.scope
+              , parameters:
+                  { meshBasicMaterial: i.meshBasicMaterial
+                  , color: i.color
+                  , map: i.map
+                  , lightMap: i.lightMap
+                  , lightMapIntensity: i.lightMapIntensity
+                  , aoMap: i.aoMap
+                  , aoMapIntensity: i.aoMapIntensity
+                  , alphaMap: i.alphaMap
+                  , envMap: i.envMap
+                  , wireframe: i.wireframe
+                  , wireframeLinewidth: i.wireframeLinewidth
+                  }
+              , materialParameters: initializeDefaultMaterials i
+              }
+            )
         )
         <|>
           ( map

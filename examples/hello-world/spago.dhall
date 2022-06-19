@@ -8,6 +8,7 @@ in      conf
               , "console"
               , "debug"
               , "canvas"
+              , "profunctor-lenses"
               , "filterable"
               , "fast-vect"
               , "lists"

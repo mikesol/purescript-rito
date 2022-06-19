@@ -17,10 +17,19 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
+import Record (union)
+import Rito.BlendDst (BlendDst)
+import Rito.BlendEquation (BlendEquation)
+import Rito.BlendSrc (BlendSrc)
+import Rito.Blending (Blending)
 import Rito.Color (Color)
 import Rito.CombineOperation (CombineOperation)
+import Rito.Core (AllMaterials, defaultMaterials, initializeDefaultMaterials)
 import Rito.Core as C
+import Rito.DepthMode (DepthMode)
 import Rito.NormalMapType (NormalMapType)
+import Rito.Precision (Precision)
+import Rito.Side (Side)
 import Rito.THREE as THREE
 import Rito.Texture (Texture)
 import Rito.Vector2 (Vector2)
@@ -190,6 +199,202 @@ instance
     (Maybe Boolean) where
   convertOption _ _ = Just
 
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "alphaTest"
+    Number
+    (Maybe Number) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "alphaToCoverage"
+    Number
+    (Maybe Number) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "blendDst"
+    BlendDst
+    (Maybe BlendDst) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "blendDstAlpha"
+    BlendDst
+    (Maybe BlendDst) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "blendEquation"
+    BlendEquation
+    (Maybe BlendEquation) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "blendEquationAlpha"
+    BlendEquation
+    (Maybe BlendEquation) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "blending"
+    Blending
+    (Maybe Blending) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "blendSrc"
+    BlendSrc
+    (Maybe BlendSrc) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "blendSrcAlpha"
+    BlendSrc
+    (Maybe BlendSrc) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "clipIntersection"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "clipShadows"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "colorWrite"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "depthFunc"
+    DepthMode
+    (Maybe DepthMode) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "depthTest"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "depthWrite"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "opacity"
+    Number
+    (Maybe Number) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "polygonOffset"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "polygonOffsetFactor"
+    Int
+    (Maybe Int) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "polygonOffsetUnits"
+    Int
+    (Maybe Int) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "precision"
+    Precision
+    (Maybe Precision) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "premultipliedAlpha"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "dithering"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "shadowSide"
+    Side
+    (Maybe Side) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "side"
+    Side
+    (Maybe Side) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "toneMapped"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "transparent"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "vertexColors"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshPhongMaterialOptions
+    "visible"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
 type MeshPhongMaterialOptional =
   ( color :: Maybe Color
   , map :: Maybe Texture
@@ -223,6 +428,11 @@ type MeshPhongMaterialOptional =
   , specularMap :: Maybe Texture
   , wireframeLinecap :: Maybe WireframeLinecap
   , wireframeLinejoin :: Maybe WireframeLinejoin
+  | AllMaterials Maybe BlendDst BlendEquation Blending
+      BlendSrc
+      DepthMode
+      Precision
+      Side
   )
 
 type MeshPhongMaterialAll =
@@ -262,7 +472,7 @@ defaultMeshPhongMaterial =
   , specularMap: Nothing
   , wireframeLinecap: Nothing
   , wireframeLinejoin: Nothing
-  }
+  } `union` defaultMaterials
 
 class InitialMeshPhongMaterial i where
   toInitializeMeshPhongMaterial :: i -> C.InitializeMeshPhongMaterial
@@ -374,42 +584,46 @@ meshPhongMaterial i' atts = C.Material go
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
       bang
         ( makeMeshPhongMaterial
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , meshPhongMaterial: i.meshPhongMaterial
-            , color: i.color
-            , map: i.map
-            , combine: i.combine
-            , fog: i.fog
-            , reflectivity: i.reflectivity
-            , refractionRatio: i.refractionRatio
-            , shininess: i.shininess
-            , specular: i.specular
-            , specularMap: i.specularMap
-            , wireframeLinecap: i.wireframeLinecap
-            , wireframeLinejoin: i.wireframeLinejoin
-            , lightMap: i.lightMap
-            , lightMapIntensity: i.lightMapIntensity
-            , aoMap: i.aoMap
-            , aoMapIntensity: i.aoMapIntensity
-            , emissive: i.emissive
-            , emissiveIntensity: i.emissiveIntensity
-            , emissiveMap: i.emissiveMap
-            , bumpMap: i.bumpMap
-            , bumpScale: i.bumpScale
-            , normalMap: i.normalMap
-            , normalMapType: i.normalMapType
-            , normalScale: i.normalScale
-            , displacementMap: i.displacementMap
-            , displacementScale: i.displacementScale
-            , displacementBias: i.displacementBias
-            , alphaMap: i.alphaMap
-            , envMap: i.envMap
-            , wireframe: i.wireframe
-            , wireframeLinewidth: i.wireframeLinewidth
-            , flatShading: i.flatShading
-            }
+            ( { id: me
+              , parent: parent.parent
+              , scope: parent.scope
+              , parameters:
+                  { meshPhongMaterial: i.meshPhongMaterial
+                  , color: i.color
+                  , map: i.map
+                  , combine: i.combine
+                  , fog: i.fog
+                  , reflectivity: i.reflectivity
+                  , refractionRatio: i.refractionRatio
+                  , shininess: i.shininess
+                  , specular: i.specular
+                  , specularMap: i.specularMap
+                  , wireframeLinecap: i.wireframeLinecap
+                  , wireframeLinejoin: i.wireframeLinejoin
+                  , lightMap: i.lightMap
+                  , lightMapIntensity: i.lightMapIntensity
+                  , aoMap: i.aoMap
+                  , aoMapIntensity: i.aoMapIntensity
+                  , emissive: i.emissive
+                  , emissiveIntensity: i.emissiveIntensity
+                  , emissiveMap: i.emissiveMap
+                  , bumpMap: i.bumpMap
+                  , bumpScale: i.bumpScale
+                  , normalMap: i.normalMap
+                  , normalMapType: i.normalMapType
+                  , normalScale: i.normalScale
+                  , displacementMap: i.displacementMap
+                  , displacementScale: i.displacementScale
+                  , displacementBias: i.displacementBias
+                  , alphaMap: i.alphaMap
+                  , envMap: i.envMap
+                  , wireframe: i.wireframe
+                  , wireframeLinewidth: i.wireframeLinewidth
+                  , flatShading: i.flatShading
+                  }
+              , materialParameters: initializeDefaultMaterials i
+              }
+            )
         )
         <|>
           ( map
@@ -449,15 +663,15 @@ meshPhongMaterial i' atts = C.Material go
                   , fog: setFog <<< { id: me, fog: _ }
                   , reflectivity: setReflectivity <<<
                       { id: me, reflectivity: _ }
-                  , refractionRatio : setRefractionRatio <<<
+                  , refractionRatio: setRefractionRatio <<<
                       { id: me, refractionRatio: _ }
-                  , shininess : setShininess <<< { id: me, shininess: _ }
-                  , specular : setSpecular <<< { id: me, specular: _ }
-                  , specularMap : setSpecularMap <<<
+                  , shininess: setShininess <<< { id: me, shininess: _ }
+                  , specular: setSpecular <<< { id: me, specular: _ }
+                  , specularMap: setSpecularMap <<<
                       { id: me, specularMap: _ }
-                  , wireframeLinecap : setWireframeLinecap <<<
+                  , wireframeLinecap: setWireframeLinecap <<<
                       { id: me, wireframeLinecap: _ }
-                  , wireframeLinejoin : setWireframeLinejoin <<<
+                  , wireframeLinejoin: setWireframeLinejoin <<<
                       { id: me, wireframeLinejoin: _ }
                   }
                   e

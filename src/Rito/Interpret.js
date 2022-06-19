@@ -255,28 +255,51 @@ export const makePointLight_ = genericMake_(
 )((x, y) => {
 	y.main.add(x.main);
 });
+const withMaterialParameters_ = (f) => (c) => {
+	const o = f(c);
+	const kv = Object.entries(c.materialParameters);
+	kv.forEach(([k, v]) => {
+		o[k] = v;
+	});
+	return o;
+};
 export const makeShaderMaterial_ = genericMake_(
-	({ shaderMaterial, ...options }) => new shaderMaterial(options)
+	withMaterialParameters_(
+		({ parameters: { shaderMaterial, ...options } }) =>
+			new shaderMaterial(options)
+	)
 )((x, y) => {
 	y.main.material = x.main;
 });
 export const makeRawShaderMaterial_ = genericMake_(
-	({ rawShaderMaterial, ...options }) => new rawShaderMaterial(options)
+	withMaterialParameters_(
+		({ parameters: { rawShaderMaterial, ...options } }) =>
+			new rawShaderMaterial(options)
+	)
 )((x, y) => {
 	y.main.material = x.main;
 });
 export const makeMeshBasicMaterial_ = genericMake_(
-	({ meshBasicMaterial, ...options }) => new meshBasicMaterial(options)
+	withMaterialParameters_(
+		({ parameters: { meshBasicMaterial, ...options } }) =>
+			new meshBasicMaterial(options)
+	)
 )((x, y) => {
 	y.main.material = x.main;
 });
 export const makeMeshPhongMaterial_ = genericMake_(
-	({ meshPhongMaterial, ...options }) => new meshPhongMaterial(options)
+	withMaterialParameters_(
+		({ parameters: { meshPhongMaterial, ...options } }) =>
+			new meshPhongMaterial(options)
+	)
 )((x, y) => {
 	y.main.material = x.main;
 });
 export const makeMeshStandardMaterial_ = genericMake_(
-	({ meshStandardMaterial, ...options }) => new meshStandardMaterial(options)
+	withMaterialParameters_(
+		({ parameters: { meshStandardMaterial, ...options } }) =>
+			new meshStandardMaterial(options)
+	)
 )((x, y) => {
 	y.main.material = x.main;
 });
@@ -564,6 +587,119 @@ export const setDepth_ = (a) => (state) => () => {
 export const setLength_ = (a) => (state) => () => {
 	state.units[a.id].main.length = a.length;
 };
+// material
+export const setAlphaTest_ = (a) => (state) => () => {
+	state.units[a.id].main.alphaTest = a.alphaTest;
+};
+
+export const setAlphaToCoverage_ = (a) => (state) => () => {
+	state.units[a.id].main.alphaToCoverage = a.alphaToCoverage;
+};
+
+export const setBlendDst_ = (a) => (state) => () => {
+	state.units[a.id].main.blendDst = a.blendDst;
+};
+
+export const setBlendDstAlpha_ = (a) => (state) => () => {
+	state.units[a.id].main.blendDstAlpha = a.blendDstAlpha;
+};
+
+export const setBlendEquation_ = (a) => (state) => () => {
+	state.units[a.id].main.blendEquation = a.blendEquation;
+};
+
+export const setBlendEquationAlpha_ = (a) => (state) => () => {
+	state.units[a.id].main.blendEquationAlpha = a.blendEquationAlpha;
+};
+
+export const setBlending_ = (a) => (state) => () => {
+	state.units[a.id].main.blending = a.blending;
+};
+
+export const setBlendSrc_ = (a) => (state) => () => {
+	state.units[a.id].main.blendSrc = a.blendSrc;
+};
+
+export const setBlendSrcAlpha_ = (a) => (state) => () => {
+	state.units[a.id].main.blendSrcAlpha = a.blendSrcAlpha;
+};
+
+export const setClipIntersection_ = (a) => (state) => () => {
+	state.units[a.id].main.clipIntersection = a.clipIntersection;
+};
+
+export const setClipShadows_ = (a) => (state) => () => {
+	state.units[a.id].main.clipShadows = a.clipShadows;
+};
+
+export const setColorWrite_ = (a) => (state) => () => {
+	state.units[a.id].main.colorWrite = a.colorWrite;
+};
+
+export const setDepthFunc_ = (a) => (state) => () => {
+	state.units[a.id].main.depthFunc = a.depthFunc;
+};
+
+export const setDepthTest_ = (a) => (state) => () => {
+	state.units[a.id].main.depthTest = a.depthTest;
+};
+
+export const setDepthWrite_ = (a) => (state) => () => {
+	state.units[a.id].main.depthWrite = a.depthWrite;
+};
+
+export const setOpacity_ = (a) => (state) => () => {
+	state.units[a.id].main.opacity = a.opacity;
+};
+
+export const setPolygonOffset_ = (a) => (state) => () => {
+	state.units[a.id].main.polygonOffset = a.polygonOffset;
+};
+
+export const setPolygonOffsetFactor_ = (a) => (state) => () => {
+	state.units[a.id].main.polygonOffsetFactor = a.polygonOffsetFactor;
+};
+
+export const setPolygonOffsetUnits_ = (a) => (state) => () => {
+	state.units[a.id].main.polygonOffsetUnits = a.polygonOffsetUnits;
+};
+
+export const setPrecision_ = (a) => (state) => () => {
+	state.units[a.id].main.precision = a.precision;
+};
+
+export const setPremultipliedAlpha_ = (a) => (state) => () => {
+	state.units[a.id].main.premultipliedAlpha = a.premultipliedAlpha;
+};
+
+export const setDithering_ = (a) => (state) => () => {
+	state.units[a.id].main.dithering = a.dithering;
+};
+
+export const setShadowSide_ = (a) => (state) => () => {
+	state.units[a.id].main.shadowSide = a.shadowSide;
+};
+
+export const setSide_ = (a) => (state) => () => {
+	state.units[a.id].main.side = a.side;
+};
+
+export const setToneMapped_ = (a) => (state) => () => {
+	state.units[a.id].main.toneMapped = a.toneMapped;
+};
+
+export const setTransparent_ = (a) => (state) => () => {
+	state.units[a.id].main.transparent = a.transparent;
+};
+
+export const setVertexColors_ = (a) => (state) => () => {
+	state.units[a.id].main.vertexColors = a.vertexColors;
+};
+
+export const setVisible_ = (a) => (state) => () => {
+	state.units[a.id].main.visible = a.visible;
+};
+
 // scene (background)
 export const setBackgroundColor_ = (a) => (state) => () => {
 	state.units[a.id].main.background = a.color;

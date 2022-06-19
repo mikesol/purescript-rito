@@ -19,14 +19,21 @@ import Prim.RowList (class RowToList)
 import Prim.RowList as RL
 import Record (get)
 import Record.Builder (Builder, insert, build)
+import Rito.BlendDst as BlendDst
+import Rito.BlendEquation as BlendEquation
+import Rito.BlendSrc as BlendSrc
+import Rito.Blending as Blending
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Color (Color)
 import Rito.CombineOperation (CombineOperation(..))
 import Rito.Core as Core
+import Rito.DepthMode as DepthMode
 import Rito.InstancedBufferAttribute (InstancedBufferAttribute)
 import Rito.NormalMapType (NormalMapType(..))
+import Rito.Precision as Precision
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
+import Rito.Side as Side
 import Rito.THREE as THREE
 import Rito.Texture (Texture)
 import Rito.Undefinable (Undefinable, m2u)
@@ -81,9 +88,9 @@ foreign import makeBufferGeometry_
 foreign import makeMeshStandardMaterial_
   :: Core.MakeMeshStandardMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeRawShaderMaterial_
-  :: Core.MakeRawShaderMaterial Undefinable (Undefinable String) -> Payload
+  :: Core.MakeRawShaderMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeShaderMaterial_
-  :: Core.MakeShaderMaterial Undefinable (Undefinable String) -> Payload
+  :: Core.MakeShaderMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeMeshPhongMaterial_
   :: Core.MakeMeshPhongMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeMeshBasicMaterial_
@@ -134,6 +141,35 @@ foreign import getBoundingSphere_ :: Core.GetBoundingSphere -> Payload
 foreign import setDecay_ :: Core.SetDecay -> Payload
 foreign import setIntensity_ :: Core.SetIntensity -> Payload
 foreign import setDistance_ :: Core.SetDistance -> Payload
+-- all shaders
+foreign import setAlphaTest_ :: Core.SetAlphaTest -> Payload
+foreign import setAlphaToCoverage_ :: Core.SetAlphaToCoverage -> Payload
+foreign import setBlendDst_ :: Core.SetBlendDst -> Payload
+foreign import setBlendDstAlpha_ :: Core.SetBlendDstAlpha -> Payload
+foreign import setBlendEquation_ :: Core.SetBlendEquation -> Payload
+foreign import setBlendEquationAlpha_ :: Core.SetBlendEquationAlpha -> Payload
+foreign import setBlending_ :: Core.SetBlending -> Payload
+foreign import setBlendSrc_ :: Core.SetBlendSrc -> Payload
+foreign import setBlendSrcAlpha_ :: Core.SetBlendSrcAlpha -> Payload
+foreign import setClipIntersection_ :: Core.SetClipIntersection -> Payload
+foreign import setClipShadows_ :: Core.SetClipShadows -> Payload
+foreign import setColorWrite_ :: Core.SetColorWrite -> Payload
+foreign import setDepthFunc_ :: Core.SetDepthFunc -> Payload
+foreign import setDepthTest_ :: Core.SetDepthTest -> Payload
+foreign import setDepthWrite_ :: Core.SetDepthWrite -> Payload
+foreign import setOpacity_ :: Core.SetOpacity -> Payload
+foreign import setPolygonOffset_ :: Core.SetPolygonOffset -> Payload
+foreign import setPolygonOffsetFactor_ :: Core.SetPolygonOffsetFactor -> Payload
+foreign import setPolygonOffsetUnits_ :: Core.SetPolygonOffsetUnits -> Payload
+foreign import setPrecision_ :: Core.SetPrecision -> Payload
+foreign import setPremultipliedAlpha_ :: Core.SetPremultipliedAlpha -> Payload
+foreign import setDithering_ :: Core.SetDithering -> Payload
+foreign import setShadowSide_ :: Core.SetShadowSide -> Payload
+foreign import setSide_ :: Core.SetSide -> Payload
+foreign import setToneMapped_ :: Core.SetToneMapped -> Payload
+foreign import setTransparent_ :: Core.SetTransparent -> Payload
+foreign import setVertexColors_ :: Core.SetVertexColors -> Payload
+foreign import setVisible_ :: Core.SetVisible -> Payload
 -- raw shader and shader material
 foreign import setUniform_ :: Core.SetUniform -> Payload
 -- mesh standard material
@@ -307,6 +343,67 @@ instance FFIMe Vector3 Vector3 where
 
 instance FFIMe HTMLCanvasElement HTMLCanvasElement where
   ffiMe = identity
+
+instance FFIMe BlendDst.BlendDst Int where
+  ffiMe BlendDst.ZeroFactor = 200
+  ffiMe BlendDst.OneFactor = 201
+  ffiMe BlendDst.SrcColorFactor = 202
+  ffiMe BlendDst.OneMinusSrcColorFactor = 203
+  ffiMe BlendDst.SrcAlphaFactor = 204
+  ffiMe BlendDst.OneMinusSrcAlphaFactor = 205
+  ffiMe BlendDst.DstAlphaFactor = 206
+  ffiMe BlendDst.OneMinusDstAlphaFactor = 207
+  ffiMe BlendDst.DstColorFactor = 208
+  ffiMe BlendDst.OneMinusDstColorFactor = 209
+
+-- same as blendDst with one extra, SrcAlphaSaturateFactor
+instance FFIMe BlendSrc.BlendSrc Int where
+  ffiMe BlendSrc.ZeroFactor = 200
+  ffiMe BlendSrc.OneFactor = 201
+  ffiMe BlendSrc.SrcColorFactor = 202
+  ffiMe BlendSrc.OneMinusSrcColorFactor = 203
+  ffiMe BlendSrc.SrcAlphaFactor = 204
+  ffiMe BlendSrc.OneMinusSrcAlphaFactor = 205
+  ffiMe BlendSrc.DstAlphaFactor = 206
+  ffiMe BlendSrc.OneMinusDstAlphaFactor = 207
+  ffiMe BlendSrc.DstColorFactor = 208
+  ffiMe BlendSrc.OneMinusDstColorFactor = 209
+  ffiMe BlendSrc.SrcAlphaSaturateFactor = 210
+
+instance FFIMe BlendEquation.BlendEquation Int where
+  ffiMe BlendEquation.AddEquation = 100
+  ffiMe BlendEquation.SubtractEquation = 101
+  ffiMe BlendEquation.ReverseSubtractEquation = 102
+  ffiMe BlendEquation.MinEquation = 103
+  ffiMe BlendEquation.MaxEquation = 104
+
+instance FFIMe Blending.Blending Int where
+  ffiMe Blending.NoBlending = 0
+  ffiMe Blending.NormalBlending = 1
+  ffiMe Blending.AdditiveBlending = 2
+  ffiMe Blending.SubtractiveBlending = 3
+  ffiMe Blending.MultiplyBlending = 4
+  ffiMe Blending.CustomBlending = 5
+
+instance FFIMe DepthMode.DepthMode Int where
+  ffiMe DepthMode.NeverDepth = 0
+  ffiMe DepthMode.AlwaysDepth = 1
+  ffiMe DepthMode.LessDepth = 2
+  ffiMe DepthMode.LessEqualDepth = 3
+  ffiMe DepthMode.EqualDepth = 4
+  ffiMe DepthMode.GreaterEqualDepth = 5
+  ffiMe DepthMode.GreaterDepth = 6
+  ffiMe DepthMode.NotEqualDepth = 7
+
+instance FFIMe Precision.Precision String where
+  ffiMe Precision.LowP = "lowp"
+  ffiMe Precision.MediumP = "mediump"
+  ffiMe Precision.HighP = "highp"
+
+instance FFIMe Side.Side Int where
+  ffiMe Side.FrontSide = 0
+  ffiMe Side.BackSide = 1
+  ffiMe Side.DoubleSide = 2
 
 instance FFIMe NormalMapType Int where
   ffiMe TangentSpaceNormalMap = 0
@@ -569,13 +666,42 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setCenter: setCenter_
   , getBoundingBox: getBoundingBox_
   , getBoundingSphere: getBoundingSphere_
-  -- shader and raw shader
-  , setUniform: setUniform_
   -- instancedMesh
   , setInstancedMeshMatrix4: setInstancedMeshMatrix4_
   , setInstancedMeshColor: setInstancedMeshColor_
   , setSingleInstancedMeshMatrix4: setSingleInstancedMeshMatrix4_
   , setSingleInstancedMeshColor: setSingleInstancedMeshColor_
+  -- all materials
+  , setAlphaTest: setAlphaTest_
+  , setAlphaToCoverage: setAlphaToCoverage_
+  , setBlendDst: setBlendDst_
+  , setBlendDstAlpha: setBlendDstAlpha_
+  , setBlendEquation: setBlendEquation_
+  , setBlendEquationAlpha: setBlendEquationAlpha_
+  , setBlending: setBlending_
+  , setBlendSrc: setBlendSrc_
+  , setBlendSrcAlpha: setBlendSrcAlpha_
+  , setClipIntersection: setClipIntersection_
+  , setClipShadows: setClipShadows_
+  , setColorWrite: setColorWrite_
+  , setDepthFunc: setDepthFunc_
+  , setDepthTest: setDepthTest_
+  , setDepthWrite: setDepthWrite_
+  , setOpacity: setOpacity_
+  , setPolygonOffset: setPolygonOffset_
+  , setPolygonOffsetFactor: setPolygonOffsetFactor_
+  , setPolygonOffsetUnits: setPolygonOffsetUnits_
+  , setPrecision: setPrecision_
+  , setPremultipliedAlpha: setPremultipliedAlpha_
+  , setDithering: setDithering_
+  , setShadowSide: setShadowSide_
+  , setSide: setSide_
+  , setToneMapped: setToneMapped_
+  , setTransparent: setTransparent_
+  , setVertexColors: setVertexColors_
+  , setVisible: setVisible_
+  -- shader and raw shader
+  , setUniform: setUniform_
   -- material
   , setColor: setColor_
   , setRoughness: setRoughness_

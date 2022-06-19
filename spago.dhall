@@ -27,6 +27,7 @@
   , "record"
   , "refs"
   , "safe-coerce"
+  , "tuples"
   , "unsafe-coerce"
   , "variant"
   , "web-dom"

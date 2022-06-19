@@ -231,7 +231,7 @@ runThree tdi delt canvas iw ih e = do
                       )
                 , toScene $ mesh { mesh: tdi.mesh }
                     (plane { plane: tdi.planeGeometry })
-                    ( shaderMaterial
+                    ( shaderMaterial { uTime: 15.0 }
                         { shaderMaterial: tdi.shaderMaterial
                         , vertexShader:
                             """
@@ -259,9 +259,6 @@ void main()
     gl_FragColor = vec4(c,c,c,1.0);
 }
                         """
-                        , uniforms:
-                            { uTime: 15.0
-                            }
                         }
                         ( biSampleOn (withTime (bang unit))
                             ( { now: _, start: _ } <$> withTime

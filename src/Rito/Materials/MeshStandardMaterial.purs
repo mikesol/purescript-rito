@@ -17,9 +17,18 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
+import Record (union)
+import Rito.BlendDst (BlendDst)
+import Rito.BlendEquation (BlendEquation)
+import Rito.BlendSrc (BlendSrc)
+import Rito.Blending (Blending)
 import Rito.Color (Color)
+import Rito.Core (AllMaterials, defaultMaterials, initializeDefaultMaterials)
 import Rito.Core as C
+import Rito.DepthMode (DepthMode)
 import Rito.NormalMapType (NormalMapType)
+import Rito.Precision (Precision)
+import Rito.Side (Side)
 import Rito.THREE as THREE
 import Rito.Texture (Texture)
 import Rito.Vector2 (Vector2)
@@ -222,6 +231,202 @@ instance
     (Maybe Boolean) where
   convertOption _ _ = Just
 
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "alphaTest"
+    Number
+    (Maybe Number) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "alphaToCoverage"
+    Number
+    (Maybe Number) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "blendDst"
+    BlendDst
+    (Maybe BlendDst) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "blendDstAlpha"
+    BlendDst
+    (Maybe BlendDst) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "blendEquation"
+    BlendEquation
+    (Maybe BlendEquation) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "blendEquationAlpha"
+    BlendEquation
+    (Maybe BlendEquation) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "blending"
+    Blending
+    (Maybe Blending) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "blendSrc"
+    BlendSrc
+    (Maybe BlendSrc) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "blendSrcAlpha"
+    BlendSrc
+    (Maybe BlendSrc) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "clipIntersection"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "clipShadows"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "colorWrite"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "depthFunc"
+    DepthMode
+    (Maybe DepthMode) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "depthTest"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "depthWrite"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "opacity"
+    Number
+    (Maybe Number) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "polygonOffset"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "polygonOffsetFactor"
+    Int
+    (Maybe Int) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "polygonOffsetUnits"
+    Int
+    (Maybe Int) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "precision"
+    Precision
+    (Maybe Precision) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "premultipliedAlpha"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "dithering"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "shadowSide"
+    Side
+    (Maybe Side) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "side"
+    Side
+    (Maybe Side) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "toneMapped"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "transparent"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "vertexColors"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
+instance
+  ConvertOption MeshStandardMaterialOptions
+    "visible"
+    Boolean
+    (Maybe Boolean) where
+  convertOption _ _ = Just
+
 type MeshStandardMaterialOptional =
   ( color :: Maybe Color
   , roughness :: Maybe Number
@@ -250,10 +455,17 @@ type MeshStandardMaterialOptional =
   , wireframe :: Maybe Boolean
   , wireframeLinewidth :: Maybe Number
   , flatShading :: Maybe Boolean
+  | AllMaterials Maybe BlendDst BlendEquation Blending
+      BlendSrc
+      DepthMode
+      Precision
+      Side
   )
 
 type MeshStandardMaterialAll =
-  (meshStandardMaterial :: THREE.TMeshStandardMaterial | MeshStandardMaterialOptional)
+  ( meshStandardMaterial :: THREE.TMeshStandardMaterial
+  | MeshStandardMaterialOptional
+  )
 
 defaultMeshStandardMaterial :: { | MeshStandardMaterialOptional }
 defaultMeshStandardMaterial =
@@ -284,7 +496,7 @@ defaultMeshStandardMaterial =
   , wireframe: Nothing
   , wireframeLinewidth: Nothing
   , flatShading: Nothing
-  }
+  } `union` defaultMaterials
 
 class InitialMeshStandardMaterial i where
   toInitializeMeshStandardMaterial :: i -> C.InitializeMeshStandardMaterial
@@ -386,38 +598,42 @@ meshStandardMaterial i' atts = C.Material go
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
       bang
         ( makeMeshStandardMaterial
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , meshStandardMaterial: i.meshStandardMaterial
-            , color: i.color
-            , roughness: i.roughness
-            , metalness: i.metalness
-            , map: i.map
-            , lightMap: i.lightMap
-            , lightMapIntensity: i.lightMapIntensity
-            , aoMap: i.aoMap
-            , aoMapIntensity: i.aoMapIntensity
-            , emissive: i.emissive
-            , emissiveIntensity: i.emissiveIntensity
-            , emissiveMap: i.emissiveMap
-            , bumpMap: i.bumpMap
-            , bumpScale: i.bumpScale
-            , normalMap: i.normalMap
-            , normalMapType: i.normalMapType
-            , normalScale: i.normalScale
-            , displacementMap: i.displacementMap
-            , displacementScale: i.displacementScale
-            , displacementBias: i.displacementBias
-            , roughnessMap: i.roughnessMap
-            , metalnessMap: i.metalnessMap
-            , alphaMap: i.alphaMap
-            , envMap: i.envMap
-            , envMapIntensity: i.envMapIntensity
-            , wireframe: i.wireframe
-            , wireframeLinewidth: i.wireframeLinewidth
-            , flatShading: i.flatShading
-            }
+            ( { id: me
+              , parent: parent.parent
+              , scope: parent.scope
+              , parameters:
+                  { meshStandardMaterial: i.meshStandardMaterial
+                  , color: i.color
+                  , roughness: i.roughness
+                  , metalness: i.metalness
+                  , map: i.map
+                  , lightMap: i.lightMap
+                  , lightMapIntensity: i.lightMapIntensity
+                  , aoMap: i.aoMap
+                  , aoMapIntensity: i.aoMapIntensity
+                  , emissive: i.emissive
+                  , emissiveIntensity: i.emissiveIntensity
+                  , emissiveMap: i.emissiveMap
+                  , bumpMap: i.bumpMap
+                  , bumpScale: i.bumpScale
+                  , normalMap: i.normalMap
+                  , normalMapType: i.normalMapType
+                  , normalScale: i.normalScale
+                  , displacementMap: i.displacementMap
+                  , displacementScale: i.displacementScale
+                  , displacementBias: i.displacementBias
+                  , roughnessMap: i.roughnessMap
+                  , metalnessMap: i.metalnessMap
+                  , alphaMap: i.alphaMap
+                  , envMap: i.envMap
+                  , envMapIntensity: i.envMapIntensity
+                  , wireframe: i.wireframe
+                  , wireframeLinewidth: i.wireframeLinewidth
+                  , flatShading: i.flatShading
+                  }
+              , materialParameters: initializeDefaultMaterials i
+              }
+            )
         )
         <|>
           ( map
