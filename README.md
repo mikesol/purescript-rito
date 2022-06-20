@@ -1,6 +1,6 @@
 # purescript-rito
 
-A port of three.js to the PureScript FRP architecture.
+A canvas graphics FRP library backed by [three.js](https://github.com/mrdoob/three.js).
 
 ## What does Rito mean?
 
