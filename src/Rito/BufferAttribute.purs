@@ -14,18 +14,11 @@ import Data.Tuple (fst)
 import Data.Tuple.Nested (type (/\), (/\))
 import Prim.Int (class Mul)
 import Prim.RowList as RL
+import Rito.BufferAttributeUnsafe (bufferAttributeImpl, bufferAttributesImpl)
 import Rito.THREE as THREE
 import Type.Proxy (Proxy(..))
 
 data BufferAttribute
-
-foreign import bufferAttributeImpl
-  :: forall n
-   . Int
-  -> Int
-  -> THREE.TBufferAttribute
-  -> (Int -> Vect.Vect n Number)
-  -> BufferAttribute
 
 bufferAttribute
   :: forall m n mn
@@ -60,15 +53,6 @@ instance
       tail /\ Proxy
     where
     tail /\ _ = internalDoNotUseBA (Proxy :: _ restI)
-
-foreign import bufferAttributesImpl
-  :: forall a i o
-   . Int
-  -> Array { k :: String, n :: Int }
-  -> THREE.TBufferAttribute
-  -> a
-  -> (Int -> a -> { | i } /\ a)
-  -> { | o }
 
 bufferAttributes
   :: forall a m i ir o or
