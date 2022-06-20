@@ -49,6 +49,7 @@ import Heterogeneous.Folding (class FoldingWithIndex, hfoldlWithIndex)
 import Prim.Row (class Cons, class Lacks)
 import Random.LCG (mkSeed)
 import Record (insert, union)
+import Rito.Blending (Blending(..))
 import Rito.CSS.CSS2DObject (css2DObject)
 import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Color (RGB(..), color)
@@ -268,7 +269,9 @@ void main()
                               \{ now: { time: timeN }, start: { time: timeS } } ->
                                 uniform
                                   ( inj (Proxy :: _ "uTime")
-                                      ((unwrap (unInstant timeN) / 1000.0) - (unwrap (unInstant timeS) / 1000.0))
+                                      ( (unwrap (unInstant timeN) / 1000.0) -
+                                          (unwrap (unInstant timeS) / 1000.0)
+                                      )
                                   )
                         )
                     )
