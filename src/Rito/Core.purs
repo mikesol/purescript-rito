@@ -216,6 +216,22 @@ type MakeGroup f s =
   , parent :: f String
   , group :: THREE.TGroup
   }
+
+data RawGroup
+
+type MakeGLTFGroup f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  , group :: RawGroup
+  }
+data RawCamera
+type MakeGLTFCamera f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  , camera :: RawCamera
+  }
 type MakeMesh f s =
   { id :: String
   , scope :: s
@@ -1333,6 +1349,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeCSS2DRenderer :: MakeCSS2DRenderer -> payload
   , makeCSS3DRenderer :: MakeCSS3DRenderer -> payload
   , makeGroup :: MakeGroup Maybe Scope -> payload
+  , makeGLTFGroup :: MakeGLTFGroup Maybe Scope -> payload
   , makeScene :: MakeScene Maybe Scope -> payload
   , makeMesh :: MakeMesh Maybe Scope -> payload
   , makePoints :: MakePoints Maybe Scope -> payload
@@ -1351,6 +1368,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
   , makeMeshPhongMaterial :: MakeMeshPhongMaterial Maybe Scope -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
+  , makeGLTFCamera :: MakeGLTFCamera Maybe Scope -> payload
   , makeCSS2DObject :: MakeCSS2DObject Maybe Scope -> payload
   , makeCSS3DObject :: MakeCSS3DObject Maybe Scope -> payload
   -- scene

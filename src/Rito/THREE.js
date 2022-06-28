@@ -27,6 +27,10 @@ export const vector3 = () =>
 export const textureLoader = () =>
 	import("three/src/loaders/TextureLoader.js").then((r) => r.TextureLoader);
 
+
+export const gltfLoader = () =>
+	import("three/examples/jsm/loaders/GLTFLoader.js").then((r) => r.GLTFLoader);
+
 export const cubeTextureLoader = () =>
 	import("three/src/loaders/CubeTextureLoader.js").then(
 		(r) => r.CubeTextureLoader
