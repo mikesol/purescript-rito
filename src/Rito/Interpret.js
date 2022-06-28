@@ -146,6 +146,9 @@ export const makePerspectiveCamera_ = (a) => (state) => () => {
 			new ctor.perspectiveCamera(ctor.fov, ctor.aspect, ctor.near, ctor.far)
 	)(() => {})(a)(state)();
 };
+export const makeGLTFCamera_ = (a) => (state) => () => {
+	genericMake_(({ camera}) => camera)(() => {})(a)(state)();
+};
 
 const ascSort = function (a, b) {
 	return a.distance - b.distance;
@@ -308,6 +311,9 @@ export const setSize_ = (a) => (state) => () => {
 };
 export const makeScene_ = genericMake_((ctor) => new ctor.scene())(() => {});
 export const makeGroup_ = genericMake_((ctor) => new ctor.group())((x, y) => {
+	y.main.add(x.main);
+});
+export const makeGLTFGroup_ = genericMake_(({ group }) => group)((x, y) => {
 	y.main.add(x.main);
 });
 export const webGLRender_ = (a) => (state) => () => {

@@ -11,6 +11,7 @@ data TCSS3DObject
 data TVector2
 data TVector3
 data TTextureLoader
+data TGLTFLoader
 data TQuaternion
 data TEuler
 data TCubeTextureLoader
@@ -50,6 +51,7 @@ foreign import vector2 :: Effect (Promise TVector2)
 foreign import vector3 :: Effect (Promise TVector3)
 foreign import textureLoader :: Effect (Promise TTextureLoader)
 foreign import cubeTextureLoader :: Effect (Promise TCubeTextureLoader)
+foreign import gltfLoader :: Effect (Promise TGLTFLoader)
 foreign import sphere :: Effect (Promise TSphere)
 foreign import quaternion :: Effect (Promise TQuaternion)
 foreign import euler :: Effect (Promise TEuler)
@@ -88,6 +90,7 @@ vector2Aff = toAffE vector2 :: Aff TVector2
 vector3Aff = toAffE vector3 :: Aff TVector3
 textureLoaderAff = toAffE textureLoader :: Aff TTextureLoader
 cubeTextureLoaderAff = toAffE cubeTextureLoader :: Aff TCubeTextureLoader
+gltfLoaderAff = toAffE gltfLoader :: Aff TGLTFLoader
 sphereAff = toAffE sphere :: Aff TSphere
 quaternionAff = toAffE quaternion :: Aff TQuaternion
 eulerAff = toAffE euler :: Aff TEuler

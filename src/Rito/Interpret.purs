@@ -26,6 +26,7 @@ import Rito.Blending as Blending
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Color (Color)
 import Rito.CombineOperation (CombineOperation(..))
+import Rito.Core (RawCamera, RawGroup)
 import Rito.Core as Core
 import Rito.DepthMode as DepthMode
 import Rito.InstancedBufferAttribute (InstancedBufferAttribute)
@@ -69,6 +70,10 @@ foreign import makeScene_
   :: Core.MakeScene Undefinable (Undefinable String) -> Payload
 foreign import makeGroup_
   :: Core.MakeGroup Undefinable (Undefinable String) -> Payload
+foreign import makeGLTFGroup_
+  :: Core.MakeGLTFGroup Undefinable (Undefinable String) -> Payload
+foreign import makeGLTFCamera_
+  :: Core.MakeGLTFCamera Undefinable (Undefinable String) -> Payload
 foreign import makeMesh_
   :: Core.MakeMesh Undefinable (Undefinable String) -> Payload
 foreign import makePoints_
@@ -317,6 +322,12 @@ instance (RowToList i ri, FFIIze ri i o) => FFIMe { | i } { | o } where
   ffiMe = ffiize
 
 instance FFIMe Boolean Boolean where
+  ffiMe = identity
+
+instance FFIMe RawGroup RawGroup where
+  ffiMe = identity
+
+instance FFIMe RawCamera RawCamera where
   ffiMe = identity
 
 instance FFIMe Scope (Undefinable String) where
@@ -580,6 +591,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeCSS3DRenderer: lcmap ffiize makeCSS3DRenderer_
   , makeScene: lcmap ffiize makeScene_
   , makeGroup: lcmap ffiize makeGroup_
+  , makeGLTFGroup: lcmap ffiize makeGLTFGroup_
   , makeMesh: lcmap ffiize makeMesh_
   , makePoints: lcmap ffiize makePoints_
   , makeInstancedMesh: lcmap ffiize makeInstancedMesh_
@@ -592,6 +604,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeAmbientLight: lcmap ffiize makeAmbientLight_
   , makePointLight: lcmap ffiize makePointLight_
   , makePerspectiveCamera: lcmap ffiize makePerspectiveCamera_
+  , makeGLTFCamera: lcmap ffiize makeGLTFCamera_
   , makeRawShaderMaterial: lcmap ffiize makeRawShaderMaterial_
   , makeShaderMaterial: lcmap ffiize makeShaderMaterial_
   , makeMeshPhongMaterial: lcmap ffiize makeMeshPhongMaterial_

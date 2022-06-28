@@ -1,15 +1,16 @@
-module Rito.Group (group, Group(..)) where
+module Rito.Group (group, unsafeInternalGroup, Group(..)) where
 
 import Prelude
 
 import Bolson.Control (flatten)
-import Bolson.Core (Entity(..), fixed)
+import Bolson.Core (Entity(..), Scope, fixed)
 import Bolson.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import FRP.Event (Event, bang, makeEvent, subscribe)
+import Rito.Core (ThreeInterpret(..))
 import Rito.Core as C
 import Rito.THREE as THREE
 import Unsafe.Coerce (unsafeCoerce)
@@ -25,7 +26,23 @@ group
   -> Event Group
   -> Array (C.AGroupful lock payload)
   -> C.AGroup lock payload
-group gp props kidz = Element' $ C.Group go
+group = unsafeInternalGroup \(ThreeInterpret { makeGroup }) -> makeGroup
+
+unsafeInternalGroup
+  :: forall group lock payload
+   . ( ThreeInterpret payload
+       -> { id :: String
+          , scope :: Scope
+          , parent :: Maybe String
+          , group :: group
+          }
+       -> payload
+     )
+  -> { group :: group }
+  -> Event Group
+  -> Array (C.AGroupful lock payload)
+  -> C.AGroup lock payload
+unsafeInternalGroup dif gp props kidz = Element' $ C.Group go
   where
   go
     parent
@@ -33,14 +50,13 @@ group gp props kidz = Element' $ C.Group go
       ( C.ThreeInterpret
           { ids
           , deleteFromCache
-          , makeGroup
           }
       ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
       oneOf
-        [ bang $ makeGroup
+        [ bang $ dif di
             { id: me
             , parent: parent.parent
             , scope: parent.scope
