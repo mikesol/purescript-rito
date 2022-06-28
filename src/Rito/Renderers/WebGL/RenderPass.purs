@@ -2,7 +2,6 @@ module Rito.Renderers.WebGL.RenderPass where
 
 import Prelude
 
-
 import Bolson.Core (Scope(..))
 import Bolson.Core as Bolson
 import Data.Foldable (oneOf)
@@ -11,11 +10,12 @@ import Effect.Ref as Ref
 import FRP.Event (bang, makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
+import Web.HTML (HTMLCanvasElement)
 
 -- todo: copy-paste from webgl renderer with the avars. fix?
 renderPass
   :: forall lock payload
-   . { renderPass :: THREE.TRenderPass, raycaster :: THREE.TRaycaster }
+   . { renderPass :: THREE.TRenderPass, raycaster :: THREE.TRaycaster, canvas :: HTMLCanvasElement }
   -> C.Scene lock payload
   -> C.Camera lock payload
   -> C.APass lock payload
@@ -67,6 +67,7 @@ renderPass ii sne cam = Bolson.Element' $ C.Pass go
                   , camera: cameraId
                   , scene: sceneId
                   , raycaster: ii.raycaster
+                  , canvas: ii.canvas
                   }
               ]
           )

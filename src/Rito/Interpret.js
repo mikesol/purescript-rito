@@ -431,7 +431,7 @@ const setUpForRaycasting = (parameters, state) => {
 	const camera = state.units[parameters.camera].main;
 
 	const makeListener = (eventName) => {
-		canvas.addEventListener(eventName, ($e) => {
+		parameters.canvas.addEventListener(eventName, ($e) => {
 			const entries = Object.entries(state.listeners[eventName]);
 			const es =
 				eventName.indexOf("touch") !== -1 ? getAllTouches($e.touches) : [$e];

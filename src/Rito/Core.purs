@@ -178,6 +178,7 @@ type MakeRenderPass f =
   , camera :: String
   , scene :: String
   , raycaster :: THREE.TRaycaster
+  , canvas :: HTMLCanvasElement
   }
 type MakeGlitchPass f =
   { id :: String
