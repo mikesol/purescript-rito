@@ -8,6 +8,7 @@ import Effect (Effect)
 import Rito.Box3 as Box3
 import Rito.Color (Color)
 import Rito.Color as Color
+import Rito.Euler (Euler)
 import Rito.InstancedMesh (InstancedMesh, Setter)
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
@@ -79,6 +80,13 @@ quaternion
   => Quaternion
   -> nt
 quaternion = wrap <<< inj (Proxy :: Proxy "quaternion")
+
+rotation
+  :: forall nt r
+   . Newtype nt (Variant (rotation :: Euler | r))
+  => Euler
+  -> nt
+rotation = wrap <<< inj (Proxy :: Proxy "rotation")
 
 rotateX
   :: forall nt r
