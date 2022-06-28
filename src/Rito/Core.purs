@@ -177,6 +177,7 @@ type MakeRenderPass f =
   , renderPass :: THREE.TRenderPass
   , camera :: String
   , scene :: String
+  , raycaster :: THREE.TRaycaster
   }
 type MakeGlitchPass f =
   { id :: String
@@ -191,18 +192,19 @@ type MakeBloomPass f =
 type MakeWebGLRenderer =
   { id :: String
   , camera :: String
+  , raycaster :: THREE.TRaycaster
   | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
       WPP.WebGLRenderingPowerPreference
   }
 type MakeWebGLRenderer' =
   { id :: String
   , camera :: String
+  , raycaster :: THREE.TRaycaster
   | InitializeWebGLRenderer' String String
   }
 type InitializeWebGLRenderer' precision powerPreference =
   ( canvas :: HTMLCanvasElement
   , webGLRenderer :: THREE.TWebGLRenderer
-  , raycaster :: THREE.TRaycaster
   , precision :: precision
   , alpha :: Boolean
   , premultipliedAlpha :: Boolean
@@ -216,7 +218,7 @@ type InitializeWebGLRenderer' precision powerPreference =
   )
 
 newtype InitializeWebGLRenderer = InitializeWebGLRenderer
-  { | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
+  { raycaster :: THREE.TRaycaster | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
       WPP.WebGLRenderingPowerPreference
   }
 

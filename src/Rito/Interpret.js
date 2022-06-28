@@ -147,7 +147,7 @@ export const makePerspectiveCamera_ = (a) => (state) => () => {
 	)(() => {})(a)(state)();
 };
 export const makeGLTFCamera_ = (a) => (state) => () => {
-	genericMake_(({ camera}) => camera)(() => {})(a)(state)();
+	genericMake_(({ camera }) => camera)(() => {})(a)(state)();
 };
 
 const ascSort = function (a, b) {
@@ -390,12 +390,16 @@ const assignThunk = (k, thunk, eventName, state) => {
 };
 
 export const makeRenderPass_ = (a) => (state) => () => {
-	const pass = new a.renderPass(state.units[a.scene].main, state.units[a.camera].main);
+	const pass = new a.renderPass(
+		state.units[a.scene].main,
+		state.units[a.camera].main
+	);
 	state.units[a.id] = { main: pass };
 	if (a.parent !== undefined) {
 		state.units[a.parent].main.addPass(pass);
 	}
-}
+	setUpForRaycasting(a);
+};
 
 export const makeGlitchPass_ = (a) => (state) => () => {
 	const pass = new a.glitchPass();
@@ -419,17 +423,11 @@ export const makeEffectComposer_ = (a) => (state) => () => {
 	const effectComposer = new a.effectComposer(state.units[a.id].main);
 	state.units[myId] = {
 		renderer: a.id,
-		main: effectComposer
-	}
+		main: effectComposer,
+	};
 };
-export const makeWebGLRenderer_ = (a) => (state) => () => {
-	const { id, ...parameters } = a;
-	const canvas = parameters.canvas;
-	const renderer = new a.webGLRenderer(parameters);
-	state.units[a.id] = { main: renderer };
-	renderer.setSize(canvas.width, canvas.height);
-	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-	const raycaster = new a.raycaster();
+const setUpForRaycasting = (parameters) => {
+	const raycaster = new parameters.raycaster();
 	const camera = state.units[parameters.camera].main;
 
 	const makeListener = (eventName) => {
@@ -486,6 +484,19 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 	makeListener("touchend");
 	makeListener("touchmove");
 	makeListener("touchcancel");
+};
+
+export const makeWebGLRendererInternal_ = (a, state) => {
+	const { id, ...parameters } = a;
+	const canvas = parameters.canvas;
+	const renderer = new a.webGLRenderer(parameters);
+	state.units[a.id] = { main: renderer };
+	renderer.setSize(canvas.width, canvas.height);
+	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+};
+export const makeWebGLRenderer_ = (a) => (state) => () => {
+	makeWebGLRendererInternal_(a, state);
+	setUpForRaycasting(parameters);
 };
 export const makeCSS2DRenderer_ = (a) => (state) => () => {
 	const { id, canvas, element } = a;

@@ -28,13 +28,6 @@ instance
 
 instance
   ConvertOption EffectComposerOptions
-    "raycaster"
-    THREE.TRaycaster
-    THREE.TRaycaster where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption EffectComposerOptions
     "effectComposer"
     THREE.TEffectComposer
     THREE.TEffectComposer where
@@ -134,7 +127,6 @@ type EffectComposerAll =
   ( canvas :: HTMLCanvasElement
   , effectComposer :: THREE.TEffectComposer
   , webGLRenderer :: THREE.TWebGLRenderer
-  , raycaster :: THREE.TRaycaster
   | EffectComposerOptional
   )
 
@@ -206,7 +198,6 @@ effectComposer i' props kidz = Element' $ C.Renderer go
             , effectComposer: i.effectComposer
             , canvas: i.canvas
             , webGLRenderer: i.webGLRenderer
-            , raycaster: i.raycaster
             , precision: i.precision
             , alpha: i.alpha
             , premultipliedAlpha: i.premultipliedAlpha
