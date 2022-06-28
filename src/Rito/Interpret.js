@@ -398,7 +398,7 @@ export const makeRenderPass_ = (a) => (state) => () => {
 	if (a.parent !== undefined) {
 		state.units[a.parent].main.addPass(pass);
 	}
-	setUpForRaycasting(a);
+	setUpForRaycasting(a, state);
 };
 
 export const makeGlitchPass_ = (a) => (state) => () => {
@@ -426,7 +426,7 @@ export const makeEffectComposer_ = (a) => (state) => () => {
 		main: effectComposer,
 	};
 };
-const setUpForRaycasting = (parameters) => {
+const setUpForRaycasting = (parameters, state) => {
 	const raycaster = new parameters.raycaster();
 	const camera = state.units[parameters.camera].main;
 
@@ -496,7 +496,7 @@ export const makeWebGLRendererInternal_ = (a, state) => {
 };
 export const makeWebGLRenderer_ = (a) => (state) => () => {
 	makeWebGLRendererInternal_(a, state);
-	setUpForRaycasting(a);
+	setUpForRaycasting(a, state);
 };
 export const makeCSS2DRenderer_ = (a) => (state) => () => {
 	const { id, canvas, element } = a;
