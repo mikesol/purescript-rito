@@ -309,6 +309,9 @@ export const makeMeshStandardMaterial_ = genericMake_(
 export const setSize_ = (a) => (state) => () => {
 	state.units[a.id].main.setSize(a.width, a.height);
 };
+export const setSizeThroughEffectComposer_ = (a) => (state) => () => {
+	state.units[a.id].main.renderer.setSize(a.width, a.height);
+};
 export const makeScene_ = genericMake_((ctor) => new ctor.scene())(() => {});
 export const makeGroup_ = genericMake_((ctor) => new ctor.group())((x, y) => {
 	y.main.add(x.main);
@@ -316,6 +319,9 @@ export const makeGroup_ = genericMake_((ctor) => new ctor.group())((x, y) => {
 export const makeGLTFGroup_ = genericMake_(({ group }) => group)((x, y) => {
 	y.main.add(x.main);
 });
+export const effectComposerRender_ = (a) => (state) => () => {
+	state.units[a.id].main.render();
+};
 export const webGLRender_ = (a) => (state) => () => {
 	state.units[a.id].main.render(
 		state.units[a.scene].main,
@@ -383,6 +389,39 @@ const assignThunk = (k, thunk, eventName, state) => {
 	}
 };
 
+export const makeRenderPass_ = (a) => (state) => () => {
+	const pass = new a.renderPass(state.units[a.scene].main, state.units[a.camera].main);
+	state.units[a.id] = { main: pass };
+	if (a.parent !== undefined) {
+		state.units[a.parent].main.addPass(pass);
+	}
+}
+
+export const makeGlitchPass_ = (a) => (state) => () => {
+	const pass = new a.glitchPass();
+	state.units[a.id] = { main: pass };
+	if (a.parent !== undefined) {
+		state.units[a.parent].main.addPass(pass);
+	}
+};
+
+export const makeBloomPass_ = (a) => (state) => () => {
+	const pass = new a.bloomPass();
+	state.units[a.id] = { main: pass };
+	if (a.parent !== undefined) {
+		state.units[a.parent].main.addPass(pass);
+	}
+};
+export const makeEffectComposer_ = (a) => (state) => () => {
+	const myId = a.id;
+	a.id = `${myId}_${Math.random()}`;
+	makeWebGLRenderer_(a)(state)();
+	const effectComposer = new a.effectComposer(state.units[a.id].main);
+	state.units[myId] = {
+		renderer: a.id,
+		main: effectComposer
+	}
+};
 export const makeWebGLRenderer_ = (a) => (state) => () => {
 	const { id, ...parameters } = a;
 	const canvas = parameters.canvas;
@@ -1085,6 +1124,15 @@ export function disconnect_(a) {
 	};
 }
 
+export function disconnectPass_(a) {
+	return function (state) {
+		return function () {
+			const ptr = a.id;
+			const parent = a.parent;
+			state.units[parent].main.removePass(state.units[ptr].main);
+		};
+	};
+}
 export function deleteFromCache_(a) {
 	return function (state) {
 		return function () {

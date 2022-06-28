@@ -77,6 +77,8 @@ type SimpleCtor payload =
 
 newtype Renderer (lock :: Type) payload = Renderer (Ctor payload)
 type ARenderer lock payload = Entity Void (Renderer lock payload) Effect lock
+newtype Pass (lock :: Type) payload = Pass (Ctor payload)
+type APass lock payload = Entity Void (Pass lock payload) Effect lock
 newtype Light (lock :: Type) payload = Light (Ctor payload)
 type ALight lock payload = Entity Void (Light lock payload) Effect lock
 newtype CSS2DObject (lock :: Type) payload = CSS2DObject (Ctor payload)
@@ -155,18 +157,36 @@ type WebGLRender = { id :: String, scene :: String, camera :: String }
 type MakeEffectComposer =
   { id :: String
   , effectComposer :: THREE.TEffectComposer
+  | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
+      WPP.WebGLRenderingPowerPreference
   }
-type MakeRenderPass =
+type MakeEffectComposer' =
   { id :: String
-  , renderPass  :: THREE.TRenderPass
+  , effectComposer :: THREE.TEffectComposer
+  | InitializeWebGLRenderer' String String
+
   }
-type MakeGlitchPass =
-  { id :: String
-  , glitchPass  :: THREE.TGlitchPass
+newtype InitializeEffectComposer = InitializeEffectComposer
+  { effectComposer :: THREE.TEffectComposer
+  | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
+      WPP.WebGLRenderingPowerPreference
   }
-type MakeBloomPass =
+type MakeRenderPass f =
   { id :: String
-  , bloomPass  :: THREE.TBloomPass
+  , parent :: f String
+  , renderPass :: THREE.TRenderPass
+  , camera :: String
+  , scene :: String
+  }
+type MakeGlitchPass f =
+  { id :: String
+  , glitchPass :: THREE.TGlitchPass
+  , parent :: f String
+  }
+type MakeBloomPass f =
+  { id :: String
+  , bloomPass :: THREE.TBloomPass
+  , parent :: f String
   }
 type MakeWebGLRenderer =
   { id :: String
@@ -201,7 +221,7 @@ newtype InitializeWebGLRenderer = InitializeWebGLRenderer
   }
 
 type CSS2DRender = { id :: String, scene :: String, camera :: String }
-
+type EffectComposerRender = { id :: String }
 type MakeCSS2DRenderer =
   { id :: String
   , camera :: String
@@ -1120,6 +1140,7 @@ type SetDistance = { id :: String, distance :: Number }
 type SetDecay = { id :: String, decay :: Number }
 -- renderer
 type SetSize = { id :: String, width :: Number, height :: Number }
+type SetSizeThroughEffectComposer = { id :: String, width :: Number, height :: Number }
 --
 type ConnectMesh =
   { id :: String
@@ -1132,6 +1153,11 @@ type ConnectToScene =
   , scope :: Scope
   }
 type Disconnect =
+  { id :: String
+  , parent :: String
+  , scope :: Scope
+  }
+type DisconnectPass =
   { id :: String
   , parent :: String
   , scope :: Scope
@@ -1357,14 +1383,15 @@ object3D
 
 newtype ThreeInterpret payload = ThreeInterpret
   { ids :: Effect String
+  , effectComposerRender :: EffectComposerRender -> payload
   , webGLRender :: WebGLRender -> payload
   , css2DRender :: CSS2DRender -> payload
   , css3DRender :: CSS3DRender -> payload
   --
   , makeEffectComposer :: MakeEffectComposer -> payload
-  , makeRenderPass :: MakeRenderPass -> payload
-  , makeGlitchPass :: MakeGlitchPass -> payload
-  , makeBloomPass :: MakeBloomPass -> payload
+  , makeRenderPass :: MakeRenderPass Maybe -> payload
+  , makeGlitchPass :: MakeGlitchPass Maybe -> payload
+  , makeBloomPass :: MakeBloomPass Maybe -> payload
   , makeWebGLRenderer :: MakeWebGLRenderer -> payload
   , makeCSS2DRenderer :: MakeCSS2DRenderer -> payload
   , makeCSS3DRenderer :: MakeCSS3DRenderer -> payload
@@ -1566,6 +1593,8 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setDecay :: SetDecay -> payload
   -- webgl
   , setSize :: SetSize -> payload
+  -- effect composer
+  , setSizeThroughEffectComposer :: SetSizeThroughEffectComposer -> payload
   -- connectors
   , connectMesh :: ConnectMesh -> payload
   , connectScene :: ConnectScene -> payload
@@ -1574,6 +1603,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , connectMaterial :: ConnectMaterial -> payload
   , connectToScene :: ConnectToScene -> payload
   , disconnect :: Disconnect -> payload
+  , disconnectPass :: DisconnectPass -> payload
   --
   , deleteFromCache :: DeleteFromCache -> payload
   }
