@@ -12,6 +12,7 @@ data TVector2
 data TVector3
 data TTextureLoader
 data TQuaternion
+data TEuler
 data TCubeTextureLoader
 data TSphere
 data TMatrix4
@@ -51,6 +52,7 @@ foreign import textureLoader :: Effect (Promise TTextureLoader)
 foreign import cubeTextureLoader :: Effect (Promise TCubeTextureLoader)
 foreign import sphere :: Effect (Promise TSphere)
 foreign import quaternion :: Effect (Promise TQuaternion)
+foreign import euler :: Effect (Promise TEuler)
 foreign import matrix4 :: Effect (Promise TMatrix4)
 foreign import color :: Effect (Promise TColor)
 foreign import box3 :: Effect (Promise TBox3)
@@ -88,6 +90,7 @@ textureLoaderAff = toAffE textureLoader :: Aff TTextureLoader
 cubeTextureLoaderAff = toAffE cubeTextureLoader :: Aff TCubeTextureLoader
 sphereAff = toAffE sphere :: Aff TSphere
 quaternionAff = toAffE quaternion :: Aff TQuaternion
+eulerAff = toAffE euler :: Aff TEuler
 matrix4Aff = toAffE matrix4 :: Aff TMatrix4
 colorAff = toAffE color :: Aff TColor
 box3Aff = toAffE box3 :: Aff TBox3
