@@ -496,7 +496,7 @@ export const makeWebGLRendererInternal_ = (a, state) => {
 };
 export const makeWebGLRenderer_ = (a) => (state) => () => {
 	makeWebGLRendererInternal_(a, state);
-	setUpForRaycasting(parameters);
+	setUpForRaycasting(a);
 };
 export const makeCSS2DRenderer_ = (a) => (state) => () => {
 	const { id, canvas, element } = a;
