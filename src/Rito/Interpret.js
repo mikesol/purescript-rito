@@ -419,7 +419,7 @@ export const makeBloomPass_ = (a) => (state) => () => {
 export const makeEffectComposer_ = (a) => (state) => () => {
 	const myId = a.id;
 	a.id = `${myId}_${Math.random()}`;
-	makeWebGLRenderer_(a)(state)();
+	makeWebGLRendererInternal_(a,state);
 	const effectComposer = new a.effectComposer(state.units[a.id].main);
 	state.units[myId] = {
 		renderer: a.id,
