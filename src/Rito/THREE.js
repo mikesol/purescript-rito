@@ -27,7 +27,6 @@ export const vector3 = () =>
 export const textureLoader = () =>
 	import("three/src/loaders/TextureLoader.js").then((r) => r.TextureLoader);
 
-
 export const gltfLoader = () =>
 	import("three/examples/jsm/loaders/GLTFLoader.js").then((r) => r.GLTFLoader);
 
@@ -42,7 +41,8 @@ export const sphere = () =>
 export const quaternion = () =>
 	import("three/src/math/Quaternion.js").then((r) => r.Quaternion);
 
-export const euler = () => import("three/src/math/Euler.js").then((r) => r.Euler);
+export const euler = () =>
+	import("three/src/math/Euler.js").then((r) => r.Euler);
 
 export const matrix4 = () =>
 	import("three/src/math/Matrix4.js").then((r) => r.Matrix4);
@@ -104,7 +104,8 @@ export const capsuleGeometry = () =>
 export const planeGeometry = () =>
 	import("three/src/geometries/PlaneGeometry.js").then((r) => r.PlaneGeometry);
 
-export const bufferGeometry = () => import("three/src/core/BufferGeometry.js").then((r) => r.BufferGeometry);
+export const bufferGeometry = () =>
+	import("three/src/core/BufferGeometry.js").then((r) => r.BufferGeometry);
 
 export const perspectiveCamera = () =>
 	import("three/src/cameras/PerspectiveCamera.js").then(
@@ -136,4 +137,24 @@ export const points = () =>
 export const meshPhongMaterial = () =>
 	import("three/src/materials/MeshPhongMaterial.js").then(
 		(r) => r.MeshPhongMaterial
+	);
+
+export const effectComposer = () =>
+	import("three/examples/jsm/postprocessing/EffectComposer.js").then(
+		(r) => r.EffectComposer
+	);
+
+export const renderPass = () =>
+	import("three/examples/jsm/postprocessing/RenderPass.js").then(
+		(r) => r.RenderPass
+	);
+
+export const glitchPass = () =>
+	import("three/examples/jsm/postprocessing/GlitchPass.js").then(
+		(r) => r.GlitchPass
+	);
+
+export const bloomPass = () =>
+	import("three/examples/jsm/postprocessing/BloomPass.js").then(
+		(r) => r.BloomPass
 	);

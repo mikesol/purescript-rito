@@ -152,6 +152,22 @@ instance Groupable CSS3DObject where
   toGroup = unsafeCoerce
 
 type WebGLRender = { id :: String, scene :: String, camera :: String }
+type MakeEffectComposer =
+  { id :: String
+  , effectComposer :: THREE.TEffectComposer
+  }
+type MakeRenderPass =
+  { id :: String
+  , renderPass  :: THREE.TRenderPass
+  }
+type MakeGlitchPass =
+  { id :: String
+  , glitchPass  :: THREE.TGlitchPass
+  }
+type MakeBloomPass =
+  { id :: String
+  , bloomPass  :: THREE.TBloomPass
+  }
 type MakeWebGLRenderer =
   { id :: String
   , camera :: String
@@ -1345,6 +1361,10 @@ newtype ThreeInterpret payload = ThreeInterpret
   , css2DRender :: CSS2DRender -> payload
   , css3DRender :: CSS3DRender -> payload
   --
+  , makeEffectComposer :: MakeEffectComposer -> payload
+  , makeRenderPass :: MakeRenderPass -> payload
+  , makeGlitchPass :: MakeGlitchPass -> payload
+  , makeBloomPass :: MakeBloomPass -> payload
   , makeWebGLRenderer :: MakeWebGLRenderer -> payload
   , makeCSS2DRenderer :: MakeCSS2DRenderer -> payload
   , makeCSS3DRenderer :: MakeCSS3DRenderer -> payload
