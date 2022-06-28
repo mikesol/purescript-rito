@@ -38,6 +38,8 @@ export const sphere = () =>
 export const quaternion = () =>
 	import("three/src/math/Quaternion.js").then((r) => r.Quaternion);
 
+export const euler = () => import("three/src/math/Euler.js").then((r) => r.Euler);
+
 export const matrix4 = () =>
 	import("three/src/math/Matrix4.js").then((r) => r.Matrix4);
 
