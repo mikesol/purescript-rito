@@ -88,6 +88,13 @@ rotation
   -> nt
 rotation = wrap <<< inj (Proxy :: Proxy "rotation")
 
+rotationFromEuler
+  :: forall nt r
+   . Newtype nt (Variant (rotationFromEuler :: Euler | r))
+  => Euler
+  -> nt
+rotationFromEuler = wrap <<< inj (Proxy :: Proxy "rotationFromEuler")
+
 rotateX
   :: forall nt r
    . Newtype nt (Variant (rotateX :: Number | r))
