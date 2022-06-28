@@ -35,9 +35,16 @@ instance
 
 instance
   ConvertOption EffectComposerOptions
-    "webGLRenderer"
+    "effectComposer"
     THREE.TEffectComposer
     THREE.TEffectComposer where
+  convertOption _ _ = identity
+
+instance
+  ConvertOption EffectComposerOptions
+    "webGLRenderer"
+    THREE.TWebGLRenderer
+    THREE.TWebGLRenderer where
   convertOption _ _ = identity
 
 instance
