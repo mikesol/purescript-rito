@@ -60,6 +60,7 @@ foreign import css3DRender_ :: Core.CSS3DRender -> Payload
 --
 foreign import makeRenderPass_ :: Core.MakeRenderPass Undefinable -> Payload
 foreign import makeBloomPass_ :: Core.MakeBloomPass Undefinable -> Payload
+foreign import makeUnrealBloomPass_ :: Core.MakeUnrealBloomPass Undefinable -> Payload
 foreign import makeGlitchPass_ :: Core.MakeGlitchPass Undefinable -> Payload
 foreign import makeEffectComposer_ :: Core.MakeEffectComposer -> Payload
 foreign import makeWebGLRenderer_ :: Core.MakeWebGLRenderer' -> Payload
@@ -511,6 +512,9 @@ instance FFIMe THREE.TGlitchPass THREE.TGlitchPass where
 instance FFIMe THREE.TBloomPass THREE.TBloomPass where
   ffiMe = identity
 
+instance FFIMe THREE.TUnrealBloomPass THREE.TUnrealBloomPass where
+  ffiMe = identity
+
 instance FFIMe THREE.TEffectComposer THREE.TEffectComposer where
   ffiMe = identity
 
@@ -610,6 +614,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeRenderPass: lcmap ffiize makeRenderPass_
   , makeGlitchPass: lcmap ffiize makeGlitchPass_
   , makeBloomPass: lcmap ffiize makeBloomPass_
+  , makeUnrealBloomPass: lcmap ffiize makeUnrealBloomPass_
   , makeEffectComposer: lcmap ffiize makeEffectComposer_
   , makeWebGLRenderer: lcmap ffiize makeWebGLRenderer_
   , makeCSS2DRenderer: lcmap ffiize makeCSS2DRenderer_

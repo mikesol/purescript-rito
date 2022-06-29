@@ -199,6 +199,11 @@ type MakeBloomPass f =
   , bloomPass :: THREE.TBloomPass
   , parent :: f String
   }
+type MakeUnrealBloomPass f =
+  { id :: String
+  , unrealBloomPass :: THREE.TUnrealBloomPass
+  , parent :: f String
+  }
 type MakeWebGLRenderer =
   { id :: String
   , camera :: String
@@ -1403,6 +1408,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeRenderPass :: MakeRenderPass Maybe -> payload
   , makeGlitchPass :: MakeGlitchPass Maybe -> payload
   , makeBloomPass :: MakeBloomPass Maybe -> payload
+  , makeUnrealBloomPass :: MakeUnrealBloomPass Maybe -> payload
   , makeWebGLRenderer :: MakeWebGLRenderer -> payload
   , makeCSS2DRenderer :: MakeCSS2DRenderer -> payload
   , makeCSS3DRenderer :: MakeCSS3DRenderer -> payload

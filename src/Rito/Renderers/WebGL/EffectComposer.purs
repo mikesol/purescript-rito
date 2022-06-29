@@ -21,8 +21,7 @@ instance Newtype EffectComposer EffectComposer'
 
 effectComposer
   :: forall lock payload
-   . { effectComposer :: THREE.TEffectComposer
-     }
+   . { effectComposer :: THREE.TEffectComposer }
   -> C.WebGLRenderer lock payload
   -> Event EffectComposer
   -> Array (C.APass lock payload)

@@ -158,3 +158,8 @@ export const bloomPass = () =>
 	import("three/examples/jsm/postprocessing/BloomPass.js").then(
 		(r) => r.BloomPass
 	);
+
+export const unrealBloomPass = () =>
+	import("three/examples/jsm/postprocessing/UnrealBloomPass.js").then(
+		(r) => r.UnrealBloomPass
+	);

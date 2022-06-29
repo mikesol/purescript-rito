@@ -419,6 +419,13 @@ export const makeBloomPass_ = (a) => (state) => () => {
 		state.units[a.parent].main.addPass(pass);
 	}
 };
+export const makeUnrealBloomPass_ = (a) => (state) => () => {
+	const pass = new a.unrealBloomPass();
+	state.units[a.id] = { main: pass };
+	if (a.parent !== undefined) {
+		state.units[a.parent].main.addPass(pass);
+	}
+};
 export const makeEffectComposer_ = (a) => (state) => () => {
 	const myId = a.id;
 	const effectComposer = new a.effectComposer(state.units[a.webGLRenderer].main);
