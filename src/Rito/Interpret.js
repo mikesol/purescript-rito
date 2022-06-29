@@ -405,7 +405,7 @@ export const makeRaycaster_ = (a) => (state) => () => {
 }
 
 export const makeGlitchPass_ = (a) => (state) => () => {
-	const pass = new a.glitchPass();
+	const pass = new a.glitchPass(a.dtSize);
 	state.units[a.id] = { main: pass };
 	if (a.parent !== undefined) {
 		state.units[a.parent].main.addPass(pass);
@@ -413,14 +413,19 @@ export const makeGlitchPass_ = (a) => (state) => () => {
 };
 
 export const makeBloomPass_ = (a) => (state) => () => {
-	const pass = new a.bloomPass();
+	const pass = new a.bloomPass(
+		a.strength,
+	  a.kernelSize,
+		a.sigma,
+		a.resolution
+	);
 	state.units[a.id] = { main: pass };
 	if (a.parent !== undefined) {
 		state.units[a.parent].main.addPass(pass);
 	}
 };
 export const makeUnrealBloomPass_ = (a) => (state) => () => {
-	const pass = new a.unrealBloomPass();
+	const pass = new a.unrealBloomPass(a.resolution, a.strength, a.radius, a.threshold);
 	state.units[a.id] = { main: pass };
 	if (a.parent !== undefined) {
 		state.units[a.parent].main.addPass(pass);

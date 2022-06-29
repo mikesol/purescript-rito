@@ -191,18 +191,45 @@ type MakeRenderPass f =
   }
 type MakeGlitchPass f =
   { id :: String
-  , glitchPass :: THREE.TGlitchPass
   , parent :: f String
+  | InitializeGlitchPass'
+  }
+type InitializeGlitchPass' =
+  ( glitchPass :: THREE.TGlitchPass
+  , dtSize :: Int
+  )
+newtype InitializeGlitchPass = InitializeGlitchPass
+  { | InitializeGlitchPass'
   }
 type MakeBloomPass f =
   { id :: String
-  , bloomPass :: THREE.TBloomPass
   , parent :: f String
+  | InitializeBloomPass'
+  }
+type InitializeBloomPass' =
+  ( bloomPass :: THREE.TBloomPass
+  , strength :: Number
+  , kernelSize :: Int
+  , sigma :: Number
+  , resolution :: Int
+  )
+newtype InitializeBloomPass = InitializeBloomPass
+  { | InitializeBloomPass'
   }
 type MakeUnrealBloomPass f =
   { id :: String
-  , unrealBloomPass :: THREE.TUnrealBloomPass
   , parent :: f String
+  | InitializeUnrealBloomPass'
+  }
+type InitializeUnrealBloomPass' =
+  ( unrealBloomPass :: THREE.TUnrealBloomPass
+  , resolution :: Vector2
+  , strength :: Number
+  , radius :: Number
+  , threshold :: Number
+  )
+newtype InitializeUnrealBloomPass = InitializeUnrealBloomPass
+  { | InitializeUnrealBloomPass'
   }
 type MakeWebGLRenderer =
   { id :: String
@@ -1629,5 +1656,5 @@ newtype ThreeInterpret payload = ThreeInterpret
   -- if it is part of multiple render passes,
   -- we always operate off of the raised ID and do not need
   -- any additional connection logic
-  , webGLRendererConnectionNoop :: { } -> payload
+  , webGLRendererConnectionNoop :: {} -> payload
   }
