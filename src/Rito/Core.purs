@@ -958,6 +958,10 @@ type SetToneMapped = { id :: String, toneMapped :: Boolean }
 type SetTransparent = { id :: String, transparent :: Boolean }
 type SetVertexColors = { id :: String, vertexColors :: Boolean }
 type SetVisible = { id :: String, visible :: Boolean }
+-- unreal bloom
+type SetResolution = { id :: String, resolution :: Vector2 }
+type SetStrength = { id :: String, strength :: Number }
+type SetThreshold = { id :: String, threshold :: Number }
 --
 type SetWidth = { id :: String, width :: Number }
 type SetHeight = { id :: String, height :: Number }
@@ -1463,6 +1467,12 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeGLTFCamera :: MakeGLTFCamera Maybe Scope -> payload
   , makeCSS2DObject :: MakeCSS2DObject Maybe Scope -> payload
   , makeCSS3DObject :: MakeCSS3DObject Maybe Scope -> payload
+  -- passes
+  ---- unreal bloom pass
+  -- radius already exists elsewhere
+  , setResolution :: SetResolution -> payload
+  , setStrength :: SetStrength -> payload
+  , setThreshold :: SetThreshold -> payload
   -- scene
   , setBackgroundCubeTexture :: SetBackgroundCubeTexture -> payload
   , setBackgroundTexture :: SetBackgroundTexture -> payload

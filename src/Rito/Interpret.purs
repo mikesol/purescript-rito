@@ -126,6 +126,10 @@ foreign import setWidth_ :: Core.SetWidth -> Payload
 foreign import setHeight_ :: Core.SetHeight -> Payload
 foreign import setDepth_ :: Core.SetDepth -> Payload
 --
+foreign import setThreshold_ :: Core.SetThreshold -> Payload
+foreign import setStrength_ :: Core.SetStrength -> Payload
+foreign import setResolution_ :: Core.SetResolution -> Payload
+--
 foreign import setRadius_ :: Core.SetRadius -> Payload
 foreign import setLength_ :: Core.SetLength -> Payload
 foreign import setWidthSegments_ :: Core.SetWidthSegments -> Payload
@@ -819,6 +823,10 @@ effectfulThreeInterpret = Core.ThreeInterpret
   -- renderer
   , setSize: setSize_
   , setSizeThroughEffectComposer: setSizeThroughEffectComposer_
+  -- passes
+  , setThreshold: setThreshold_
+  , setStrength: setStrength_
+  , setResolution: setResolution_
   -- connectors
   , connectMesh: connectMesh_
   , connectScene: connectScene_

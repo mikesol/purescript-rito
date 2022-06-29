@@ -5,7 +5,8 @@ import Prelude
 import Bolson.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
-import FRP.Event (bang, makeEvent, subscribe)
+import Data.Variant (Variant, match)
+import FRP.Event (Event, bang, makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 import Rito.Vector2 (Vector2)
@@ -81,12 +82,22 @@ instance
         provided
     )
 
+newtype UnrealBloomPass = UnrealBloomPass
+  ( Variant
+      ( resolution :: Vector2
+      , strength :: Number
+      , radius :: Number
+      , threshold :: Number
+      )
+  )
+
 unrealBloomPass
   :: forall i lock payload
    . InitialUnrealBloomPass i
   => i
+  -> Event UnrealBloomPass
   -> C.APass lock payload
-unrealBloomPass ii' = Bolson.Element' $ C.Pass go
+unrealBloomPass ii' propz = Bolson.Element' $ C.Pass go
   where
   C.InitializeUnrealBloomPass ii = toInitializeUnrealBloomPass ii'
   go
@@ -95,6 +106,10 @@ unrealBloomPass ii' = Bolson.Element' $ C.Pass go
         { ids
         , deleteFromCache
         , makeUnrealBloomPass
+        , setResolution
+        , setStrength
+        , setRadius
+        , setThreshold
         }
     ) = makeEvent \k0 -> do
     me <- ids
@@ -109,7 +124,17 @@ unrealBloomPass ii' = Bolson.Element' $ C.Pass go
               , strength: ii.strength
               , radius: ii.radius
               , threshold: ii.threshold
-              }
+              },
+              map
+              ( \(UnrealBloomPass e) -> match
+                  { resolution: setResolution <<< { id: me, resolution: _ }
+                  , strength: setStrength <<< { id: me, strength: _ }
+                  , radius: setRadius <<< { id: me, radius: _ }
+                  , threshold: setThreshold <<< { id: me, threshold: _ }
+                  }
+                  e
+              )
+              propz
           ]
       )
       k0

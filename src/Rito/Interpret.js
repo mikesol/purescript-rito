@@ -777,6 +777,16 @@ export const setBackgroundTexture_ = (a) => (state) => () => {
 export const setBackgroundCubeTexture_ = (a) => (state) => () => {
 	state.units[a.id].main.background = a.cubeTexture;
 };
+// unrealBloom
+export const setThreshold_ = (a) => (state) => () => {
+	state.units[a.id].main.threshold = a.threshold;
+};
+export const setStrength_ = (a) => (state) => () => {
+	state.units[a.id].main.strength = a.strength;
+};
+export const setResolution_ = (a) => (state) => () => {
+	state.units[a.id].main.resolution = a.resolution;
+};
 // sphere
 export const setRadius_ = (a) => (state) => () => {
 	state.units[a.id].main.radius = a.radius;
