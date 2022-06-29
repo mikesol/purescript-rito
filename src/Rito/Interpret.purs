@@ -61,10 +61,11 @@ foreign import css3DRender_ :: Core.CSS3DRender -> Payload
 foreign import makeRenderPass_ :: Core.MakeRenderPass Undefinable -> Payload
 foreign import makeBloomPass_ :: Core.MakeBloomPass Undefinable -> Payload
 foreign import makeGlitchPass_ :: Core.MakeGlitchPass Undefinable -> Payload
-foreign import makeEffectComposer_ :: Core.MakeEffectComposer' -> Payload
+foreign import makeEffectComposer_ :: Core.MakeEffectComposer -> Payload
 foreign import makeWebGLRenderer_ :: Core.MakeWebGLRenderer' -> Payload
 foreign import makeCSS2DRenderer_ :: Core.MakeCSS2DRenderer -> Payload
 foreign import makeCSS3DRenderer_ :: Core.MakeCSS3DRenderer -> Payload
+foreign import makeRaycaster_ :: Core.MakeRaycaster -> Payload
 foreign import makePointLight_
   :: Core.MakePointLight Undefinable (Undefinable String) -> Payload
 foreign import makeAmbientLight_
@@ -613,6 +614,7 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , makeWebGLRenderer: lcmap ffiize makeWebGLRenderer_
   , makeCSS2DRenderer: lcmap ffiize makeCSS2DRenderer_
   , makeCSS3DRenderer: lcmap ffiize makeCSS3DRenderer_
+  , makeRaycaster: lcmap ffiize makeRaycaster_
   , makeScene: lcmap ffiize makeScene_
   , makeGroup: lcmap ffiize makeGroup_
   , makeGLTFGroup: lcmap ffiize makeGLTFGroup_
@@ -823,4 +825,6 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , disconnectPass: disconnectPass_
   --
   , deleteFromCache: deleteFromCache_
+  --
+  , webGLRendererConnectionNoop: mempty
   }

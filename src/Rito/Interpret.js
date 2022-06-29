@@ -398,8 +398,11 @@ export const makeRenderPass_ = (a) => (state) => () => {
 	if (a.parent !== undefined) {
 		state.units[a.parent].main.addPass(pass);
 	}
-	setUpForRaycasting(a, state);
 };
+
+export const makeRaycaster_ = (a) => (state) => () => {
+		setUpForRaycasting(a, state);
+}
 
 export const makeGlitchPass_ = (a) => (state) => () => {
 	const pass = new a.glitchPass();
@@ -418,11 +421,8 @@ export const makeBloomPass_ = (a) => (state) => () => {
 };
 export const makeEffectComposer_ = (a) => (state) => () => {
 	const myId = a.id;
-	a.id = `${myId}_${Math.random()}`;
-	makeWebGLRendererInternal_(a,state);
-	const effectComposer = new a.effectComposer(state.units[a.id].main);
+	const effectComposer = new a.effectComposer(state.units[a.webGLRenderer].main);
 	state.units[myId] = {
-		renderer: a.id,
 		main: effectComposer,
 	};
 };
@@ -496,7 +496,6 @@ export const makeWebGLRendererInternal_ = (a, state) => {
 };
 export const makeWebGLRenderer_ = (a) => (state) => () => {
 	makeWebGLRendererInternal_(a, state);
-	setUpForRaycasting(a, state);
 };
 export const makeCSS2DRenderer_ = (a) => (state) => () => {
 	const { id, canvas, element } = a;

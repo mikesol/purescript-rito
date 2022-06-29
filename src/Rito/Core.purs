@@ -39,11 +39,15 @@ import Rito.Vector2 (Vector2)
 import Rito.Vector3 (Vector3)
 import Rito.WireframeLinecap (WireframeLinecap)
 import Rito.WireframeLinejoin (WireframeLinejoin)
+import Safe.Coerce (coerce)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM as Web.DOM
 import Web.HTML (HTMLCanvasElement)
 import Web.TouchEvent (Touch, TouchEvent)
 import Web.UIEvent.MouseEvent (MouseEvent)
+
+plain :: forall logic obj m lock. obj -> Entity logic obj m lock
+plain = Bolson.Element'
 
 class Sceneable ctor where
   toScene
@@ -74,6 +78,14 @@ type Ctor payload =
 type SimpleCtor payload =
   ThreeInterpret payload
   -> Event payload
+
+newtype WebGLRenderer (lock :: Type) payload = WebGLRenderer (Ctor payload)
+
+webGLRendererToRenderer
+  :: forall lock payload
+   . WebGLRenderer lock payload
+  -> Renderer lock payload
+webGLRendererToRenderer = coerce
 
 newtype Renderer (lock :: Type) payload = Renderer (Ctor payload)
 type ARenderer lock payload = Entity Void (Renderer lock payload) Effect lock
@@ -154,17 +166,16 @@ instance Groupable CSS3DObject where
   toGroup = unsafeCoerce
 
 type WebGLRender = { id :: String, scene :: String, camera :: String }
+type MakeRaycaster =
+  { id :: String
+  , camera :: String
+  , canvas :: HTMLCanvasElement
+  , raycaster :: THREE.TRaycaster
+  }
 type MakeEffectComposer =
   { id :: String
   , effectComposer :: THREE.TEffectComposer
-  | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
-      WPP.WebGLRenderingPowerPreference
-  }
-type MakeEffectComposer' =
-  { id :: String
-  , effectComposer :: THREE.TEffectComposer
-  | InitializeWebGLRenderer' String String
-
+  , webGLRenderer :: String
   }
 newtype InitializeEffectComposer = InitializeEffectComposer
   { effectComposer :: THREE.TEffectComposer
@@ -177,8 +188,6 @@ type MakeRenderPass f =
   , renderPass :: THREE.TRenderPass
   , camera :: String
   , scene :: String
-  , raycaster :: THREE.TRaycaster
-  , canvas :: HTMLCanvasElement
   }
 type MakeGlitchPass f =
   { id :: String
@@ -193,14 +202,12 @@ type MakeBloomPass f =
 type MakeWebGLRenderer =
   { id :: String
   , camera :: String
-  , raycaster :: THREE.TRaycaster
   | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
       WPP.WebGLRenderingPowerPreference
   }
 type MakeWebGLRenderer' =
   { id :: String
   , camera :: String
-  , raycaster :: THREE.TRaycaster
   | InitializeWebGLRenderer' String String
   }
 type InitializeWebGLRenderer' precision powerPreference =
@@ -219,7 +226,7 @@ type InitializeWebGLRenderer' precision powerPreference =
   )
 
 newtype InitializeWebGLRenderer = InitializeWebGLRenderer
-  { raycaster :: THREE.TRaycaster | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
+  { | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
       WPP.WebGLRenderingPowerPreference
   }
 
@@ -1143,7 +1150,8 @@ type SetDistance = { id :: String, distance :: Number }
 type SetDecay = { id :: String, decay :: Number }
 -- renderer
 type SetSize = { id :: String, width :: Number, height :: Number }
-type SetSizeThroughEffectComposer = { id :: String, width :: Number, height :: Number }
+type SetSizeThroughEffectComposer =
+  { id :: String, width :: Number, height :: Number }
 --
 type ConnectMesh =
   { id :: String
@@ -1398,6 +1406,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeWebGLRenderer :: MakeWebGLRenderer -> payload
   , makeCSS2DRenderer :: MakeCSS2DRenderer -> payload
   , makeCSS3DRenderer :: MakeCSS3DRenderer -> payload
+  , makeRaycaster :: MakeRaycaster -> payload
   , makeGroup :: MakeGroup Maybe Scope -> payload
   , makeGLTFGroup :: MakeGLTFGroup Maybe Scope -> payload
   , makeScene :: MakeScene Maybe Scope -> payload
@@ -1609,4 +1618,10 @@ newtype ThreeInterpret payload = ThreeInterpret
   , disconnectPass :: DisconnectPass -> payload
   --
   , deleteFromCache :: DeleteFromCache -> payload
+  --
+  -- when a webgl renderer is in a portal, like for example
+  -- if it is part of multiple render passes,
+  -- we always operate off of the raised ID and do not need
+  -- any additional connection logic
+  , webGLRendererConnectionNoop :: { } -> payload
   }
