@@ -87,6 +87,14 @@ webGLRendererToRenderer
   -> Renderer lock payload
 webGLRendererToRenderer = coerce
 
+newtype EffectComposer (lock :: Type) payload = EffectComposer (Ctor payload)
+
+effectComposerToRenderer
+  :: forall lock payload
+   . EffectComposer lock payload
+  -> Renderer lock payload
+effectComposerToRenderer = coerce
+
 newtype Renderer (lock :: Type) payload = Renderer (Ctor payload)
 type ARenderer lock payload = Entity Void (Renderer lock payload) Effect lock
 newtype Pass (lock :: Type) payload = Pass (Ctor payload)
@@ -200,6 +208,18 @@ type InitializeGlitchPass' =
   )
 newtype InitializeGlitchPass = InitializeGlitchPass
   { | InitializeGlitchPass'
+  }
+type MakeEffectComposerPass f =
+  { id :: String
+  , parent :: f String
+  , effectComposer :: String
+  | InitializeEffectComposerPass'
+  }
+type InitializeEffectComposerPass' =
+  ( effectComposerPass :: THREE.TEffectComposerPass
+  )
+newtype InitializeEffectComposerPass = InitializeEffectComposerPass
+  { | InitializeEffectComposerPass'
   }
 type MakeBloomPass f =
   { id :: String
@@ -1438,6 +1458,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeEffectComposer :: MakeEffectComposer -> payload
   , makeRenderPass :: MakeRenderPass Maybe -> payload
   , makeGlitchPass :: MakeGlitchPass Maybe -> payload
+  , makeEffectComposerPass :: MakeEffectComposerPass Maybe -> payload
   , makeBloomPass :: MakeBloomPass Maybe -> payload
   , makeUnrealBloomPass :: MakeUnrealBloomPass Maybe -> payload
   , makeWebGLRenderer :: MakeWebGLRenderer -> payload
@@ -1667,4 +1688,5 @@ newtype ThreeInterpret payload = ThreeInterpret
   -- we always operate off of the raised ID and do not need
   -- any additional connection logic
   , webGLRendererConnectionNoop :: {} -> payload
+  , effectComposerConnectionNoop :: {} -> payload
   }

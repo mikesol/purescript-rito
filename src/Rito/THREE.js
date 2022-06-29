@@ -163,3 +163,52 @@ export const unrealBloomPass = () =>
 	import("three/examples/jsm/postprocessing/UnrealBloomPass.js").then(
 		(r) => r.UnrealBloomPass
 	);
+
+export const effectComposerPass = () =>
+	Promise.all([
+		import("three/examples/jsm/postprocessing/ShaderPass.js"),
+		import("three/src/materials/ShaderMaterial.js"),
+	]).then(([sp, sm]) => {
+		class EffectComposerPass extends sp.ShaderPass {
+			constructor(effectComposer) {
+				super(
+					new sm.ShaderMaterial({
+						uniforms: {
+							tDiffuse: { value: null },
+							incomingTexture: {
+								value: effectComposer.renderTarget2.texture,
+							},
+						},
+
+						vertexShader: /* glsl */ `
+		varying vec2 vUv;
+		void main() {
+			vUv = uv;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+		}`,
+
+						fragmentShader: /* glsl */ `
+		uniform sampler2D tDiffuse;
+    uniform sampler2D incomingTexture;
+
+    varying vec2 vUv;
+
+    void main() {
+
+      gl_FragColor = ( texture2D( tDiffuse, vUv ) + texture2D( incomingTexture, vUv ) );
+
+    }`,
+					})
+				);
+				this.effectComposer = effectComposer;
+			}
+			render(renderer, writeBuffer, readBuffer, deltaTime, maskActive) {
+				this.effectComposer.renderToScreen = false;
+				this.effectComposer.render();
+				const buffy = this.effectComposer.renderTarget2.texture;
+				this.uniforms.incomingTexture.value = buffy;
+				super.render(renderer, writeBuffer, readBuffer, deltaTime, maskActive);
+			}
+		}
+		return EffectComposerPass;
+	});

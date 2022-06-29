@@ -47,6 +47,7 @@ data TRenderPass
 data TGlitchPass
 data TBloomPass
 data TUnrealBloomPass
+data TEffectComposerPass
 
 foreign import css2DRenderer :: Effect (Promise TCSS2DRenderer)
 foreign import css2DObject :: Effect (Promise TCSS2DObject)
@@ -91,6 +92,7 @@ foreign import renderPass :: Effect (Promise TRenderPass)
 foreign import glitchPass :: Effect (Promise TGlitchPass)
 foreign import bloomPass :: Effect (Promise TBloomPass)
 foreign import unrealBloomPass :: Effect (Promise TUnrealBloomPass)
+foreign import effectComposerPass :: Effect (Promise TEffectComposerPass)
 
 css2DRendererAff = toAffE css2DRenderer :: Aff TCSS2DRenderer
 css2DObjectAff = toAffE css2DObject :: Aff TCSS2DObject
@@ -135,3 +137,4 @@ renderPassAff = toAffE renderPass :: Aff TRenderPass
 glitchPassAff = toAffE glitchPass :: Aff TGlitchPass
 bloomPassAff = toAffE bloomPass :: Aff TBloomPass
 unrealBloomPassAff = toAffE unrealBloomPass :: Aff TUnrealBloomPass
+effectComposerPassAff = toAffE effectComposerPass :: Aff TEffectComposerPass

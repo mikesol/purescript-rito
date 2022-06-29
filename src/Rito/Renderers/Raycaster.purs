@@ -42,7 +42,7 @@ raycaster i cam = Bolson.Element' $ C.Renderer go
           [ cam # \(C.Camera gooo) -> gooo
               { parent: Just me
               , scope: Local scope
-              , raiseId: \i -> Ref.write (Just i) cameraAvar
+              , raiseId: \ii -> Ref.write (Just ii) cameraAvar
               }
               di
           ]

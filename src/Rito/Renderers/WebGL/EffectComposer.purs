@@ -3,7 +3,7 @@ module Rito.Renderers.WebGL.EffectComposer where
 import Prelude
 
 import Bolson.Control (flatten)
-import Bolson.Core (Entity(..), Scope(..), fixed)
+import Bolson.Core (Scope(..), fixed)
 import Bolson.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
@@ -25,8 +25,8 @@ effectComposer
   -> C.WebGLRenderer lock payload
   -> Event EffectComposer
   -> Array (C.APass lock payload)
-  -> C.ARenderer lock payload
-effectComposer i rndr props kidz = Element' $ C.Renderer go
+  -> C.EffectComposer lock payload
+effectComposer i rndr props kidz = C.EffectComposer go
   where
   go
     parent

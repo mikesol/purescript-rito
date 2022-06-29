@@ -3,7 +3,6 @@ module Rito.Renderers.WebGL where
 import Prelude
 
 import Bolson.Core (Scope(..))
-import Bolson.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))

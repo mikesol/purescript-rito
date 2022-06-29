@@ -412,6 +412,14 @@ export const makeGlitchPass_ = (a) => (state) => () => {
 	}
 };
 
+export const makeEffectComposerPass_ = (a) => (state) => () => {
+		const pass = new a.effectComposerPass(state.units[a.effectComposer].main);
+		state.units[a.id] = { main: pass };
+		if (a.parent !== undefined) {
+			state.units[a.parent].main.addPass(pass);
+		}
+}
+
 export const makeBloomPass_ = (a) => (state) => () => {
 	const pass = new a.bloomPass(
 		a.strength,

@@ -168,7 +168,7 @@ globalCameraPortal1
   -> Entity Void (obj lock payload) Effect lock
 globalCameraPortal1 v c = globalCameraPortal (singleton v) (lcmap (index (Proxy :: _ 0)) c)
 
--- camera
+-- webgl renderer
 globalWebGLRendererPortal
   :: forall n obj lock payload
    . Compare n (-1) GT
@@ -203,3 +203,39 @@ globalWebGLRendererPortal1
   -> (C.WebGLRenderer lock payload -> Entity Void (obj lock payload) Effect lock)
   -> Entity Void (obj lock payload) Effect lock
 globalWebGLRendererPortal1 v c = globalWebGLRendererPortal (singleton v) (lcmap (index (Proxy :: _ 0)) c)
+
+-- webgl renderer
+globalEffectComposerPortal
+  :: forall n obj lock payload
+   . Compare n (-1) GT
+  => Portable obj
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect lock payload)
+  => Vect n (C.EffectComposer lock payload)
+  -> (Vect n (C.EffectComposer lock payload) -> Entity Void (obj lock payload) Effect lock)
+  -> Entity Void (obj lock payload) Effect lock
+globalEffectComposerPortal v c =
+  Bolson.globalPortalSimpleComplex
+    { doLogic: absurd
+    , ids: unwrap >>> _.ids
+    , disconnectElement:
+        \(C.ThreeInterpret { disconnect }) { id, scope, parent } ->
+          disconnect { id, scope, parent }
+    , toElt: coerce
+    }
+    { fromEltO1: coerce
+    , fromEltO2: coerce
+    , toElt: coerce
+    , giveNewParent: \a _ _  -> (unwrap a).effectComposerConnectionNoop {}
+    , deleteFromCache: unwrap >>> _.deleteFromCache
+    }
+    v
+    (lcmap (map (_ $ unit)) c)
+
+globalEffectComposerPortal1
+  :: forall obj lock payload
+   . Portable obj
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect lock payload)
+  => C.EffectComposer lock payload
+  -> (C.EffectComposer lock payload -> Entity Void (obj lock payload) Effect lock)
+  -> Entity Void (obj lock payload) Effect lock
+globalEffectComposerPortal1 v c = globalEffectComposerPortal (singleton v) (lcmap (index (Proxy :: _ 0)) c)
