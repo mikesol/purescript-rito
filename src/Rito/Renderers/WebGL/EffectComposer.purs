@@ -23,8 +23,7 @@ effectComposer
   :: forall lock payload
    . { effectComposer :: THREE.TEffectComposer
      }
-  -- todo: we need to enforce this being a webgl renderer!
-  -> C.Renderer lock payload
+  -> C.WebGLRenderer lock payload
   -> Event EffectComposer
   -> Array (C.APass lock payload)
   -> C.ARenderer lock payload
@@ -46,7 +45,7 @@ effectComposer i rndr props kidz = Element' $ C.Renderer go
     rendererAvar <- Ref.new Nothing
     u0 <- subscribe
       ( oneOf
-          [ rndr # \(C.Renderer gooo) -> gooo
+          [ rndr # \(C.WebGLRenderer gooo) -> gooo
               { parent: Just me
               , scope: Local scope
               , raiseId: \iii -> Ref.write (Just iii) rendererAvar
