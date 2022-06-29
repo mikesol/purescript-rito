@@ -3,7 +3,6 @@ module Rito.Renderers.WebGL where
 import Prelude
 
 import Bolson.Core (Scope(..))
-import Bolson.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
@@ -24,13 +23,6 @@ instance
     "canvas"
     HTMLCanvasElement
     HTMLCanvasElement where
-  convertOption _ _ = identity
-
-instance
-  ConvertOption WebGLRendererOptions
-    "raycaster"
-    THREE.TRaycaster
-    THREE.TRaycaster where
   convertOption _ _ = identity
 
 instance
@@ -126,7 +118,6 @@ type WebGLRendererOptional =
 type WebGLRendererAll =
   ( canvas :: HTMLCanvasElement
   , webGLRenderer :: THREE.TWebGLRenderer
-  , raycaster :: THREE.TRaycaster
   | WebGLRendererOptional
   )
 
@@ -175,8 +166,8 @@ webGLRenderer
   -> C.Camera lock payload
   -> i
   -> Event WebGLRenderer
-  -> C.ARenderer lock payload
-webGLRenderer sne cam i' props = Bolson.Element' $ C.Renderer go
+  -> C.WebGLRenderer lock payload
+webGLRenderer sne cam i' props = C.WebGLRenderer go
   where
   C.InitializeWebGLRenderer i = toInitializeWebGLRenderer i'
   go
@@ -223,7 +214,6 @@ webGLRenderer sne cam i' props = Bolson.Element' $ C.Renderer go
               [ bang $ makeWebGLRenderer
                   { id: me
                   , webGLRenderer: i.webGLRenderer
-                  , raycaster: i.raycaster
                   , canvas: i.canvas
                   , camera: cameraId
                   , precision: i.precision

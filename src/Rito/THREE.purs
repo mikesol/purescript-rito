@@ -42,6 +42,12 @@ data TBufferAttribute
 data TInstancedBufferAttribute
 data TPoints
 data TBufferGeometry
+data TEffectComposer
+data TRenderPass
+data TGlitchPass
+data TBloomPass
+data TUnrealBloomPass
+data TEffectComposerPass
 
 foreign import css2DRenderer :: Effect (Promise TCSS2DRenderer)
 foreign import css2DObject :: Effect (Promise TCSS2DObject)
@@ -81,6 +87,12 @@ foreign import bufferAttribute :: Effect (Promise TBufferAttribute)
 foreign import instancedBufferAttribute :: Effect (Promise TInstancedBufferAttribute)
 foreign import points :: Effect (Promise TPoints)
 foreign import bufferGeometry :: Effect (Promise TBufferGeometry)
+foreign import effectComposer :: Effect (Promise TEffectComposer)
+foreign import renderPass :: Effect (Promise TRenderPass)
+foreign import glitchPass :: Effect (Promise TGlitchPass)
+foreign import bloomPass :: Effect (Promise TBloomPass)
+foreign import unrealBloomPass :: Effect (Promise TUnrealBloomPass)
+foreign import effectComposerPass :: Effect (Promise TEffectComposerPass)
 
 css2DRendererAff = toAffE css2DRenderer :: Aff TCSS2DRenderer
 css2DObjectAff = toAffE css2DObject :: Aff TCSS2DObject
@@ -120,3 +132,9 @@ instancedBufferAttributeAff = toAffE instancedBufferAttribute :: Aff TInstancedB
 pointsAff = toAffE points :: Aff TPoints
 meshPhongMaterialAff = toAffE meshPhongMaterial :: Aff TMeshPhongMaterial
 bufferGeometryAff = toAffE bufferGeometry :: Aff TBufferGeometry
+effectComposerAff = toAffE effectComposer :: Aff TEffectComposer
+renderPassAff = toAffE renderPass :: Aff TRenderPass
+glitchPassAff = toAffE glitchPass :: Aff TGlitchPass
+bloomPassAff = toAffE bloomPass :: Aff TBloomPass
+unrealBloomPassAff = toAffE unrealBloomPass :: Aff TUnrealBloomPass
+effectComposerPassAff = toAffE effectComposerPass :: Aff TEffectComposerPass

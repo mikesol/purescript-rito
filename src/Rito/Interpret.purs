@@ -54,12 +54,20 @@ foreign import makeFFIThreeSnapshot :: Effect FFIThreeSnapshot
 
 --
 foreign import webGLRender_ :: Core.WebGLRender -> Payload
+foreign import effectComposerRender_ :: Core.EffectComposerRender -> Payload
 foreign import css2DRender_ :: Core.CSS2DRender -> Payload
 foreign import css3DRender_ :: Core.CSS3DRender -> Payload
 --
+foreign import makeRenderPass_ :: Core.MakeRenderPass Undefinable -> Payload
+foreign import makeEffectComposerPass_ :: Core.MakeEffectComposerPass Undefinable -> Payload
+foreign import makeBloomPass_ :: Core.MakeBloomPass Undefinable -> Payload
+foreign import makeUnrealBloomPass_ :: Core.MakeUnrealBloomPass Undefinable -> Payload
+foreign import makeGlitchPass_ :: Core.MakeGlitchPass Undefinable -> Payload
+foreign import makeEffectComposer_ :: Core.MakeEffectComposer -> Payload
 foreign import makeWebGLRenderer_ :: Core.MakeWebGLRenderer' -> Payload
 foreign import makeCSS2DRenderer_ :: Core.MakeCSS2DRenderer -> Payload
 foreign import makeCSS3DRenderer_ :: Core.MakeCSS3DRenderer -> Payload
+foreign import makeRaycaster_ :: Core.MakeRaycaster -> Payload
 foreign import makePointLight_
   :: Core.MakePointLight Undefinable (Undefinable String) -> Payload
 foreign import makeAmbientLight_
@@ -118,6 +126,10 @@ foreign import setSingleInstancedMeshColor_
 foreign import setWidth_ :: Core.SetWidth -> Payload
 foreign import setHeight_ :: Core.SetHeight -> Payload
 foreign import setDepth_ :: Core.SetDepth -> Payload
+--
+foreign import setThreshold_ :: Core.SetThreshold -> Payload
+foreign import setStrength_ :: Core.SetStrength -> Payload
+foreign import setResolution_ :: Core.SetResolution -> Payload
 --
 foreign import setRadius_ :: Core.SetRadius -> Payload
 foreign import setLength_ :: Core.SetLength -> Payload
@@ -277,6 +289,7 @@ foreign import setScaleY_ :: Core.SetScaleY -> Payload
 foreign import setScaleZ_ :: Core.SetScaleZ -> Payload
 -- renderer
 foreign import setSize_ :: Core.SetSize -> Payload
+foreign import setSizeThroughEffectComposer_ :: Core.SetSizeThroughEffectComposer -> Payload
 -- perspective camera
 foreign import setAspect_ :: Core.SetAspect -> Payload
 foreign import setFar_ :: Core.SetFar -> Payload
@@ -296,6 +309,7 @@ foreign import connectCamera_ :: Core.ConnectCamera -> Payload
 foreign import connectGeometry_ :: Core.ConnectGeometry -> Payload
 foreign import connectMaterial_ :: Core.ConnectMaterial -> Payload
 foreign import disconnect_ :: Core.Disconnect -> Payload
+foreign import disconnectPass_ :: Core.DisconnectPass -> Payload
 
 class FFIMe i o | i -> o where
   ffiMe :: i -> o
@@ -494,6 +508,25 @@ instance FFIMe THREE.TBox3 THREE.TBox3 where
 instance FFIMe THREE.TScene THREE.TScene where
   ffiMe = identity
 
+instance FFIMe THREE.TRenderPass THREE.TRenderPass where
+  ffiMe = identity
+
+instance FFIMe THREE.TGlitchPass THREE.TGlitchPass where
+  ffiMe = identity
+
+instance FFIMe THREE.TBloomPass THREE.TBloomPass where
+  ffiMe = identity
+
+instance FFIMe THREE.TUnrealBloomPass THREE.TUnrealBloomPass where
+  ffiMe = identity
+
+instance FFIMe THREE.TEffectComposerPass THREE.TEffectComposerPass where
+  ffiMe = identity
+
+
+instance FFIMe THREE.TEffectComposer THREE.TEffectComposer where
+  ffiMe = identity
+
 instance FFIMe THREE.TWebGLRenderer THREE.TWebGLRenderer where
   ffiMe = identity
 
@@ -582,13 +615,21 @@ effectfulThreeInterpret :: Core.ThreeInterpret (Payload)
 effectfulThreeInterpret = Core.ThreeInterpret
   { ids: map show R.random
   -- render
+  , effectComposerRender: effectComposerRender_
   , webGLRender: webGLRender_
   , css2DRender: css2DRender_
   , css3DRender: css3DRender_
   -- makers
+  , makeRenderPass: lcmap ffiize makeRenderPass_
+  , makeEffectComposerPass: lcmap ffiize makeEffectComposerPass_
+  , makeGlitchPass: lcmap ffiize makeGlitchPass_
+  , makeBloomPass: lcmap ffiize makeBloomPass_
+  , makeUnrealBloomPass: lcmap ffiize makeUnrealBloomPass_
+  , makeEffectComposer: lcmap ffiize makeEffectComposer_
   , makeWebGLRenderer: lcmap ffiize makeWebGLRenderer_
   , makeCSS2DRenderer: lcmap ffiize makeCSS2DRenderer_
   , makeCSS3DRenderer: lcmap ffiize makeCSS3DRenderer_
+  , makeRaycaster: lcmap ffiize makeRaycaster_
   , makeScene: lcmap ffiize makeScene_
   , makeGroup: lcmap ffiize makeGroup_
   , makeGLTFGroup: lcmap ffiize makeGLTFGroup_
@@ -787,6 +828,11 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , setViewOffset: setViewOffset_
   -- renderer
   , setSize: setSize_
+  , setSizeThroughEffectComposer: setSizeThroughEffectComposer_
+  -- passes
+  , setThreshold: setThreshold_
+  , setStrength: setStrength_
+  , setResolution: setResolution_
   -- connectors
   , connectMesh: connectMesh_
   , connectScene: connectScene_
@@ -795,6 +841,10 @@ effectfulThreeInterpret = Core.ThreeInterpret
   , connectMaterial: connectMaterial_
   , connectToScene: connectToScene_
   , disconnect: disconnect_
+  , disconnectPass: disconnectPass_
   --
   , deleteFromCache: deleteFromCache_
+  --
+  , webGLRendererConnectionNoop: mempty
+  , effectComposerConnectionNoop: mempty
   }

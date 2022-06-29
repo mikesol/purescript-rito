@@ -39,11 +39,15 @@ import Rito.Vector2 (Vector2)
 import Rito.Vector3 (Vector3)
 import Rito.WireframeLinecap (WireframeLinecap)
 import Rito.WireframeLinejoin (WireframeLinejoin)
+import Safe.Coerce (coerce)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM as Web.DOM
 import Web.HTML (HTMLCanvasElement)
 import Web.TouchEvent (Touch, TouchEvent)
 import Web.UIEvent.MouseEvent (MouseEvent)
+
+plain :: forall logic obj m lock. obj -> Entity logic obj m lock
+plain = Bolson.Element'
 
 class Sceneable ctor where
   toScene
@@ -75,8 +79,26 @@ type SimpleCtor payload =
   ThreeInterpret payload
   -> Event payload
 
+newtype WebGLRenderer (lock :: Type) payload = WebGLRenderer (Ctor payload)
+
+webGLRendererToRenderer
+  :: forall lock payload
+   . WebGLRenderer lock payload
+  -> Renderer lock payload
+webGLRendererToRenderer = coerce
+
+newtype EffectComposer (lock :: Type) payload = EffectComposer (Ctor payload)
+
+effectComposerToRenderer
+  :: forall lock payload
+   . EffectComposer lock payload
+  -> Renderer lock payload
+effectComposerToRenderer = coerce
+
 newtype Renderer (lock :: Type) payload = Renderer (Ctor payload)
 type ARenderer lock payload = Entity Void (Renderer lock payload) Effect lock
+newtype Pass (lock :: Type) payload = Pass (Ctor payload)
+type APass lock payload = Entity Void (Pass lock payload) Effect lock
 newtype Light (lock :: Type) payload = Light (Ctor payload)
 type ALight lock payload = Entity Void (Light lock payload) Effect lock
 newtype CSS2DObject (lock :: Type) payload = CSS2DObject (Ctor payload)
@@ -152,6 +174,83 @@ instance Groupable CSS3DObject where
   toGroup = unsafeCoerce
 
 type WebGLRender = { id :: String, scene :: String, camera :: String }
+type MakeRaycaster =
+  { id :: String
+  , camera :: String
+  , canvas :: HTMLCanvasElement
+  , raycaster :: THREE.TRaycaster
+  }
+type MakeEffectComposer =
+  { id :: String
+  , effectComposer :: THREE.TEffectComposer
+  , webGLRenderer :: String
+  }
+newtype InitializeEffectComposer = InitializeEffectComposer
+  { effectComposer :: THREE.TEffectComposer
+  | InitializeWebGLRenderer' WRP.WebGLRenderingPrecision
+      WPP.WebGLRenderingPowerPreference
+  }
+type MakeRenderPass f =
+  { id :: String
+  , parent :: f String
+  , renderPass :: THREE.TRenderPass
+  , camera :: String
+  , scene :: String
+  }
+type MakeGlitchPass f =
+  { id :: String
+  , parent :: f String
+  | InitializeGlitchPass'
+  }
+type InitializeGlitchPass' =
+  ( glitchPass :: THREE.TGlitchPass
+  , dtSize :: Int
+  )
+newtype InitializeGlitchPass = InitializeGlitchPass
+  { | InitializeGlitchPass'
+  }
+type MakeEffectComposerPass f =
+  { id :: String
+  , parent :: f String
+  , effectComposer :: String
+  | InitializeEffectComposerPass'
+  }
+type InitializeEffectComposerPass' =
+  ( effectComposerPass :: THREE.TEffectComposerPass
+  )
+newtype InitializeEffectComposerPass = InitializeEffectComposerPass
+  { | InitializeEffectComposerPass'
+  }
+type MakeBloomPass f =
+  { id :: String
+  , parent :: f String
+  | InitializeBloomPass'
+  }
+type InitializeBloomPass' =
+  ( bloomPass :: THREE.TBloomPass
+  , strength :: Number
+  , kernelSize :: Int
+  , sigma :: Number
+  , resolution :: Int
+  )
+newtype InitializeBloomPass = InitializeBloomPass
+  { | InitializeBloomPass'
+  }
+type MakeUnrealBloomPass f =
+  { id :: String
+  , parent :: f String
+  | InitializeUnrealBloomPass'
+  }
+type InitializeUnrealBloomPass' =
+  ( unrealBloomPass :: THREE.TUnrealBloomPass
+  , resolution :: Vector2
+  , strength :: Number
+  , radius :: Number
+  , threshold :: Number
+  )
+newtype InitializeUnrealBloomPass = InitializeUnrealBloomPass
+  { | InitializeUnrealBloomPass'
+  }
 type MakeWebGLRenderer =
   { id :: String
   , camera :: String
@@ -166,7 +265,6 @@ type MakeWebGLRenderer' =
 type InitializeWebGLRenderer' precision powerPreference =
   ( canvas :: HTMLCanvasElement
   , webGLRenderer :: THREE.TWebGLRenderer
-  , raycaster :: THREE.TRaycaster
   , precision :: precision
   , alpha :: Boolean
   , premultipliedAlpha :: Boolean
@@ -185,7 +283,7 @@ newtype InitializeWebGLRenderer = InitializeWebGLRenderer
   }
 
 type CSS2DRender = { id :: String, scene :: String, camera :: String }
-
+type EffectComposerRender = { id :: String }
 type MakeCSS2DRenderer =
   { id :: String
   , camera :: String
@@ -880,6 +978,10 @@ type SetToneMapped = { id :: String, toneMapped :: Boolean }
 type SetTransparent = { id :: String, transparent :: Boolean }
 type SetVertexColors = { id :: String, vertexColors :: Boolean }
 type SetVisible = { id :: String, visible :: Boolean }
+-- unreal bloom
+type SetResolution = { id :: String, resolution :: Vector2 }
+type SetStrength = { id :: String, strength :: Number }
+type SetThreshold = { id :: String, threshold :: Number }
 --
 type SetWidth = { id :: String, width :: Number }
 type SetHeight = { id :: String, height :: Number }
@@ -1104,6 +1206,8 @@ type SetDistance = { id :: String, distance :: Number }
 type SetDecay = { id :: String, decay :: Number }
 -- renderer
 type SetSize = { id :: String, width :: Number, height :: Number }
+type SetSizeThroughEffectComposer =
+  { id :: String, width :: Number, height :: Number }
 --
 type ConnectMesh =
   { id :: String
@@ -1116,6 +1220,11 @@ type ConnectToScene =
   , scope :: Scope
   }
 type Disconnect =
+  { id :: String
+  , parent :: String
+  , scope :: Scope
+  }
+type DisconnectPass =
   { id :: String
   , parent :: String
   , scope :: Scope
@@ -1341,13 +1450,21 @@ object3D
 
 newtype ThreeInterpret payload = ThreeInterpret
   { ids :: Effect String
+  , effectComposerRender :: EffectComposerRender -> payload
   , webGLRender :: WebGLRender -> payload
   , css2DRender :: CSS2DRender -> payload
   , css3DRender :: CSS3DRender -> payload
   --
+  , makeEffectComposer :: MakeEffectComposer -> payload
+  , makeRenderPass :: MakeRenderPass Maybe -> payload
+  , makeGlitchPass :: MakeGlitchPass Maybe -> payload
+  , makeEffectComposerPass :: MakeEffectComposerPass Maybe -> payload
+  , makeBloomPass :: MakeBloomPass Maybe -> payload
+  , makeUnrealBloomPass :: MakeUnrealBloomPass Maybe -> payload
   , makeWebGLRenderer :: MakeWebGLRenderer -> payload
   , makeCSS2DRenderer :: MakeCSS2DRenderer -> payload
   , makeCSS3DRenderer :: MakeCSS3DRenderer -> payload
+  , makeRaycaster :: MakeRaycaster -> payload
   , makeGroup :: MakeGroup Maybe Scope -> payload
   , makeGLTFGroup :: MakeGLTFGroup Maybe Scope -> payload
   , makeScene :: MakeScene Maybe Scope -> payload
@@ -1371,6 +1488,12 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeGLTFCamera :: MakeGLTFCamera Maybe Scope -> payload
   , makeCSS2DObject :: MakeCSS2DObject Maybe Scope -> payload
   , makeCSS3DObject :: MakeCSS3DObject Maybe Scope -> payload
+  -- passes
+  ---- unreal bloom pass
+  -- radius already exists elsewhere
+  , setResolution :: SetResolution -> payload
+  , setStrength :: SetStrength -> payload
+  , setThreshold :: SetThreshold -> payload
   -- scene
   , setBackgroundCubeTexture :: SetBackgroundCubeTexture -> payload
   , setBackgroundTexture :: SetBackgroundTexture -> payload
@@ -1546,6 +1669,8 @@ newtype ThreeInterpret payload = ThreeInterpret
   , setDecay :: SetDecay -> payload
   -- webgl
   , setSize :: SetSize -> payload
+  -- effect composer
+  , setSizeThroughEffectComposer :: SetSizeThroughEffectComposer -> payload
   -- connectors
   , connectMesh :: ConnectMesh -> payload
   , connectScene :: ConnectScene -> payload
@@ -1554,6 +1679,14 @@ newtype ThreeInterpret payload = ThreeInterpret
   , connectMaterial :: ConnectMaterial -> payload
   , connectToScene :: ConnectToScene -> payload
   , disconnect :: Disconnect -> payload
+  , disconnectPass :: DisconnectPass -> payload
   --
   , deleteFromCache :: DeleteFromCache -> payload
+  --
+  -- when a webgl renderer is in a portal, like for example
+  -- if it is part of multiple render passes,
+  -- we always operate off of the raised ID and do not need
+  -- any additional connection logic
+  , webGLRendererConnectionNoop :: {} -> payload
+  , effectComposerConnectionNoop :: {} -> payload
   }

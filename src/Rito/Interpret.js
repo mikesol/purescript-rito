@@ -147,7 +147,7 @@ export const makePerspectiveCamera_ = (a) => (state) => () => {
 	)(() => {})(a)(state)();
 };
 export const makeGLTFCamera_ = (a) => (state) => () => {
-	genericMake_(({ camera}) => camera)(() => {})(a)(state)();
+	genericMake_(({ camera }) => camera)(() => {})(a)(state)();
 };
 
 const ascSort = function (a, b) {
@@ -309,6 +309,9 @@ export const makeMeshStandardMaterial_ = genericMake_(
 export const setSize_ = (a) => (state) => () => {
 	state.units[a.id].main.setSize(a.width, a.height);
 };
+export const setSizeThroughEffectComposer_ = (a) => (state) => () => {
+	state.units[a.id].main.renderer.setSize(a.width, a.height);
+};
 export const makeScene_ = genericMake_((ctor) => new ctor.scene())(() => {});
 export const makeGroup_ = genericMake_((ctor) => new ctor.group())((x, y) => {
 	y.main.add(x.main);
@@ -316,6 +319,9 @@ export const makeGroup_ = genericMake_((ctor) => new ctor.group())((x, y) => {
 export const makeGLTFGroup_ = genericMake_(({ group }) => group)((x, y) => {
 	y.main.add(x.main);
 });
+export const effectComposerRender_ = (a) => (state) => () => {
+	state.units[a.id].main.render();
+};
 export const webGLRender_ = (a) => (state) => () => {
 	state.units[a.id].main.render(
 		state.units[a.scene].main,
@@ -383,18 +389,69 @@ const assignThunk = (k, thunk, eventName, state) => {
 	}
 };
 
-export const makeWebGLRenderer_ = (a) => (state) => () => {
-	const { id, ...parameters } = a;
-	const canvas = parameters.canvas;
-	const renderer = new a.webGLRenderer(parameters);
-	state.units[a.id] = { main: renderer };
-	renderer.setSize(canvas.width, canvas.height);
-	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-	const raycaster = new a.raycaster();
+export const makeRenderPass_ = (a) => (state) => () => {
+	const pass = new a.renderPass(
+		state.units[a.scene].main,
+		state.units[a.camera].main
+	);
+	state.units[a.id] = { main: pass };
+	if (a.parent !== undefined) {
+		state.units[a.parent].main.addPass(pass);
+	}
+};
+
+export const makeRaycaster_ = (a) => (state) => () => {
+		setUpForRaycasting(a, state);
+}
+
+export const makeGlitchPass_ = (a) => (state) => () => {
+	const pass = new a.glitchPass(a.dtSize);
+	state.units[a.id] = { main: pass };
+	if (a.parent !== undefined) {
+		state.units[a.parent].main.addPass(pass);
+	}
+};
+
+export const makeEffectComposerPass_ = (a) => (state) => () => {
+		const pass = new a.effectComposerPass(state.units[a.effectComposer].main);
+		state.units[a.id] = { main: pass };
+		if (a.parent !== undefined) {
+			state.units[a.parent].main.addPass(pass);
+		}
+}
+
+export const makeBloomPass_ = (a) => (state) => () => {
+	const pass = new a.bloomPass(
+		a.strength,
+	  a.kernelSize,
+		a.sigma,
+		a.resolution
+	);
+	state.units[a.id] = { main: pass };
+	if (a.parent !== undefined) {
+		state.units[a.parent].main.addPass(pass);
+	}
+};
+export const makeUnrealBloomPass_ = (a) => (state) => () => {
+	const pass = new a.unrealBloomPass(a.resolution, a.strength, a.radius, a.threshold);
+	state.units[a.id] = { main: pass };
+	if (a.parent !== undefined) {
+		state.units[a.parent].main.addPass(pass);
+	}
+};
+export const makeEffectComposer_ = (a) => (state) => () => {
+	const myId = a.id;
+	const effectComposer = new a.effectComposer(state.units[a.webGLRenderer].main);
+	state.units[myId] = {
+		main: effectComposer,
+	};
+};
+const setUpForRaycasting = (parameters, state) => {
+	const raycaster = new parameters.raycaster();
 	const camera = state.units[parameters.camera].main;
 
 	const makeListener = (eventName) => {
-		canvas.addEventListener(eventName, ($e) => {
+		parameters.canvas.addEventListener(eventName, ($e) => {
 			const entries = Object.entries(state.listeners[eventName]);
 			const es =
 				eventName.indexOf("touch") !== -1 ? getAllTouches($e.touches) : [$e];
@@ -447,6 +504,18 @@ export const makeWebGLRenderer_ = (a) => (state) => () => {
 	makeListener("touchend");
 	makeListener("touchmove");
 	makeListener("touchcancel");
+};
+
+export const makeWebGLRendererInternal_ = (a, state) => {
+	const { id, ...parameters } = a;
+	const canvas = parameters.canvas;
+	const renderer = new a.webGLRenderer(parameters);
+	state.units[a.id] = { main: renderer };
+	renderer.setSize(canvas.width, canvas.height);
+	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+};
+export const makeWebGLRenderer_ = (a) => (state) => () => {
+	makeWebGLRendererInternal_(a, state);
 };
 export const makeCSS2DRenderer_ = (a) => (state) => () => {
 	const { id, canvas, element } = a;
@@ -715,6 +784,16 @@ export const setBackgroundTexture_ = (a) => (state) => () => {
 };
 export const setBackgroundCubeTexture_ = (a) => (state) => () => {
 	state.units[a.id].main.background = a.cubeTexture;
+};
+// unrealBloom
+export const setThreshold_ = (a) => (state) => () => {
+	state.units[a.id].main.threshold = a.threshold;
+};
+export const setStrength_ = (a) => (state) => () => {
+	state.units[a.id].main.strength = a.strength;
+};
+export const setResolution_ = (a) => (state) => () => {
+	state.units[a.id].main.resolution = a.resolution;
 };
 // sphere
 export const setRadius_ = (a) => (state) => () => {
@@ -1085,6 +1164,15 @@ export function disconnect_(a) {
 	};
 }
 
+export function disconnectPass_(a) {
+	return function (state) {
+		return function () {
+			const ptr = a.id;
+			const parent = a.parent;
+			state.units[parent].main.removePass(state.units[ptr].main);
+		};
+	};
+}
 export function deleteFromCache_(a) {
 	return function (state) {
 		return function () {

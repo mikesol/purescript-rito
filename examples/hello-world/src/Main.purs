@@ -53,7 +53,7 @@ import Rito.Blending (Blending(..))
 import Rito.CSS.CSS2DObject (css2DObject)
 import Rito.Cameras.PerspectiveCamera (perspectiveCamera)
 import Rito.Color (RGB(..), color)
-import Rito.Core (Renderer(..), toScene)
+import Rito.Core (Renderer(..), plain, toScene, webGLRendererToRenderer)
 import Rito.Geometries.Plane (plane)
 import Rito.Geometries.Sphere (sphere)
 import Rito.InstancedMesh (instancedMesh, setter)
@@ -378,12 +378,11 @@ void main()
             )
             \myCamera ->
               ( fixed
-                  [ webGLRenderer
+                  [ plain $ webGLRendererToRenderer $ webGLRenderer
                       myScene
                       myCamera
                       { canvas: e
                       , webGLRenderer: tdi.webGLRenderer
-                      , raycaster: tdi.raycaster
                       }
                       ( oneOf
                           [ bang (size { width: iw, height: ih })
