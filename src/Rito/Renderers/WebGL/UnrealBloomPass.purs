@@ -1,4 +1,4 @@
-module Rito.Renderers.WebGL.UnrealUnrealBloomPass where
+module Rito.Renderers.WebGL.UnrealBloomPass where
 
 import Prelude
 
