@@ -194,9 +194,10 @@ export const effectComposerPass = () =>
     varying vec2 vUv;
 
     void main() {
-
-      gl_FragColor = ( texture2D( tDiffuse, vUv ) + texture2D( incomingTexture, vUv ) );
-
+			vec4 background = texture2D( tDiffuse, vUv );
+			vec4 foreground = texture2D( incomingTexture, vUv );
+      background.rgb *= (1.0 - foreground.a);
+			gl_FragColor = background + foreground;
     }`,
 					})
 				);
@@ -205,8 +206,8 @@ export const effectComposerPass = () =>
 			render(renderer, writeBuffer, readBuffer, deltaTime, maskActive) {
 				this.effectComposer.renderToScreen = false;
 				this.effectComposer.render();
-				const buffy = this.effectComposer.renderTarget2.texture;
-				this.uniforms.incomingTexture.value = buffy;
+				this.uniforms.incomingTexture.value =
+					this.effectComposer.renderTarget2.texture;
 				super.render(renderer, writeBuffer, readBuffer, deltaTime, maskActive);
 			}
 		}
