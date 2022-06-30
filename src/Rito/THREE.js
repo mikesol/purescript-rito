@@ -196,7 +196,11 @@ export const effectComposerPass = () =>
     void main() {
 			vec4 background = texture2D( tDiffuse, vUv );
 			vec4 foreground = texture2D( incomingTexture, vUv );
-      background.rgb *= (1.0 - ((foreground.r + foreground.g + foreground.b) / 3.0));
+			float mulFac = 1.0;
+			if (((foreground.r + foreground.g + foreground.b) / 3.0) > 0.02)) {
+				mulFac = 0.0;
+			}
+      background.rgb *= mulFac;
 			gl_FragColor = background + foreground;
     }`,
 					})
