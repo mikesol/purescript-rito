@@ -170,7 +170,7 @@ export const effectComposerPass = () =>
 		import("three/src/materials/ShaderMaterial.js"),
 	]).then(([sp, sm]) => {
 		class EffectComposerPass extends sp.ShaderPass {
-			constructor(effectComposer) {
+			constructor(effectComposer, threshold = 0.1) {
 				super(
 					new sm.ShaderMaterial({
 						uniforms: {
@@ -197,7 +197,7 @@ export const effectComposerPass = () =>
 			vec4 background = texture2D( tDiffuse, vUv );
 			vec4 foreground = texture2D( incomingTexture, vUv );
 			float mulFac = 1.0;
-			if (foreground.r + foreground.g + foreground.b > 0.03) {
+			if (foreground.r + foreground.g + foreground.b > ${threshold}) {
 				mulFac = 0.0;
 			}
       background.rgb *= mulFac;
