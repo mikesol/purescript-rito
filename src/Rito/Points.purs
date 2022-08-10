@@ -11,7 +11,7 @@ import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import Effect (Effect)
 import Effect.Ref as Ref
-import FRP.Event (Event, bang, makeEvent, subscribe)
+import FRP.Event (Event,  makeEvent, subscribe)
 import Foreign.Object (Object)
 import Foreign.Object as Object
 import Heterogeneous.Mapping (class Mapping, hmap)
@@ -87,7 +87,7 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
       oneOf
-        [ bang $ makePoints
+        [ pure $ makePoints
             { id: me
             , parent: parent.parent
             , scope: parent.scope

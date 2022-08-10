@@ -21,7 +21,7 @@ import Data.Reflectable (class Reflectable, reflectType)
 import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Variant (Variant, match)
 import Effect.Ref as Ref
-import FRP.Event (Event, bang, makeEvent, subscribe)
+import FRP.Event (Event,  makeEvent, subscribe)
 import Rito.Color (Color)
 import Rito.Core as C
 import Rito.Matrix4 (Matrix4)
@@ -116,7 +116,7 @@ instancedMesh' _ imsh (C.Geometry geo) (C.Material mat) props = Bolson.Element'
       Nothing, _ -> empty
       _, Nothing -> empty
       Just gid, Just mid -> oneOf
-        [ bang $ makeInstancedMesh
+        [ pure $ makeInstancedMesh
             { id: me
             , parent: parent.parent
             , scope: parent.scope

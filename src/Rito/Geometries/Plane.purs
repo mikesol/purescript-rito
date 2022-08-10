@@ -8,7 +8,7 @@ module Rito.Geometries.Plane
 import Prelude
 
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
-import FRP.Event (bang, makeEvent, subscribe)
+import FRP.Event ( makeEvent, subscribe)
 import Foreign.Object (Object, empty)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
@@ -120,7 +120,7 @@ plane i' = C.Geometry go
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      bang
+      pure
         ( makePlane
             { id: me
             , parent: parent.parent

@@ -9,7 +9,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import Effect.Ref as Ref
-import FRP.Event (Event, bang, makeEvent, subscribe)
+import FRP.Event (Event,  makeEvent, subscribe)
 import Record (union)
 import Rito.Core as C
 import Rito.THREE as THREE
@@ -79,7 +79,7 @@ css3DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
         Nothing -> pure (pure unit)
         Just cameraId -> subscribe
           ( oneOf
-              [ bang $ makeCSS3DRenderer
+              [ pure $ makeCSS3DRenderer
                   $ union
                     { id: me
                     , camera: cameraId

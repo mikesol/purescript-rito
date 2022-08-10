@@ -7,7 +7,7 @@ import Bolson.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Effect.Ref as Ref
-import FRP.Event (bang, makeEvent, subscribe)
+import FRP.Event ( makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -48,7 +48,7 @@ effectComposerPass ii ecomp = Bolson.Element' $ C.Pass go
       Nothing -> pure (pure unit)
       Just effectComposerId -> subscribe
           ( oneOf
-              [ bang $ makeEffectComposerPass
+              [ pure $ makeEffectComposerPass
                   { id: me
                   , parent: psr.parent
                   , effectComposerPass: ii.effectComposerPass

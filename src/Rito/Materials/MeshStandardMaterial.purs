@@ -16,7 +16,7 @@ import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, bang, makeEvent, subscribe)
+import FRP.Event (Event,  makeEvent, subscribe)
 import Record (union)
 import Rito.BlendDst (BlendDst)
 import Rito.BlendEquation (BlendEquation)
@@ -596,7 +596,7 @@ meshStandardMaterial i' atts = C.Material go
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      bang
+      pure
         ( makeMeshStandardMaterial
             ( { id: me
               , parent: parent.parent

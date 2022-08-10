@@ -9,7 +9,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import Effect.Ref as Ref
-import FRP.Event (Event, bang, makeEvent, subscribe)
+import FRP.Event (Event,  makeEvent, subscribe)
 import Rito.Core as C
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
@@ -211,7 +211,7 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
         Nothing -> pure (pure unit)
         Just cameraId -> subscribe
           ( oneOf
-              [ bang $ makeWebGLRenderer
+              [ pure $ makeWebGLRenderer
                   { id: me
                   , webGLRenderer: i.webGLRenderer
                   , canvas: i.canvas

@@ -17,7 +17,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Symbol (reflectSymbol)
 import Data.Variant (Unvariant(..), Variant, match, unvariant)
-import FRP.Event (Event, bang, makeEvent, subscribe)
+import FRP.Event (Event,  makeEvent, subscribe)
 import Foreign (Foreign)
 import Prim.RowList (class RowToList)
 import Record (union)
@@ -322,7 +322,7 @@ shaderMaterial unifs i' atts = C.Material go
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      bang
+      pure
         ( makeShaderMaterial
             ( { id: me
               , parent: parent.parent

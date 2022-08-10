@@ -5,7 +5,7 @@ import Prelude
 import Bolson.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
-import FRP.Event (bang, makeEvent, subscribe)
+import FRP.Event ( makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -99,7 +99,7 @@ bloomPass ii' = Bolson.Element' $ C.Pass go
     psr.raiseId me
     u1 <- subscribe
       ( oneOf
-          [ bang $ makeBloomPass
+          [ pure $ makeBloomPass
               { id: me
               , parent: psr.parent
               , bloomPass: ii.bloomPass

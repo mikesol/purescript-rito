@@ -16,7 +16,7 @@ import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, bang, makeEvent, subscribe)
+import FRP.Event (Event,  makeEvent, subscribe)
 import Record (union)
 import Rito.Color (Color)
 import Rito.Core as C
@@ -128,7 +128,7 @@ pointLight i' atts = Bolson.Element' $ C.Light go
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      bang
+      pure
         ( makePointLight
             { id: me
             , parent: parent.parent

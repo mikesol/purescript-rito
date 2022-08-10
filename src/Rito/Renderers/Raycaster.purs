@@ -12,7 +12,7 @@ import Bolson.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Effect.Ref as Ref
-import FRP.Event (bang, makeEvent, subscribe)
+import FRP.Event ( makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 import Web.HTML (HTMLCanvasElement)
@@ -53,7 +53,7 @@ raycaster i cam = Bolson.Element' $ C.Renderer go
       Nothing -> pure (pure unit)
       Just cameraId -> subscribe
         ( oneOf
-            [ bang $ makeRaycaster
+            [ pure $ makeRaycaster
                 { id: me
                 , raycaster: i.raycaster
                 , canvas: i.canvas

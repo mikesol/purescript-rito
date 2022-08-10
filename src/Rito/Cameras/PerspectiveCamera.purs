@@ -15,7 +15,7 @@ import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, bang, makeEvent, subscribe)
+import FRP.Event (Event,  makeEvent, subscribe)
 import Record (union)
 import Rito.Core (object3D)
 import Rito.Core as C
@@ -148,7 +148,7 @@ perspectiveCamera i' atts = C.Camera go
     me <- ids
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      bang
+      pure
         ( makePerspectiveCamera
             { id: me
             , parent: parent.parent

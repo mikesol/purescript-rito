@@ -9,7 +9,7 @@ import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, bang, makeEvent, subscribe)
+import FRP.Event (Event,  makeEvent, subscribe)
 import Rito.Core (ThreeInterpret(..))
 import Rito.Core as C
 import Rito.THREE as THREE
@@ -56,7 +56,7 @@ unsafeInternalGroup dif gp props kidz = Element' $ C.Group go
     parent.raiseId me
     map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
       oneOf
-        [ bang $ dif di
+        [ pure $ dif di
             { id: me
             , parent: parent.parent
             , scope: parent.scope

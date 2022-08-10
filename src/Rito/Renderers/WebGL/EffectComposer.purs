@@ -10,7 +10,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import Effect.Ref as Ref
-import FRP.Event (Event, bang, makeEvent, subscribe)
+import FRP.Event (Event,  makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -58,7 +58,7 @@ effectComposer i rndr props kidz = C.EffectComposer go
       Nothing -> pure (pure unit)
       Just rendererId -> k # subscribe
         ( oneOf
-            [ bang $ makeEffectComposer
+            [ pure $ makeEffectComposer
                 { id: me
                 , effectComposer: i.effectComposer
                 , webGLRenderer: rendererId

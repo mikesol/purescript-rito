@@ -5,7 +5,7 @@ import Prelude
 import Bolson.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
-import FRP.Event (bang, makeEvent, subscribe)
+import FRP.Event ( makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -71,7 +71,7 @@ glitchPass ii' = Bolson.Element' $ C.Pass go
     psr.raiseId me
     u1 <- subscribe
           ( oneOf
-              [ bang $ makeGlitchPass
+              [ pure $ makeGlitchPass
                   { id: me
                   , parent: psr.parent
                   , glitchPass: ii.glitchPass

@@ -7,7 +7,7 @@ import Bolson.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Effect.Ref as Ref
-import FRP.Event (bang, makeEvent, subscribe)
+import FRP.Event ( makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -59,7 +59,7 @@ renderPass ii sne cam = Bolson.Element' $ C.Pass go
         Nothing -> pure (pure unit)
         Just cameraId -> subscribe
           ( oneOf
-              [ bang $ makeRenderPass
+              [ pure $ makeRenderPass
                   { id: me
                   , parent: psr.parent
                   , renderPass: ii.renderPass

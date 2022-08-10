@@ -73,14 +73,14 @@ import Rito.THREE as THREE
 import Rito.Vector3 (vector3)
 import Test.QuickCheck.Gen (elements, evalGen)
 import Type.Proxy (Proxy(..))
-import WAGS.Clock (withACTime)
-import WAGS.Control (analyser_, bandpass, delay, fan1, fix, gain, gain_, highpass, lowpass, playBuf)
-import WAGS.Core (Audible, AudioEnvelope(..), AudioNumeric(..), Po2(..), _linear, bangOn)
-import WAGS.Interpret (close, constant0Hack, context, decodeAudioDataFromUri, getByteFrequencyData)
-import WAGS.Math (calcSlope)
-import WAGS.Properties as P
-import WAGS.Run (run2)
-import WAGS.WebAPI (AnalyserNodeCb(..))
+import Ocarina.Clock (withACTime)
+import Ocarina.Control (analyser_, bandpass, delay, fan1, fix, gain, gain_, highpass, lowpass, playBuf)
+import Ocarina.Core (Audible, AudioEnvelope(..), AudioNumeric(..), Po2(..), _linear, bangOn)
+import Ocarina.Interpret (close, constant0Hack, context, decodeAudioDataFromUri, getByteFrequencyData)
+import Ocarina.Math (calcSlope)
+import Ocarina.Properties as P
+import Ocarina.Run (run2)
+import Ocarina.WebAPI (AnalyserNodeCb(..))
 import Web.DOM as Web.DOM
 import Web.Event.Event (target)
 import Web.HTML (window)
@@ -214,7 +214,7 @@ runThree tdi delt canvas iw ih e = do
                       { css2DObject: tdi.css2DObject
                       , nut: ANut
                           ( D.span
-                              (bang (D.Class := "text-white font-bold text-xl"))
+                              (pure (D.Class := "text-white font-bold text-xl"))
                               [ text_ "Hello world" ]
                           )
                       }
@@ -261,9 +261,9 @@ void main()
 }
                         """
                         }
-                        ( biSampleOn (withTime (bang unit))
+                        ( biSampleOn (withTime (pure unit))
                             ( { now: _, start: _ } <$> withTime
-                                ((canvas $> unit) <|> bang unit)
+                                ((canvas $> unit) <|> pure unit)
                             )
                             <#>
                               \{ now: { time: timeN }, start: { time: timeS } } ->
@@ -294,7 +294,7 @@ void main()
                           ( (_ / 1000.0)
                               <<< unwrap
                               <<< unInstant
-                          ) <$> withTime (canvas <|> bang [])
+                          ) <$> withTime (canvas <|> pure [])
                           <#>
                             \{ time
                              , value: a
@@ -369,9 +369,9 @@ void main()
                   , far: 100.0
                   }
                   ( oneOf
-                      [ bang (positionX 0.0)
-                      , bang (positionY 0.0)
-                      , bang (positionZ 2.0)
+                      [ pure (positionX 0.0)
+                      , pure (positionY 0.0)
+                      , pure (positionZ 2.0)
                       ]
                   )
               )
@@ -385,8 +385,8 @@ void main()
                       , webGLRenderer: tdi.webGLRenderer
                       }
                       ( oneOf
-                          [ bang (size { width: iw, height: ih })
-                          , bang render
+                          [ pure (size { width: iw, height: ih })
+                          , pure render
                           , (canvas $> render)
                           ]
                       )
@@ -399,8 +399,8 @@ void main()
                           , css2DRenderer: tdi.css2DRenderer
                           }
                           ( oneOf
-                              [ bang (size { width: iw, height: ih })
-                              , bang render
+                              [ pure (size { width: iw, height: ih })
+                              , pure render
                               , (canvas $> render)
                               ]
                           )
@@ -459,7 +459,7 @@ main = launchAff_ do
 
         do
           let
-            startE = bang unit <|> event.startStop.start
+            startE = pure unit <|> event.startStop.start
             stopE = event.startStop.stop
 
             music :: forall lock. _ -> _ -> _ -> Array (Audible _ lock _)
@@ -590,7 +590,7 @@ main = launchAff_ do
                     []
                 ]
             , D.div
-                ( bang $ D.Style :=
+                ( pure $ D.Style :=
                     "position: absolute; width:100%; background-color: rgba(200,200,200,0.8);"
                 )
                 [ D.input
@@ -613,7 +613,7 @@ main = launchAff_ do
                     []
                 , D.button
                     ( oneOf
-                        [ bang $ D.Style :=
+                        [ pure $ D.Style :=
                             "width:100%; padding:1.0rem;"
                         , ( oneOfMap (map (attr D.OnClick <<< cb <<< const))
                               [ stopE <#>

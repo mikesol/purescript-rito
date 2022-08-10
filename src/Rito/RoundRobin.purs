@@ -18,7 +18,7 @@ import Data.Variant (Variant, match)
 import Effect (Effect)
 import Effect.Ref as Ref
 import FRP.Event (Event, makeEvent, subscribe)
-import FRP.Event.Class (bang)
+
 import Foreign.Object as Object
 import Record (union)
 import Rito.Color (Color)
@@ -223,7 +223,7 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
       Nothing, _ -> empty
       _, Nothing -> empty
       Just gid, Just mid -> oneOf
-        [ bang $ makeInstancedMesh
+        [ pure $ makeInstancedMesh
             ( { id: me
               , parent: parent.parent
               , scope: parent.scope
