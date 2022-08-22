@@ -1,7 +1,7 @@
 {
 	"name": "purescript-rito",
 	"version": "0.1.0",
-	"description": "A canvas graphics FRP library backed by three.js.",
+	"description": "A WebGL graphics FRP library backed by three.js.",
 	"scripts": {
 		"postinstall": "node node_modules/puppeteer/install.js",
 		"clean": "rm -rf .spago output node_modules *.lock",
