@@ -18,8 +18,8 @@ export const bufferAttributesImpl = (m) => (ns) => (bufferAttribute) => (a) => (
 	let $a = a;
 	for (let i = 0; i < m; i++) {
 		const $v = f(i)($a);
-		const v = $v.value0;
-		$a = $v.value1;
+		const v = $v.l;
+		$a = $v.r;
 		for (let j = 0; j < ns.length; j++) {
 			const key = ns[j].k;
 			const n = ns[j].n;

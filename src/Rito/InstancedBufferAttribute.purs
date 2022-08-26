@@ -6,6 +6,8 @@ module Rito.InstancedBufferAttribute
   , InstancedBufferAttribute
   ) where
 
+import Prelude
+
 import Data.Array as Array
 import Data.FastVect.FastVect as Vect
 import Data.Reflectable (class Reflectable, reflectType)
@@ -65,5 +67,8 @@ instancedBufferAttributes
   -> a
   -> (Int -> a -> { | i } /\ a)
   -> { | o }
-instancedBufferAttributes px = bufferAttributesImpl (reflectType px)
+instancedBufferAttributes px ba a f = bufferAttributesImpl (reflectType px)
   (fst (internalDoNotUseBA (Proxy :: _ ir)))
+  ba
+  a
+  ((map <<< map) (\(l /\ r) -> { l, r }) f)

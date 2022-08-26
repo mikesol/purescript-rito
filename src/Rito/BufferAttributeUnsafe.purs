@@ -1,7 +1,6 @@
 module Rito.BufferAttributeUnsafe where
 
 import Data.FastVect.FastVect as Vect
-import Data.Tuple.Nested (type (/\))
 
 foreign import bufferAttributeImpl
   :: forall n ctor buf
@@ -17,5 +16,5 @@ foreign import bufferAttributesImpl
   -> Array { k :: String, n :: Int }
   -> ctor
   -> a
-  -> (Int -> a -> { | i } /\ a)
+  -> (Int -> a -> {l :: { | i }, r :: a })
   -> { | o }
