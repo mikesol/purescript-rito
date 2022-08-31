@@ -111,4 +111,6 @@ bloomPass ii' = Bolson.Element' $ C.Pass go
           ]
       )
       k0
-    pure (k0 (deleteFromCache { id: me }) *> u1)
+    pure do
+      k0 (deleteFromCache { id: me })
+      u1

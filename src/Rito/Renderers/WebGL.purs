@@ -252,4 +252,7 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
               ]
           )
           k0
-    pure (k0 (deleteFromCache { id: me }) *> u0 *> u1)
+    pure do
+      k0 (deleteFromCache { id: me })
+      u0
+      u1

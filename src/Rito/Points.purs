@@ -1,11 +1,16 @@
-module Rito.Points (points, points', Points(..), Points') where
+module Rito.Points
+  ( Points(..)
+  , points
+  , points'
+  , Points'
+  ) where
 
 import Prelude
 
 import Bolson.EffectFn.Control (flatten)
 import Bolson.EffectFn.Core (fixed)
 import Bolson.EffectFn.Core as Bolson
-import Data.Foldable (oneOf, traverse_)
+import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
@@ -85,8 +90,8 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
       ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      oneOf
+    unsub <- subscribe 
+      (oneOf
         [ pure $ makePoints
             { id: me
             , parent: parent.parent
@@ -181,7 +186,10 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
             { parent: Just me, scope: parent.scope, raiseId: pure mempty }
             di
             (fixed kidz)
-        ]
+        ]) k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub
 
 points
   :: forall lock payload

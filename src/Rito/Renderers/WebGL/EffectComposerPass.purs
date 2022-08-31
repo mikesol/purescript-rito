@@ -57,4 +57,7 @@ effectComposerPass ii ecomp = Bolson.Element' $ C.Pass go
               ]
           )
           k0
-    pure (k0 (deleteFromCache { id: me }) *> u0 *> u1)
+    pure do
+      k0 (deleteFromCache { id: me })
+      u0
+      u1

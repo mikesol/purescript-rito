@@ -7,12 +7,12 @@ module Rito.CSS.CSS2DObject
 import Prelude
 
 import Bolson.EffectFn.Core as Bolson
-import Control.Alt ((<|>))
+import Data.Foldable (oneOf)
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import Deku.Core (ANut(..))
 import Deku.Toplevel (runInElement')
-import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event, makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 import Web.DOM.Document (createElement)
@@ -47,19 +47,25 @@ css2DObject ipt@{ nut: ANut nut } atts = Bolson.Element' $ C.CSS2DObject go
     parent.raiseId me
     elt <- window >>= document >>= createElement "div" <<< toDocument
     dku <- runInElement' elt nut
-    map ((k (deleteFromCache { id: me }) *> dku) *> _) $ flip subscribe k $
-      pure
-        ( makeCSS2DObject
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , nut: elt
-            , css2DObject: ipt.css2DObject
+    unsub <- subscribe
+      ( oneOf
+          [ pure
+              ( makeCSS2DObject
+                  { id: me
+                  , parent: parent.parent
+                  , scope: parent.scope
+                  , nut: elt
+                  , css2DObject: ipt.css2DObject
 
-            }
-        )
-        <|>
-          ( map
+                  }
+              )
+          , map
               (\(CSS2DObject e) -> match (C.object3D me di) e)
               atts
-          )
+          ]
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      dku
+      unsub

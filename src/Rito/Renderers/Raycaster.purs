@@ -62,4 +62,7 @@ raycaster i cam = Bolson.Element' $ C.Renderer go
             ]
         )
         k0
-    pure (k0 (deleteFromCache { id: me }) *> u0 *> u1)
+    pure do
+      k0 (deleteFromCache { id: me })
+      u0
+      u1

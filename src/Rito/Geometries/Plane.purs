@@ -8,7 +8,7 @@ module Rito.Geometries.Plane
 import Prelude
 
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
-import FRP.Event.EffectFn ( makeEvent, subscribe)
+import FRP.Event.EffectFn (makeEvent, subscribe)
 import Foreign.Object (Object, empty)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
@@ -111,26 +111,31 @@ plane i' = C.Geometry go
   C.InitializePlane i = toInitializePlane i'
   go
     parent
-      ( C.ThreeInterpret
-          { ids
-          , deleteFromCache
-          , makePlane
-          }
-      ) = makeEvent \k -> do
+    ( C.ThreeInterpret
+        { ids
+        , deleteFromCache
+        , makePlane
+        }
+    ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      pure
-        ( makePlane
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , plane: i.plane
-            , width: i.width
-            , height: i.height
-            , widthSegments: i.widthSegments
-            , heightSegments: i.heightSegments
-            , bufferAttributes: i.bufferAttributes
-            , instancedBufferAttributes: i.instancedBufferAttributes
-            }
-        )
+    unsub <- subscribe
+      ( pure
+          ( makePlane
+              { id: me
+              , parent: parent.parent
+              , scope: parent.scope
+              , plane: i.plane
+              , width: i.width
+              , height: i.height
+              , widthSegments: i.widthSegments
+              , heightSegments: i.heightSegments
+              , bufferAttributes: i.bufferAttributes
+              , instancedBufferAttributes: i.instancedBufferAttributes
+              }
+          )
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub

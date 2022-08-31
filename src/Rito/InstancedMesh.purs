@@ -142,4 +142,7 @@ instancedMesh' _ imsh (C.Geometry geo) (C.Material mat) props = Bolson.Element'
                   }
             )
         ]
-    pure (k (deleteFromCache { id: me }) *> u0 *> u1)
+    pure do
+      k (deleteFromCache { id: me })
+      u0
+      u1

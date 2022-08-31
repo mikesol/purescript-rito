@@ -10,13 +10,13 @@ module Rito.Materials.MeshPhongMaterial
 
 import Prelude
 
-import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
+import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event, makeEvent, subscribe)
 import Record (union)
 import Rito.BlendDst (BlendDst)
 import Rito.BlendEquation (BlendEquation)
@@ -581,52 +581,52 @@ meshPhongMaterial i' atts = C.Material go
     ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      pure
-        ( makeMeshPhongMaterial
-            ( { id: me
-              , parent: parent.parent
-              , scope: parent.scope
-              , parameters:
-                  { meshPhongMaterial: i.meshPhongMaterial
-                  , color: i.color
-                  , map: i.map
-                  , combine: i.combine
-                  , fog: i.fog
-                  , reflectivity: i.reflectivity
-                  , refractionRatio: i.refractionRatio
-                  , shininess: i.shininess
-                  , specular: i.specular
-                  , specularMap: i.specularMap
-                  , wireframeLinecap: i.wireframeLinecap
-                  , wireframeLinejoin: i.wireframeLinejoin
-                  , lightMap: i.lightMap
-                  , lightMapIntensity: i.lightMapIntensity
-                  , aoMap: i.aoMap
-                  , aoMapIntensity: i.aoMapIntensity
-                  , emissive: i.emissive
-                  , emissiveIntensity: i.emissiveIntensity
-                  , emissiveMap: i.emissiveMap
-                  , bumpMap: i.bumpMap
-                  , bumpScale: i.bumpScale
-                  , normalMap: i.normalMap
-                  , normalMapType: i.normalMapType
-                  , normalScale: i.normalScale
-                  , displacementMap: i.displacementMap
-                  , displacementScale: i.displacementScale
-                  , displacementBias: i.displacementBias
-                  , alphaMap: i.alphaMap
-                  , envMap: i.envMap
-                  , wireframe: i.wireframe
-                  , wireframeLinewidth: i.wireframeLinewidth
-                  , flatShading: i.flatShading
-                  }
-              , materialParameters: initializeDefaultMaterials i
-              }
-            )
-        )
-        <|>
-          ( map
+    unsub <- subscribe
+      ( oneOf
+          [ pure
+              ( makeMeshPhongMaterial
+                  ( { id: me
+                    , parent: parent.parent
+                    , scope: parent.scope
+                    , parameters:
+                        { meshPhongMaterial: i.meshPhongMaterial
+                        , color: i.color
+                        , map: i.map
+                        , combine: i.combine
+                        , fog: i.fog
+                        , reflectivity: i.reflectivity
+                        , refractionRatio: i.refractionRatio
+                        , shininess: i.shininess
+                        , specular: i.specular
+                        , specularMap: i.specularMap
+                        , wireframeLinecap: i.wireframeLinecap
+                        , wireframeLinejoin: i.wireframeLinejoin
+                        , lightMap: i.lightMap
+                        , lightMapIntensity: i.lightMapIntensity
+                        , aoMap: i.aoMap
+                        , aoMapIntensity: i.aoMapIntensity
+                        , emissive: i.emissive
+                        , emissiveIntensity: i.emissiveIntensity
+                        , emissiveMap: i.emissiveMap
+                        , bumpMap: i.bumpMap
+                        , bumpScale: i.bumpScale
+                        , normalMap: i.normalMap
+                        , normalMapType: i.normalMapType
+                        , normalScale: i.normalScale
+                        , displacementMap: i.displacementMap
+                        , displacementScale: i.displacementScale
+                        , displacementBias: i.displacementBias
+                        , alphaMap: i.alphaMap
+                        , envMap: i.envMap
+                        , wireframe: i.wireframe
+                        , wireframeLinewidth: i.wireframeLinewidth
+                        , flatShading: i.flatShading
+                        }
+                    , materialParameters: initializeDefaultMaterials i
+                    }
+                  )
+              )
+          , map
               ( \(MeshPhongMaterial e) -> match
                   { color: setColor <<< { id: me, color: _ }
                   , map: setMap <<< { id: me, map: _ }
@@ -677,7 +677,12 @@ meshPhongMaterial i' atts = C.Material go
                   e
               )
               atts
-          )
+          ]
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub
 
 meshPhongMaterial_
   :: forall i lock payload

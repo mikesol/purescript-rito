@@ -8,7 +8,7 @@ module Rito.Geometries.Capsule
 import Prelude
 
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
-import FRP.Event.EffectFn ( makeEvent, subscribe)
+import FRP.Event.EffectFn (makeEvent, subscribe)
 import Foreign.Object (Object, empty)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
@@ -119,18 +119,23 @@ capsule i' = C.Geometry go
     ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      pure
-        ( makeCapsule
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , capsule: i.capsule
-            , radius: i.radius
-            , length: i.length
-            , radialSegments: i.radialSegments
-            , capSegments: i.capSegments
-            , bufferAttributes: i.bufferAttributes
-            , instancedBufferAttributes: i.instancedBufferAttributes
-            }
-        )
+    unsub <- subscribe
+      ( pure
+          ( makeCapsule
+              { id: me
+              , parent: parent.parent
+              , scope: parent.scope
+              , capsule: i.capsule
+              , radius: i.radius
+              , length: i.length
+              , radialSegments: i.radialSegments
+              , capSegments: i.capSegments
+              , bufferAttributes: i.bufferAttributes
+              , instancedBufferAttributes: i.instancedBufferAttributes
+              }
+          )
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub

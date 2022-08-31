@@ -269,17 +269,21 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
                                 -- use nub so that the operation is idempotent
                                 -- as we may call it twice
                                 -- if the cancelation is immediate
-                                Ref.modify_ ((_ <> [ head ]) >>> nub) available
-                                  *> join (Ref.read myUnsub)
-                                  *> join (Ref.read eltsUnsub)
-                                  *> Ref.modify_
+                                do
+                                  Ref.modify_ ((_ <> [ head ]) >>> nub)
+                                    available
+                                  join (Ref.read myUnsub)
+                                  join (Ref.read eltsUnsub)
+                                  Ref.modify_
                                     (Object.delete myUnsubId)
                                     cancelInner
-                                  *> Ref.modify_
+                                  Ref.modify_
                                     (Object.delete eltsUnsubId)
                                     cancelInner
 
-                            (Ref.write mic myImmediateCancellation) *> mic
+                            do
+                              Ref.write mic myImmediateCancellation
+                              mic
                           Acquire kid, Begin -> do
                             -- holds the current id
                             Ref.write Middle stageRef
@@ -304,4 +308,7 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
               Ref.read cancelInner >>= traverse_ identity
               cancelOuter
         ]
-    pure (topK (deleteFromCache { id: me }) *> u0 *> u1)
+    pure do
+      topK (deleteFromCache { id: me })
+      u0
+      u1

@@ -11,12 +11,12 @@ module Rito.Lights.AmbientLight
 import Prelude
 
 import Bolson.EffectFn.Core as Bolson
-import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
+import Data.Foldable (oneOf)
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event, makeEvent, subscribe)
 import Record (union)
 import Rito.Color (Color)
 import Rito.Core as C
@@ -107,19 +107,19 @@ ambientLight i' atts = Bolson.Element' $ C.Light go
       ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      pure
-        ( makeAmbientLight
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , ambientLight: i.ambientLight
-            , color: i.color
-            , intensity: i.intensity
-            }
-        )
-        <|>
-          ( map
+    unsub <- subscribe
+      ( oneOf
+          [ pure
+              ( makeAmbientLight
+                  { id: me
+                  , parent: parent.parent
+                  , scope: parent.scope
+                  , ambientLight: i.ambientLight
+                  , color: i.color
+                  , intensity: i.intensity
+                  }
+              )
+          , map
               ( \(AmbientLight e) -> match
                   ( union
                       { color: setColor <<< { id: me, color: _ }
@@ -130,7 +130,12 @@ ambientLight i' atts = Bolson.Element' $ C.Light go
                   e
               )
               atts
-          )
+          ]
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub
 
 ambientLight_
   :: forall i lock payload

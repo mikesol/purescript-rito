@@ -81,4 +81,7 @@ effectComposer i rndr props kidz = C.EffectComposer go
                 (fixed kidz)
             ]
         )
-    pure (k (deleteFromCache { id: me }) *> u0 *> u1)
+    pure do
+      k (deleteFromCache { id: me })
+      u0
+      u1

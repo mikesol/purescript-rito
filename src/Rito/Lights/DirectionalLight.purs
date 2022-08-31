@@ -11,12 +11,12 @@ module Rito.Lights.DirectionalLight
 import Prelude
 
 import Bolson.EffectFn.Core as Bolson
-import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
+import Data.Foldable (oneOf)
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event, makeEvent, subscribe)
 import Record (union)
 import Rito.Color (Color)
 import Rito.Core as C
@@ -107,19 +107,19 @@ directionalLight i' atts = Bolson.Element' $ C.Light go
       ) = makeEvent \k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      pure
-        ( makeDirectionalLight
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , directionalLight: i.directionalLight
-            , color: i.color
-            , intensity: i.intensity
-            }
-        )
-        <|>
-          ( map
+    unsub <- subscribe
+      ( oneOf
+          [ pure
+              ( makeDirectionalLight
+                  { id: me
+                  , parent: parent.parent
+                  , scope: parent.scope
+                  , directionalLight: i.directionalLight
+                  , color: i.color
+                  , intensity: i.intensity
+                  }
+              )
+          , map
               ( \(DirectionalLight e) -> match
                   ( union
                       { color: setColor <<< { id: me, color: _ }
@@ -130,7 +130,12 @@ directionalLight i' atts = Bolson.Element' $ C.Light go
                   e
               )
               atts
-          )
+          ]
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub
 
 directionalLight_
   :: forall i lock payload
