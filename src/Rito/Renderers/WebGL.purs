@@ -2,14 +2,14 @@ module Rito.Renderers.WebGL where
 
 import Prelude
 
-import Bolson.Core (Scope(..))
+import Bolson.EffectFn.Core (Scope(..))
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import Effect.Ref as Ref
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
 import Rito.Core as C
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP

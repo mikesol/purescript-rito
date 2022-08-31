@@ -2,12 +2,12 @@ module Rito.Renderers.WebGL.EffectComposerPass where
 
 import Prelude
 
-import Bolson.Core (Scope(..))
-import Bolson.Core as Bolson
+import Bolson.EffectFn.Core (Scope(..))
+import Bolson.EffectFn.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Effect.Ref as Ref
-import FRP.Event ( makeEvent, subscribe)
+import FRP.Event.EffectFn ( makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 

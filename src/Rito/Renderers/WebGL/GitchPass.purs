@@ -2,10 +2,10 @@ module Rito.Renderers.WebGL.GlitchPass where
 
 import Prelude
 
-import Bolson.Core as Bolson
+import Bolson.EffectFn.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
-import FRP.Event ( makeEvent, subscribe)
+import FRP.Event.EffectFn ( makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 

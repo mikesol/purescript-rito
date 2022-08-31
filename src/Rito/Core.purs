@@ -2,13 +2,13 @@ module Rito.Core where
 
 import Prelude
 
-import Bolson.Core (Entity, Scope)
-import Bolson.Core as Bolson
+import Bolson.EffectFn.Core (Entity, Scope)
+import Bolson.EffectFn.Core as Bolson
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Deku.Core (ANut)
 import Effect (Effect)
-import FRP.Event (Event)
+import FRP.Event.EffectFn (Event)
 import Foreign (Foreign)
 import Foreign.Object as Object
 import Record (union)
@@ -46,25 +46,25 @@ import Web.HTML (HTMLCanvasElement)
 import Web.TouchEvent (Touch, TouchEvent)
 import Web.UIEvent.MouseEvent (MouseEvent)
 
-plain :: forall logic obj m lock. obj -> Entity logic obj m lock
+plain :: forall logic obj lock. obj -> Entity logic obj lock
 plain = Bolson.Element'
 
 class Sceneable ctor where
   toScene
     :: forall lock payload
-     . Entity Void (ctor lock payload) Effect lock
-    -> Entity Void (Sceneful lock payload) Effect lock
+     . Entity Void (ctor lock payload) lock
+    -> Entity Void (Sceneful lock payload) lock
 
 class Groupable ctor where
   toGroup
     :: forall lock payload
-     . Entity Void (ctor lock payload) Effect lock
-    -> Entity Void (Groupful lock payload) Effect lock
+     . Entity Void (ctor lock payload) lock
+    -> Entity Void (Groupful lock payload) lock
 
 cameraToGroup
   :: forall lock payload
    . Camera lock payload
-  -> Entity Void (Groupful lock payload) Effect lock
+  -> Entity Void (Groupful lock payload) lock
 cameraToGroup c = Bolson.Element' $
   (unsafeCoerce :: Camera lock payload -> Groupful lock payload) c
 
@@ -96,34 +96,32 @@ effectComposerToRenderer
 effectComposerToRenderer = coerce
 
 newtype Renderer (lock :: Type) payload = Renderer (Ctor payload)
-type ARenderer lock payload = Entity Void (Renderer lock payload) Effect lock
+type ARenderer lock payload = Entity Void (Renderer lock payload) lock
 newtype Pass (lock :: Type) payload = Pass (Ctor payload)
-type APass lock payload = Entity Void (Pass lock payload) Effect lock
+type APass lock payload = Entity Void (Pass lock payload) lock
 newtype Light (lock :: Type) payload = Light (Ctor payload)
-type ALight lock payload = Entity Void (Light lock payload) Effect lock
+type ALight lock payload = Entity Void (Light lock payload) lock
 newtype CSS2DObject (lock :: Type) payload = CSS2DObject (Ctor payload)
-type ACSS2DObject lock payload = Entity Void (CSS2DObject lock payload) Effect
-  lock
+type ACSS2DObject lock payload = Entity Void (CSS2DObject lock payload) lock
 newtype CSS3DObject (lock :: Type) payload = CSS3DObject (Ctor payload)
-type ACSS3DObject lock payload = Entity Void (CSS3DObject lock payload) Effect
-  lock
+type ACSS3DObject lock payload = Entity Void (CSS3DObject lock payload) lock
 newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
 newtype Material (lock :: Type) payload = Material (Ctor payload)
 newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
 newtype Instance (lock :: Type) payload = Instance (SimpleCtor payload)
-type AMesh lock payload = Entity Void (Mesh lock payload) Effect lock
+type AMesh lock payload = Entity Void (Mesh lock payload) lock
 newtype Points (lock :: Type) payload = Points (Ctor payload)
-type APoints lock payload = Entity Void (Points lock payload) Effect lock
+type APoints lock payload = Entity Void (Points lock payload) lock
 newtype Group (lock :: Type) payload = Group (Ctor payload)
-type AGroup lock payload = Entity Void (Group lock payload) Effect lock
+type AGroup lock payload = Entity Void (Group lock payload) lock
 newtype Scene (lock :: Type) payload = Scene (Ctor payload)
--- type AScene lock payload = Entity Void (Scene lock payload) Effect lock
+-- type AScene lock payload = Entity Void (Scene lock payload) lock
 newtype Sceneful (lock :: Type) payload = Sceneful (Ctor payload)
-type ASceneful lock payload = Entity Void (Sceneful lock payload) Effect lock
+type ASceneful lock payload = Entity Void (Sceneful lock payload) lock
 newtype Groupful (lock :: Type) payload = Groupful (Ctor payload)
-type AGroupful lock payload = Entity Void (Groupful lock payload) Effect lock
+type AGroupful lock payload = Entity Void (Groupful lock payload) lock
 newtype Camera (lock :: Type) payload = Camera (Ctor payload)
--- type ACamera lock payload = Entity Void (Camera lock payload) Effect lock
+-- type ACamera lock payload = Entity Void (Camera lock payload) lock
 
 instance Sceneable Light where
   toScene = unsafeCoerce

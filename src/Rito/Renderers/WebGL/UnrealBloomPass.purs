@@ -2,11 +2,11 @@ module Rito.Renderers.WebGL.UnrealBloomPass where
 
 import Prelude
 
-import Bolson.Core as Bolson
+import Bolson.EffectFn.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
 import Data.Variant (Variant, match)
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 import Rito.Vector2 (Vector2)

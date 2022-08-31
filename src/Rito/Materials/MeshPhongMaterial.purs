@@ -16,7 +16,7 @@ import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
 import Record (union)
 import Rito.BlendDst (BlendDst)
 import Rito.BlendEquation (BlendEquation)

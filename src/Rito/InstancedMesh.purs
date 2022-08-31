@@ -10,7 +10,7 @@ module Rito.InstancedMesh
 
 import Prelude
 
-import Bolson.Core as Bolson
+import Bolson.EffectFn.Core as Bolson
 import Control.Plus (empty)
 import Data.Exists (Exists, mkExists, runExists)
 import Data.FastVect.Common (class IsVect)
@@ -21,7 +21,7 @@ import Data.Reflectable (class Reflectable, reflectType)
 import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Variant (Variant, match)
 import Effect.Ref as Ref
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
 import Rito.Color (Color)
 import Rito.Core as C
 import Rito.Matrix4 (Matrix4)

@@ -8,7 +8,7 @@ module Rito.RoundRobin
 
 import Prelude
 
-import Bolson.Core as Bolson
+import Bolson.EffectFn.Core as Bolson
 import Control.Plus (empty)
 import Data.Array (nub, uncons, (..))
 import Data.Foldable (oneOf, traverse_)
@@ -17,7 +17,7 @@ import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import Effect (Effect)
 import Effect.Ref as Ref
-import FRP.Event (Event, makeEvent, subscribe)
+import FRP.Event.EffectFn (Event, makeEvent, subscribe)
 
 import Foreign.Object as Object
 import Record (union)

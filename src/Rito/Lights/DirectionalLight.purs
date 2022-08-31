@@ -10,13 +10,13 @@ module Rito.Lights.DirectionalLight
 
 import Prelude
 
-import Bolson.Core as Bolson
+import Bolson.EffectFn.Core as Bolson
 import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
 import Record (union)
 import Rito.Color (Color)
 import Rito.Core as C

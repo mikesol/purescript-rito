@@ -2,12 +2,11 @@ module Rito.Portal where
 
 import Prelude
 
-import Bolson.Control as Bolson
-import Bolson.Core (Element(..), Entity)
+import Bolson.EffectFn.Control as Bolson
+import Bolson.EffectFn.Core (Element(..), Entity)
 import Data.FastVect.FastVect (Vect, index, singleton)
 import Data.Newtype (unwrap)
 import Data.Profunctor (lcmap)
-import Effect (Effect)
 import Prim.Int (class Compare)
 import Prim.Ordering (GT)
 import Rito.Core (ThreeInterpret)
@@ -29,20 +28,20 @@ instance Portable C.Renderer
 globalGeometryPortal1
   :: forall obj lock payload
    . Portable obj
-  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect () lock payload)
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) () lock payload)
   => C.Geometry lock payload
-  -> (C.Geometry lock payload -> Entity Void (obj lock payload) Effect lock)
-  -> Entity Void (obj lock payload) Effect lock
+  -> (C.Geometry lock payload -> Entity Void (obj lock payload) lock)
+  -> Entity Void (obj lock payload) lock
 globalGeometryPortal1 v c = globalGeometryPortal (singleton v) (lcmap (index (Proxy :: _ 0)) c)
 
 globalGeometryPortal
   :: forall n obj lock payload
    . Compare n (-1) GT
   => Portable obj
-  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect () lock payload)
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) () lock payload)
   => Vect n (C.Geometry lock payload)
-  -> (Vect n (C.Geometry lock payload) -> Entity Void (obj lock payload) Effect lock)
-  -> Entity Void (obj lock payload) Effect lock
+  -> (Vect n (C.Geometry lock payload) -> Entity Void (obj lock payload) lock)
+  -> Entity Void (obj lock payload) lock
 globalGeometryPortal v c =
   Bolson.globalPortalSimpleComplex
     { doLogic: absurd
@@ -50,7 +49,7 @@ globalGeometryPortal v c =
     , disconnectElement:
         \(C.ThreeInterpret { disconnect }) { id, scope, parent } ->
           disconnect { id, scope, parent }
-    , toElt: coerce :: obj lock payload ->  Element (ThreeInterpret payload) Effect () lock payload
+    , toElt: coerce :: obj lock payload ->  Element (ThreeInterpret payload) () lock payload
     }
     { fromEltO1: coerce
     , fromEltO2: coerce
@@ -64,20 +63,20 @@ globalGeometryPortal v c =
 globalMaterialPortal1
   :: forall obj lock payload
    . Portable obj
-  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect () lock payload)
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) () lock payload)
   => C.Material lock payload
-  -> (C.Material lock payload -> Entity Void (obj lock payload) Effect lock)
-  -> Entity Void (obj lock payload) Effect lock
+  -> (C.Material lock payload -> Entity Void (obj lock payload) lock)
+  -> Entity Void (obj lock payload) lock
 globalMaterialPortal1 v c = globalMaterialPortal (singleton v) (lcmap (index (Proxy :: _ 0)) c)
 
 globalMaterialPortal
   :: forall n obj lock payload
    . Compare n (-1) GT
   => Portable obj
-  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect () lock payload)
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) () lock payload)
   => Vect n (C.Material lock payload)
-  -> (Vect n (C.Material lock payload) -> Entity Void (obj lock payload) Effect lock)
-  -> Entity Void (obj lock payload) Effect lock
+  -> (Vect n (C.Material lock payload) -> Entity Void (obj lock payload) lock)
+  -> Entity Void (obj lock payload) lock
 globalMaterialPortal v c =
   Bolson.globalPortalSimpleComplex
     { doLogic: absurd
@@ -85,7 +84,7 @@ globalMaterialPortal v c =
     , disconnectElement:
         \(C.ThreeInterpret { disconnect }) { id, scope, parent } ->
           disconnect { id, scope, parent }
-    , toElt: coerce :: obj lock payload ->  Element (ThreeInterpret payload) Effect () lock payload
+    , toElt: coerce :: obj lock payload ->  Element (ThreeInterpret payload) () lock payload
     }
     { fromEltO1: coerce
     , fromEltO2: coerce
@@ -101,10 +100,10 @@ globalScenePortal
   :: forall n obj lock payload
    . Compare n (-1) GT
   => Portable obj
-  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect () lock payload)
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) () lock payload)
   => Vect n (C.Scene lock payload)
-  -> (Vect n (C.Scene lock payload) -> Entity Void (obj lock payload) Effect lock)
-  -> Entity Void (obj lock payload) Effect lock
+  -> (Vect n (C.Scene lock payload) -> Entity Void (obj lock payload) lock)
+  -> Entity Void (obj lock payload) lock
 globalScenePortal v c =
   Bolson.globalPortalSimpleComplex
     { doLogic: absurd
@@ -112,7 +111,7 @@ globalScenePortal v c =
     , disconnectElement:
         \(C.ThreeInterpret { disconnect }) { id, scope, parent } ->
           disconnect { id, scope, parent }
-    , toElt: coerce :: obj lock payload ->  Element (ThreeInterpret payload) Effect () lock payload
+    , toElt: coerce :: obj lock payload ->  Element (ThreeInterpret payload) () lock payload
     }
     { fromEltO1: coerce
     , fromEltO2: coerce
@@ -126,10 +125,10 @@ globalScenePortal v c =
 globalScenePortal1
   :: forall obj lock payload
    . Portable obj
-  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect () lock payload)
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) () lock payload)
   => C.Scene lock payload
-  -> (C.Scene lock payload -> Entity Void (obj lock payload) Effect lock)
-  -> Entity Void (obj lock payload) Effect lock
+  -> (C.Scene lock payload -> Entity Void (obj lock payload) lock)
+  -> Entity Void (obj lock payload) lock
 globalScenePortal1 v c = globalScenePortal (singleton v) (lcmap (index (Proxy :: _ 0)) c)
 
 -- camera
@@ -137,10 +136,10 @@ globalCameraPortal
   :: forall n obj lock payload
    . Compare n (-1) GT
   => Portable obj
-  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect () lock payload)
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) () lock payload)
   => Vect n (C.Camera lock payload)
-  -> (Vect n (C.Camera lock payload) -> Entity Void (obj lock payload) Effect lock)
-  -> Entity Void (obj lock payload) Effect lock
+  -> (Vect n (C.Camera lock payload) -> Entity Void (obj lock payload) lock)
+  -> Entity Void (obj lock payload) lock
 globalCameraPortal v c =
   Bolson.globalPortalSimpleComplex
     { doLogic: absurd
@@ -148,7 +147,7 @@ globalCameraPortal v c =
     , disconnectElement:
         \(C.ThreeInterpret { disconnect }) { id, scope, parent } ->
           disconnect { id, scope, parent }
-    , toElt: coerce :: obj lock payload ->  Element (ThreeInterpret payload) Effect () lock payload
+    , toElt: coerce :: obj lock payload ->  Element (ThreeInterpret payload) () lock payload
     }
     { fromEltO1: coerce
     , fromEltO2: coerce
@@ -162,10 +161,10 @@ globalCameraPortal v c =
 globalCameraPortal1
   :: forall obj lock payload
    . Portable obj
-  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect () lock payload)
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) () lock payload)
   => C.Camera lock payload
-  -> (C.Camera lock payload -> Entity Void (obj lock payload) Effect lock)
-  -> Entity Void (obj lock payload) Effect lock
+  -> (C.Camera lock payload -> Entity Void (obj lock payload) lock)
+  -> Entity Void (obj lock payload) lock
 globalCameraPortal1 v c = globalCameraPortal (singleton v) (lcmap (index (Proxy :: _ 0)) c)
 
 -- webgl renderer
@@ -173,10 +172,10 @@ globalWebGLRendererPortal
   :: forall n obj lock payload
    . Compare n (-1) GT
   => Portable obj
-  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect () lock payload)
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) () lock payload)
   => Vect n (C.WebGLRenderer lock payload)
-  -> (Vect n (C.WebGLRenderer lock payload) -> Entity Void (obj lock payload) Effect lock)
-  -> Entity Void (obj lock payload) Effect lock
+  -> (Vect n (C.WebGLRenderer lock payload) -> Entity Void (obj lock payload) lock)
+  -> Entity Void (obj lock payload) lock
 globalWebGLRendererPortal v c =
   Bolson.globalPortalSimpleComplex
     { doLogic: absurd
@@ -184,7 +183,7 @@ globalWebGLRendererPortal v c =
     , disconnectElement:
         \(C.ThreeInterpret { disconnect }) { id, scope, parent } ->
           disconnect { id, scope, parent }
-    , toElt: coerce :: obj lock payload ->  Element (ThreeInterpret payload) Effect () lock payload
+    , toElt: coerce :: obj lock payload ->  Element (ThreeInterpret payload) () lock payload
     }
     { fromEltO1: coerce
     , fromEltO2: coerce
@@ -198,10 +197,10 @@ globalWebGLRendererPortal v c =
 globalWebGLRendererPortal1
   :: forall obj lock payload
    . Portable obj
-  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect () lock payload)
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) () lock payload)
   => C.WebGLRenderer lock payload
-  -> (C.WebGLRenderer lock payload -> Entity Void (obj lock payload) Effect lock)
-  -> Entity Void (obj lock payload) Effect lock
+  -> (C.WebGLRenderer lock payload -> Entity Void (obj lock payload) lock)
+  -> Entity Void (obj lock payload) lock
 globalWebGLRendererPortal1 v c = globalWebGLRendererPortal (singleton v) (lcmap (index (Proxy :: _ 0)) c)
 
 -- webgl renderer
@@ -209,10 +208,10 @@ globalEffectComposerPortal
   :: forall n obj lock payload
    . Compare n (-1) GT
   => Portable obj
-  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect () lock payload)
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) () lock payload)
   => Vect n (C.EffectComposer lock payload)
-  -> (Vect n (C.EffectComposer lock payload) -> Entity Void (obj lock payload) Effect lock)
-  -> Entity Void (obj lock payload) Effect lock
+  -> (Vect n (C.EffectComposer lock payload) -> Entity Void (obj lock payload) lock)
+  -> Entity Void (obj lock payload) lock
 globalEffectComposerPortal v c =
   Bolson.globalPortalSimpleComplex
     { doLogic: absurd
@@ -220,7 +219,7 @@ globalEffectComposerPortal v c =
     , disconnectElement:
         \(C.ThreeInterpret { disconnect }) { id, scope, parent } ->
           disconnect { id, scope, parent }
-    , toElt: coerce :: obj lock payload ->  Element (ThreeInterpret payload) Effect () lock payload
+    , toElt: coerce :: obj lock payload ->  Element (ThreeInterpret payload) () lock payload
     }
     { fromEltO1: coerce
     , fromEltO2: coerce
@@ -234,8 +233,8 @@ globalEffectComposerPortal v c =
 globalEffectComposerPortal1
   :: forall obj lock payload
    . Portable obj
-  => Coercible (obj lock payload) (Element (ThreeInterpret payload) Effect () lock payload)
+  => Coercible (obj lock payload) (Element (ThreeInterpret payload) () lock payload)
   => C.EffectComposer lock payload
-  -> (C.EffectComposer lock payload -> Entity Void (obj lock payload) Effect lock)
-  -> Entity Void (obj lock payload) Effect lock
+  -> (C.EffectComposer lock payload -> Entity Void (obj lock payload) lock)
+  -> Entity Void (obj lock payload) lock
 globalEffectComposerPortal1 v c = globalEffectComposerPortal (singleton v) (lcmap (index (Proxy :: _ 0)) c)

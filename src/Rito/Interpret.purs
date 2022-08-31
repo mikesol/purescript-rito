@@ -6,7 +6,7 @@ module Rito.Interpret
 
 import Prelude
 
-import Bolson.Core (Scope(..))
+import Bolson.EffectFn.Core (Scope(..))
 import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
 import Data.Symbol (class IsSymbol)

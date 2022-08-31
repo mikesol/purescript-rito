@@ -6,13 +6,13 @@ module Rito.CSS.CSS3DObject
 
 import Prelude
 
-import Bolson.Core as Bolson
+import Bolson.EffectFn.Core as Bolson
 import Control.Alt ((<|>))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import Deku.Core (ANut(..))
 import Deku.Toplevel (runInElement')
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 import Web.DOM.Document (createElement)

@@ -2,14 +2,14 @@ module Rito.Scene (scene, Scene(..), Background(..)) where
 
 import Prelude
 
-import Bolson.Control (flatten)
-import Bolson.Core (fixed)
-import Bolson.Core as Bolson
+import Bolson.EffectFn.Control (flatten)
+import Bolson.EffectFn.Core (fixed)
+import Bolson.EffectFn.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
 import Record (union)
 import Rito.Color as Col
 import Rito.Core as C

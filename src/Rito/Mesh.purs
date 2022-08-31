@@ -2,16 +2,16 @@ module Rito.Mesh (mesh, mesh', Mesh(..), Mesh') where
 
 import Prelude
 
-import Bolson.Control (flatten)
-import Bolson.Core (fixed)
-import Bolson.Core as Bolson
+import Bolson.EffectFn.Control (flatten)
+import Bolson.EffectFn.Core (fixed)
+import Bolson.EffectFn.Core as Bolson
 import Data.Foldable (oneOf, traverse_)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import Effect (Effect)
 import Effect.Ref as Ref
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
 import Foreign.Object (Object)
 import Foreign.Object as Object
 import Heterogeneous.Mapping (class Mapping, hmap)

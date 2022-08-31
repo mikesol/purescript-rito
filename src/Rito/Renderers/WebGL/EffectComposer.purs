@@ -2,15 +2,15 @@ module Rito.Renderers.WebGL.EffectComposer where
 
 import Prelude
 
-import Bolson.Control (flatten)
-import Bolson.Core (Scope(..), fixed)
-import Bolson.Core as Bolson
+import Bolson.EffectFn.Control (flatten)
+import Bolson.EffectFn.Core (Scope(..), fixed)
+import Bolson.EffectFn.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import Effect.Ref as Ref
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 

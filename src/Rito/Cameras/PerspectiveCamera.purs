@@ -15,7 +15,7 @@ import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
 import Record (union)
 import Rito.Core (object3D)
 import Rito.Core as C

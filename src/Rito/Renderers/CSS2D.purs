@@ -2,14 +2,14 @@ module Rito.Renderers.CSS2D where
 
 import Prelude
 
-import Bolson.Core (Scope(..))
-import Bolson.Core as Bolson
+import Bolson.EffectFn.Core (Scope(..))
+import Bolson.EffectFn.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import Effect.Ref as Ref
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
 import Record (union)
 import Rito.Core as C
 import Rito.THREE as THREE

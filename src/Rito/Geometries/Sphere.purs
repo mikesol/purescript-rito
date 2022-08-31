@@ -9,7 +9,7 @@ import Prelude
 
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Number (pi)
-import FRP.Event ( makeEvent, subscribe)
+import FRP.Event.EffectFn ( makeEvent, subscribe)
 import Foreign.Object (Object, empty)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
