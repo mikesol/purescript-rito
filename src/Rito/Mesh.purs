@@ -5,14 +5,14 @@ import Prelude
 import Bolson.EffectFn.Control (flatten)
 import Bolson.EffectFn.Core (fixed)
 import Bolson.EffectFn.Core as Bolson
-import Data.Foldable (oneOf, traverse_)
+import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import Effect (Effect)
+import Effect (Effect, foreachE)
 import Effect.Ref as Ref
-import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
-import Foreign.Object (Object)
+import FRP.Event.EffectFn (Event, makeEvent, subscribe)
+import Foreign.Object (Object, values)
 import Foreign.Object as Object
 import Heterogeneous.Mapping (class Mapping, hmap)
 import Record (union)
@@ -170,7 +170,7 @@ mesh' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.
               )
             pure do
               removes <- Ref.read unsubs
-              traverse_ pusher removes
+              foreachE (values removes) pusher
               usu
         , flatten
             { doLogic: absurd

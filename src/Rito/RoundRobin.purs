@@ -15,10 +15,10 @@ import Data.Foldable (oneOf, traverse_)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import Effect (Effect)
+import Effect (Effect, foreachE)
 import Effect.Ref as Ref
 import FRP.Event.EffectFn (Event, makeEvent, subscribe)
-
+import Foreign.Object (values)
 import Foreign.Object as Object
 import Record (union)
 import Rito.Color (Color)
@@ -162,7 +162,7 @@ singleInstance props (InstanceId { meshId, instanceId }) = C.Instance
           pure
             do
               removes <- Ref.read unsubs
-              traverse_ pusher removes
+              foreachE (values removes) pusher
               usu
 
       ]
