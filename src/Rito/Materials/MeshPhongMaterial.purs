@@ -16,7 +16,7 @@ import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, makePureEvent, subscribePure)
+import FRP.Event (Event, makeLemmingEvent)
 import Record (union)
 import Rito.BlendDst (BlendDst)
 import Rito.BlendEquation (BlendEquation)
@@ -578,10 +578,10 @@ meshPhongMaterial i' atts = C.Material go
         , setWireframeLinecap
         , setWireframeLinejoin
         }
-    ) = makePureEvent \k -> do
+    ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribePure
+    unsub <- mySub
       ( oneOf
           [ pure
               ( makeMeshPhongMaterial

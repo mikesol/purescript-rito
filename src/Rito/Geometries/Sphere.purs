@@ -9,7 +9,7 @@ import Prelude
 
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Number (pi)
-import FRP.Event (makePureEvent, subscribePure)
+import FRP.Event (makeLemmingEvent)
 import Foreign.Object (Object, empty)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
@@ -145,10 +145,10 @@ sphere i' = C.Geometry go
         , deleteFromCache
         , makeSphere
         }
-    ) = makePureEvent \k -> do
+    ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribePure
+    unsub <- mySub
       ( pure
           ( makeSphere
               { id: me

@@ -5,7 +5,7 @@ import Prelude
 import Bolson.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
-import FRP.Event ( makePureEvent, subscribePure)
+import FRP.Event ( makeLemmingEvent)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -94,10 +94,10 @@ bloomPass ii' = Bolson.Element' $ C.Pass go
         , deleteFromCache
         , makeBloomPass
         }
-    ) = makePureEvent \k0 -> do
+    ) = makeLemmingEvent \mySub k0 -> do
     me <- ids
     psr.raiseId me
-    u1 <- subscribePure
+    u1 <- mySub
       ( oneOf
           [ pure $ makeBloomPass
               { id: me

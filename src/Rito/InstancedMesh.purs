@@ -21,7 +21,7 @@ import Data.Newtype (class Newtype)
 import Data.Reflectable (class Reflectable, reflectType)
 import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, makePureEvent, subscribePure)
+import FRP.Event (Event, makeLemmingEvent)
 import Rito.Color (Color)
 import Rito.Core as C
 import Rito.Matrix4 (Matrix4)
@@ -87,12 +87,12 @@ instancedMesh' _ imsh (C.Geometry geo) (C.Material mat) props = Bolson.Element'
           , setInstancedMeshMatrix4
           , setInstancedMeshColor
           }
-      ) = makePureEvent \k -> do
+      ) = makeLemmingEvent \mySub k -> do
     me <- ids
     geoR <- Ref.new Nothing
     matR <- Ref.new Nothing
     parent.raiseId me
-    u0 <- flip subscribePure k $
+    u0 <- flip mySub k $
       oneOf
         [ geo
             -- we set the parent to nothing
@@ -112,7 +112,7 @@ instancedMesh' _ imsh (C.Geometry geo) (C.Material mat) props = Bolson.Element'
         ]
     geoId <- Ref.read geoR
     matId <- Ref.read matR
-    u1 <- flip subscribePure k $ case geoId, matId of
+    u1 <- flip mySub k $ case geoId, matId of
       Nothing, _ -> empty
       _, Nothing -> empty
       Just gid, Just mid -> oneOf

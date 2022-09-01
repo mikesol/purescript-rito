@@ -8,7 +8,7 @@ module Rito.Geometries.BufferGeometry
 import Prelude
 
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
-import FRP.Event (makePureEvent, subscribePure)
+import FRP.Event (makeLemmingEvent)
 import Foreign.Object (Object, empty)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
@@ -83,10 +83,10 @@ bufferGeometry i' = C.Geometry go
         , deleteFromCache
         , makeBufferGeometry
         }
-    ) = makePureEvent \k -> do
+    ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribePure
+    unsub <- mySub
       ( pure
           ( makeBufferGeometry
               { id: me

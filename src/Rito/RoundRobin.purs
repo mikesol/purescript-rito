@@ -19,7 +19,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import Effect (Effect)
-import FRP.Event (Event, makePureEvent, subscribePure)
+import FRP.Event (Event, makeLemmingEvent)
 import Foreign.Object (values)
 import Foreign.Object as Object
 import Record (union)
@@ -90,13 +90,13 @@ singleInstance props (InstanceId { meshId, instanceId }) = C.Instance
         , removeIMOnTouchMove
         , removeIMOnTouchCancel
         }
-    ) = makePureEvent \k -> do
+    ) = makeLemmingEvent \mySub k -> do
 
-    u <- flip subscribePure k $ oneOf
-      [ makePureEvent \pusher -> do
+    u <- flip mySub k $ oneOf
+      [ makeLemmingEvent \mySub pusher -> do
           unsubs <- Ref.new Object.empty
           let withRemoval = withRemoval' unsubs
-          usu <- subscribePure props \(Instance msh) -> pusher =<<
+          usu <- mySub props \(Instance msh) -> pusher =<<
             ( msh # match
                 { matrix4: \matrix4 -> pure $ setSingleInstancedMeshMatrix4 $
                     { id: meshId
@@ -197,12 +197,12 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
           , deleteFromCache
           , makeInstancedMesh
           }
-      ) = makePureEvent \topK -> do
+      ) = makeLemmingEvent \mySub topK -> do
     me <- ids
     geoR <- Ref.new Nothing
     matR <- Ref.new Nothing
     parent.raiseId me
-    u0 <- flip subscribePure topK $
+    u0 <- flip mySub topK $
       oneOf
         [ geo
             -- we set the parent to nothing
@@ -222,7 +222,7 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
         ]
     geoId <- Ref.read geoR
     matId <- Ref.read matR
-    u1 <- flip subscribePure topK $ case geoId, matId of
+    u1 <- flip mySub topK $ case geoId, matId of
       Nothing, _ -> empty
       _, Nothing -> empty
       Just gid, Just mid -> oneOf
@@ -238,12 +238,12 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
         -- todo: instanced logic is copied a fair bit from bolson's flatten
         -- but it's different enough that it's tough to merge it with flatten
         -- insert instanced logic here
-        , makePureEvent \k -> do
+        , makeLemmingEvent \mySub k -> do
             available <- Ref.new (0 .. (count - 1))
             cancelInner <- Ref.new Object.empty
             cancelOuter <-
               -- each child gets its own scope
-              subscribePure props \inner ->
+              mySub props \inner ->
                 do
                   -- holds the previous id
                   availableNow <- Ref.read available
@@ -258,7 +258,7 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
                       eltsUnsub <- Ref.new (pure unit)
                       myImmediateCancellation <- Ref.new (pure unit)
                       stageRef <- Ref.new Begin
-                      c0 <- subscribePure inner \kid' -> do
+                      c0 <- mySub inner \kid' -> do
                         stage <- Ref.read stageRef
                         case kid', stage of
                           Release, Middle -> do
@@ -290,7 +290,7 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
                           Acquire kid, Begin -> do
                             -- holds the current id
                             void $ Ref.write Middle stageRef
-                            c1 <- subscribePure
+                            c1 <- mySub
                               ( ( (\(C.Instance i) -> i) $ kid
                                     ( InstanceId
                                         { meshId: me, instanceId: head }

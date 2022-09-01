@@ -15,7 +15,7 @@ import Data.Variant (Variant, match)
 import Deku.Core (ANut(..))
 import Deku.Toplevel (runInElement')
 import Effect (Effect)
-import FRP.Event (Event, makePureEvent, subscribePure)
+import FRP.Event (Event, makeLemmingEvent)
 import Rito.Core as C
 import Rito.THREE as THREE
 import Unsafe.Coerce (unsafeCoerce)
@@ -47,14 +47,14 @@ css2DObject ipt@{ nut: ANut nut } atts = Bolson.Element' $ C.CSS2DObject go
           , deleteFromCache
           , makeCSS2DObject
           }
-      ) = makePureEvent \k -> do
+      ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
     --- UGGGGHHHHH
     elt <- (unsafeCoerce :: Effect Element -> ST Region.Global Element) (window >>= document >>= createElement "div" <<< toDocument)
     --- UGGGGHHHH
     dku <- ((unsafeCoerce :: Effect (Effect Unit) -> ST Region.Global (ST Region.Global Unit)) (runInElement' elt nut))
-    unsub <- subscribePure
+    unsub <- mySub
       ( oneOf
           [ pure
               ( makeCSS2DObject

@@ -9,7 +9,7 @@ import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, makePureEvent, subscribePure)
+import FRP.Event (Event, makeLemmingEvent)
 import Rito.Core (ThreeInterpret(..))
 import Rito.Core as C
 import Rito.THREE as THREE
@@ -51,10 +51,10 @@ unsafeInternalGroup dif gp props kidz = Element' $ C.Group go
           { ids
           , deleteFromCache
           }
-      ) = makePureEvent \k -> do
+      ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribePure
+    unsub <- mySub
       ( oneOf
           [ pure $ dif di
               { id: me

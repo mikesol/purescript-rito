@@ -10,7 +10,7 @@ import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, makePureEvent, subscribePure)
+import FRP.Event (Event, makeLemmingEvent)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -37,12 +37,12 @@ effectComposer i rndr props kidz = C.EffectComposer go
           , makeEffectComposer
           , effectComposerRender
           }
-      ) = makePureEvent \k -> do
+      ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
     scope <- ids
     rendererAvar <- Ref.new Nothing
-    u0 <- subscribePure
+    u0 <- mySub
       ( oneOf
           [ rndr # \(C.WebGLRenderer gooo) -> gooo
               { parent: Just me
@@ -56,7 +56,7 @@ effectComposer i rndr props kidz = C.EffectComposer go
     rendererLR <- Ref.read rendererAvar
     u1 <- case rendererLR of
       Nothing -> pure (pure unit)
-      Just rendererId -> k # subscribePure
+      Just rendererId -> k # mySub
         ( oneOf
             [ pure $ makeEffectComposer
                 { id: me

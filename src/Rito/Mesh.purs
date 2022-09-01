@@ -13,7 +13,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import Effect (Effect)
-import FRP.Event (Event, makePureEvent, subscribePure)
+import FRP.Event (Event, makeLemmingEvent)
 import Foreign.Object (Object, values)
 import Foreign.Object as Object
 import Heterogeneous.Mapping (class Mapping, hmap)
@@ -91,10 +91,10 @@ mesh' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $
           , removeOnTouchMove
           , removeOnTouchCancel
           }
-      ) = makePureEvent \k -> do
+      ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribePure
+    unsub <- mySub
       ( oneOf
           [ pure $ makeMesh
               { id: me
@@ -114,10 +114,10 @@ mesh' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $
               , raiseId: \_ -> pure unit
               }
               di
-          , makePureEvent \pusher -> do
+          , makeLemmingEvent \mySub pusher -> do
               unsubs <- Ref.new Object.empty
               let withRemoval = withRemoval' unsubs
-              usu <- subscribePure props \(Mesh msh) -> pusher =<<
+              usu <- mySub props \(Mesh msh) -> pusher =<<
                 ( msh # match
                     ( union
                         { onClick: \onClick -> withRemoval "click"

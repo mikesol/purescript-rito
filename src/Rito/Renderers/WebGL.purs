@@ -9,7 +9,7 @@ import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, makePureEvent, subscribePure)
+import FRP.Event (Event, makeLemmingEvent)
 import Rito.Core as C
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
@@ -180,13 +180,13 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
           , webGLRender
           , setSize
           }
-      ) = makePureEvent \k0 -> do
+      ) = makeLemmingEvent \mySub k0 -> do
     me <- ids
     psr.raiseId me
     scope <- ids
     sceneAvar <- Ref.new Nothing
     cameraAvar <- Ref.new Nothing
-    u0 <- subscribePure
+    u0 <- mySub
       ( oneOf
           [ sne # \(C.Scene gooo) -> gooo
               { parent: Just me
@@ -209,7 +209,7 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
       Nothing -> pure (pure unit)
       Just sceneId -> case cameraLR of
         Nothing -> pure (pure unit)
-        Just cameraId -> subscribePure
+        Just cameraId -> mySub
           ( oneOf
               [ pure $ makeWebGLRenderer
                   { id: me
@@ -227,10 +227,10 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
                   , depth: i.depth
                   , logarithmicDepthBuffer: i.logarithmicDepthBuffer
                   }
-              , makePureEvent \k -> do
+              , makeLemmingEvent \mySub k -> do
                   usuRef <- Ref.new (pure unit)
                   -- ugh, there's got to be a better way...
-                  unsub <- subscribePure
+                  unsub <- mySub
                     ( props <#>
                         ( \(WebGLRenderer msh) ->
                             msh # match

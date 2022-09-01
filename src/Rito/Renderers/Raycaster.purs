@@ -7,7 +7,7 @@ import Bolson.Core as Bolson
 import Control.Monad.ST.Internal as Ref
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
-import FRP.Event (makePureEvent, subscribePure)
+import FRP.Event (makeLemmingEvent)
 import Rito.Core as C
 import Rito.THREE as THREE
 import Web.HTML (HTMLCanvasElement)
@@ -27,12 +27,12 @@ raycaster i cam = Bolson.Element' $ C.Renderer go
           , deleteFromCache
           , makeRaycaster
           }
-      ) = makePureEvent \k0 -> do
+      ) = makeLemmingEvent \mySub k0 -> do
     me <- ids
     psr.raiseId me
     scope <- ids
     cameraAvar <- Ref.new Nothing
-    u0 <- subscribePure
+    u0 <- mySub
       ( oneOf
           [ cam # \(C.Camera gooo) -> gooo
               { parent: Just me
@@ -46,7 +46,7 @@ raycaster i cam = Bolson.Element' $ C.Renderer go
     cameraLR <- Ref.read cameraAvar
     u1 <- case cameraLR of
       Nothing -> pure (pure unit)
-      Just cameraId -> subscribePure
+      Just cameraId -> mySub
         ( oneOf
             [ pure $ makeRaycaster
                 { id: me

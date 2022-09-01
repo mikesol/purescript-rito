@@ -8,7 +8,7 @@ module Rito.Geometries.Capsule
 import Prelude
 
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
-import FRP.Event (makePureEvent, subscribePure)
+import FRP.Event (makeLemmingEvent)
 import Foreign.Object (Object, empty)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
@@ -116,10 +116,10 @@ capsule i' = C.Geometry go
         , deleteFromCache
         , makeCapsule
         }
-    ) = makePureEvent \k -> do
+    ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribePure
+    unsub <- mySub
       ( pure
           ( makeCapsule
               { id: me

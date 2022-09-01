@@ -9,7 +9,7 @@ import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, makePureEvent, subscribePure)
+import FRP.Event (Event, makeLemmingEvent)
 import Record (union)
 import Rito.Color as Col
 import Rito.Core as C
@@ -46,10 +46,10 @@ scene ctor props kidz = C.Scene go
           , setBackgroundTexture
           , setBackgroundColor
           }
-      ) = makePureEvent \k -> do
+      ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribePure
+    unsub <- mySub
       ( oneOf
           [ pure $ makeScene
               { id: me
