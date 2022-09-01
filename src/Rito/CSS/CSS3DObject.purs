@@ -67,6 +67,5 @@ css3DObject ipt@{ nut: ANut nut } atts = Bolson.Element' $ C.CSS3DObject go
       k
     pure do
       k (deleteFromCache { id: me })
-      -- ugggghhhhhhhhhh
       dku
       unsub
