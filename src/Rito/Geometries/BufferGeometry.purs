@@ -8,7 +8,7 @@ module Rito.Geometries.BufferGeometry
 import Prelude
 
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
-import FRP.Event.EffectFn (makeEvent, subscribe)
+import FRP.Event (makePureEvent, subscribePure)
 import Foreign.Object (Object, empty)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
@@ -83,10 +83,10 @@ bufferGeometry i' = C.Geometry go
         , deleteFromCache
         , makeBufferGeometry
         }
-    ) = makeEvent \k -> do
+    ) = makePureEvent \k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribe
+    unsub <- subscribePure
       ( pure
           ( makeBufferGeometry
               { id: me

@@ -6,7 +6,7 @@ import Data.Either (Either(..))
 import Effect (Effect)
 import Effect.Aff (Aff, makeAff)
 import Effect.Exception (Error)
-import FRP.Event.EffectFn (Event)
+import FRP.Event (Event)
 import Rito.Core (ThreeInterpret(..))
 import Rito.Core as C
 import Rito.Group (Group, unsafeInternalGroup)

@@ -17,7 +17,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Symbol (reflectSymbol)
 import Data.Variant (Unvariant(..), Variant, match, unvariant)
-import FRP.Event.EffectFn (Event, makeEvent, subscribe)
+import FRP.Event (Event, makePureEvent, subscribePure)
 import Foreign (Foreign)
 import Prim.RowList (class RowToList)
 import Record (union)
@@ -318,10 +318,10 @@ shaderMaterial unifs i' atts = C.Material go
         , makeShaderMaterial
         , setUniform
         }
-    ) = makeEvent \k -> do
+    ) = makePureEvent \k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribe
+    unsub <- subscribePure
       ( oneOf
           [ pure
               ( makeShaderMaterial

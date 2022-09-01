@@ -2,12 +2,12 @@ module Rito.Renderers.WebGL.EffectComposerPass where
 
 import Prelude
 
-import Bolson.EffectFn.Core (Scope(..))
-import Bolson.EffectFn.Core as Bolson
+import Bolson.Core (Scope(..))
+import Bolson.Core as Bolson
+import Control.Monad.ST.Internal as Ref
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
-import Effect.Ref as Ref
-import FRP.Event.EffectFn ( makeEvent, subscribe)
+import FRP.Event (makePureEvent, subscribePure)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -27,17 +27,17 @@ effectComposerPass ii ecomp = Bolson.Element' $ C.Pass go
           , deleteFromCache
           , makeEffectComposerPass
           }
-      ) = makeEvent \k0 -> do
+      ) = makePureEvent \k0 -> do
     me <- ids
     psr.raiseId me
     scope <- ids
     effectComposerAvar <- Ref.new Nothing
-    u0 <- subscribe
+    u0 <- subscribePure
       ( oneOf
           [ ecomp # \(C.EffectComposer gooo) -> gooo
               { parent: Just me
               , scope: Local scope
-              , raiseId: \i -> Ref.write (Just i) effectComposerAvar
+              , raiseId: \i -> void $ Ref.write (Just i) effectComposerAvar
               }
               di
           ]
@@ -46,7 +46,7 @@ effectComposerPass ii ecomp = Bolson.Element' $ C.Pass go
     effectComposerLR <- Ref.read effectComposerAvar
     u1 <- case effectComposerLR of
       Nothing -> pure (pure unit)
-      Just effectComposerId -> subscribe
+      Just effectComposerId -> subscribePure
           ( oneOf
               [ pure $ makeEffectComposerPass
                   { id: me

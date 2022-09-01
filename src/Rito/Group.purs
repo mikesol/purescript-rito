@@ -2,14 +2,14 @@ module Rito.Group (group, unsafeInternalGroup, Group(..)) where
 
 import Prelude
 
-import Bolson.EffectFn.Control (flatten)
-import Bolson.EffectFn.Core (Entity(..), Scope, fixed)
-import Bolson.EffectFn.Core as Bolson
+import Bolson.Control (flatten)
+import Bolson.Core (Entity(..), Scope, fixed)
+import Bolson.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import FRP.Event.EffectFn (Event, makeEvent, subscribe)
+import FRP.Event (Event, makePureEvent, subscribePure)
 import Rito.Core (ThreeInterpret(..))
 import Rito.Core as C
 import Rito.THREE as THREE
@@ -51,10 +51,10 @@ unsafeInternalGroup dif gp props kidz = Element' $ C.Group go
           { ids
           , deleteFromCache
           }
-      ) = makeEvent \k -> do
+      ) = makePureEvent \k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribe
+    unsub <- subscribePure
       ( oneOf
           [ pure $ dif di
               { id: me
@@ -72,7 +72,7 @@ unsafeInternalGroup dif gp props kidz = Element' $ C.Group go
               , disconnectElement: unwrap >>> _.disconnect
               , toElt: \(C.Group obj) -> Bolson.Element obj
               }
-              { parent: Just me, scope: parent.scope, raiseId: pure mempty }
+              { parent: Just me, scope: parent.scope, raiseId: \_ -> pure unit }
               di
               ( fixed
                   ( map

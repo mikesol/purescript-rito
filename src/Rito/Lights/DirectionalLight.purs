@@ -10,13 +10,13 @@ module Rito.Lights.DirectionalLight
 
 import Prelude
 
-import Bolson.EffectFn.Core as Bolson
+import Bolson.Core as Bolson
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event.EffectFn (Event, makeEvent, subscribe)
+import FRP.Event (Event, makePureEvent, subscribePure)
 import Record (union)
 import Rito.Color (Color)
 import Rito.Core as C
@@ -104,10 +104,10 @@ directionalLight i' atts = Bolson.Element' $ C.Light go
           , setColor
           , setIntensity
           }
-      ) = makeEvent \k -> do
+      ) = makePureEvent \k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribe
+    unsub <- subscribePure
       ( oneOf
           [ pure
               ( makeDirectionalLight

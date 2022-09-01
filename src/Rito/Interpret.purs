@@ -6,12 +6,13 @@ module Rito.Interpret
 
 import Prelude
 
-import Bolson.EffectFn.Core (Scope(..))
+import Bolson.Core (Scope(..))
+import Control.Monad.ST.Global as Region
+import Control.Monad.ST.Internal as Ref
 import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
 import Data.Symbol (class IsSymbol)
 import Effect (Effect)
-import Effect.Random as R
 import Foreign (Foreign)
 import Foreign.Object (Object)
 import Prim.Row (class Cons, class Lacks)
@@ -42,6 +43,8 @@ import Rito.Vector2 (Vector2)
 import Rito.Vector3 (Vector3)
 import Rito.WireframeLinecap as WLC
 import Rito.WireframeLinejoin as WLJ
+import Test.QuickCheck (arbitrary, mkSeed)
+import Test.QuickCheck.Gen (Gen, evalGen)
 import Type.Proxy (Proxy(..))
 import Web.DOM as Web.DOM
 import Web.HTML (HTMLCanvasElement)
@@ -611,9 +614,15 @@ foreign import stripUndefined_ :: forall a. a -> a
 ffiize :: forall ri i o. RowToList i ri => FFIIze ri i o => { | i } -> { | o }
 ffiize i = stripUndefined_ (build (ffiize' (Proxy :: _ ri) i) {})
 
-effectfulThreeInterpret :: Core.ThreeInterpret (Payload)
-effectfulThreeInterpret = Core.ThreeInterpret
-  { ids: map show R.random
+effectfulThreeInterpret :: Ref.STRef Region.Global Int -> Core.ThreeInterpret (Payload)
+effectfulThreeInterpret seed = Core.ThreeInterpret
+  { ids: do
+      s <- Ref.read seed
+      let
+        o = show
+          (evalGen (arbitrary :: Gen Int) { newSeed: mkSeed s, size: 5 })
+      void $ Ref.modify (add 1) seed
+      pure o
   -- render
   , effectComposerRender: effectComposerRender_
   , webGLRender: webGLRender_

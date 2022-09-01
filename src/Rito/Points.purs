@@ -7,21 +7,24 @@ module Rito.Points
 
 import Prelude
 
-import Bolson.EffectFn.Control (flatten)
-import Bolson.EffectFn.Core (fixed)
-import Bolson.EffectFn.Core as Bolson
+import Bolson.Control (flatten)
+import Bolson.Core (fixed)
+import Bolson.Core as Bolson
+import Control.Monad.ST.Global as Region
+import Control.Monad.ST.Internal (ST)
+import Control.Monad.ST.Internal as Ref
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import Effect (Effect, foreachE)
-import Effect.Ref as Ref
-import FRP.Event.EffectFn (Event, makeEvent, subscribe)
+import Effect (Effect)
+import FRP.Event (Event, makePureEvent, subscribePure)
 import Foreign.Object (Object, values)
 import Foreign.Object as Object
 import Heterogeneous.Mapping (class Mapping, hmap)
 import Record (union)
 import Rito.Core as C
+import Rito.ST.ForEach (foreachST)
 import Rito.THREE as THREE
 import Web.TouchEvent (Touch, TouchEvent)
 import Web.UIEvent.MouseEvent (MouseEvent)
@@ -45,12 +48,12 @@ instance Newtype Points Points'
 
 data MakeEvent = MakeEvent
 
-instance Mapping MakeEvent (x -> a) (x -> Effect a) where
+instance Mapping MakeEvent (x -> a) (x -> ST Region.Global a) where
   mapping MakeEvent = map pure
 
-withRemoval' :: forall a. Ref.Ref (Object a) -> String -> a -> a -> Effect a
+withRemoval' :: forall a. Ref.STRef Region.Global (Object a) -> String -> a -> a -> ST Region.Global a
 withRemoval' p s attach remove = do
-  Ref.modify_ (Object.insert s remove) p
+  void $ Ref.modify (Object.insert s remove) p
   pure attach
 
 points'
@@ -87,10 +90,10 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
           , removeOnTouchMove
           , removeOnTouchCancel
           }
-      ) = makeEvent \k -> do
+      ) = makePureEvent \k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribe 
+    unsub <- subscribePure 
       (oneOf
         [ pure $ makePoints
             { id: me
@@ -101,19 +104,19 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
         , geo
             { parent: Just me
             , scope: parent.scope
-            , raiseId: mempty
+            , raiseId: \_ -> pure unit
             }
             di
         , mat
             { parent: Just me
             , scope: parent.scope
-            , raiseId: mempty
+            , raiseId: \_ -> pure unit
             }
             di
-        , makeEvent \pusher -> do
+        , makePureEvent \pusher -> do
             unsubs <- Ref.new Object.empty
             let withRemoval = withRemoval' unsubs
-            usu <- subscribe props \(Points msh) -> pusher =<<
+            usu <- subscribePure props \(Points msh) -> pusher =<<
               ( msh # match
                   ( union
                       { onClick: \onClick -> withRemoval "click"
@@ -175,7 +178,7 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
               )
             pure do
               removes <- Ref.read unsubs
-              foreachE (values removes) pusher
+              foreachST (values removes) pusher
               usu
         , flatten
             { doLogic: absurd
@@ -183,7 +186,7 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
             , disconnectElement: unwrap >>> _.disconnect
             , toElt: \(C.Points obj) -> Bolson.Element obj
             }
-            { parent: Just me, scope: parent.scope, raiseId: pure mempty }
+            { parent: Just me, scope: parent.scope, raiseId: \_ -> pure unit }
             di
             (fixed kidz)
         ]) k

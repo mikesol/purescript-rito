@@ -10,7 +10,8 @@ module Rito.InstancedMesh
 
 import Prelude
 
-import Bolson.EffectFn.Core as Bolson
+import Bolson.Core as Bolson
+import Control.Monad.ST.Internal as Ref
 import Control.Plus (empty)
 import Data.Exists (Exists, mkExists, runExists)
 import Data.FastVect.Common (class IsVect)
@@ -20,8 +21,7 @@ import Data.Newtype (class Newtype)
 import Data.Reflectable (class Reflectable, reflectType)
 import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Variant (Variant, match)
-import Effect.Ref as Ref
-import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
+import FRP.Event (Event, makePureEvent, subscribePure)
 import Rito.Color (Color)
 import Rito.Core as C
 import Rito.Matrix4 (Matrix4)
@@ -87,12 +87,12 @@ instancedMesh' _ imsh (C.Geometry geo) (C.Material mat) props = Bolson.Element'
           , setInstancedMeshMatrix4
           , setInstancedMeshColor
           }
-      ) = makeEvent \k -> do
+      ) = makePureEvent \k -> do
     me <- ids
     geoR <- Ref.new Nothing
     matR <- Ref.new Nothing
     parent.raiseId me
-    u0 <- flip subscribe k $
+    u0 <- flip subscribePure k $
       oneOf
         [ geo
             -- we set the parent to nothing
@@ -100,19 +100,19 @@ instancedMesh' _ imsh (C.Geometry geo) (C.Material mat) props = Bolson.Element'
             -- in makeInstancedMesh
             { parent: Nothing
             , scope: parent.scope
-            , raiseId: \id -> Ref.write (Just id) geoR
+            , raiseId: \id -> void $ Ref.write (Just id) geoR
             }
             di
         , mat
             { parent: Nothing
             , scope: parent.scope
-            , raiseId: \id -> Ref.write (Just id) matR
+            , raiseId: \id -> void $ Ref.write (Just id) matR
             }
             di
         ]
     geoId <- Ref.read geoR
     matId <- Ref.read matR
-    u1 <- flip subscribe k $ case geoId, matId of
+    u1 <- flip subscribePure k $ case geoId, matId of
       Nothing, _ -> empty
       _, Nothing -> empty
       Just gid, Just mid -> oneOf

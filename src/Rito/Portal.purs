@@ -2,8 +2,8 @@ module Rito.Portal where
 
 import Prelude
 
-import Bolson.EffectFn.Control as Bolson
-import Bolson.EffectFn.Core (Element(..), Entity)
+import Bolson.Control as Bolson
+import Bolson.Core (Element(..), Entity)
 import Data.FastVect.FastVect (Vect, index, singleton)
 import Data.Newtype (unwrap)
 import Data.Profunctor (lcmap)

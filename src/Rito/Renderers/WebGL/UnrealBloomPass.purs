@@ -2,11 +2,11 @@ module Rito.Renderers.WebGL.UnrealBloomPass where
 
 import Prelude
 
-import Bolson.EffectFn.Core as Bolson
+import Bolson.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
 import Data.Variant (Variant, match)
-import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
+import FRP.Event (Event,  makePureEvent, subscribePure)
 import Rito.Core as C
 import Rito.THREE as THREE
 import Rito.Vector2 (Vector2)
@@ -111,10 +111,10 @@ unrealBloomPass ii' propz = Bolson.Element' $ C.Pass go
         , setRadius
         , setThreshold
         }
-    ) = makeEvent \k0 -> do
+    ) = makePureEvent \k0 -> do
     me <- ids
     psr.raiseId me
-    u1 <- subscribe
+    u1 <- subscribePure
       ( oneOf
           [ pure $ makeUnrealBloomPass
               { id: me

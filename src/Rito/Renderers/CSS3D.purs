@@ -2,14 +2,14 @@ module Rito.Renderers.CSS3D where
 
 import Prelude
 
-import Bolson.EffectFn.Core (Scope(..))
-import Bolson.EffectFn.Core as Bolson
+import Bolson.Core (Scope(..))
+import Bolson.Core as Bolson
+import Control.Monad.ST.Internal as Ref
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import Effect.Ref as Ref
-import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
+import FRP.Event (Event, makePureEvent, subscribePure)
 import Record (union)
 import Rito.Core as C
 import Rito.THREE as THREE
@@ -46,24 +46,24 @@ css3DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
           , css3DRender
           , setSize
           }
-      ) = makeEvent \k0 -> do
+      ) = makePureEvent \k0 -> do
     me <- ids
     psr.raiseId me
     scope <- ids
     sceneAvar <- Ref.new Nothing
     cameraAvar <- Ref.new Nothing
-    u0 <- subscribe
+    u0 <- subscribePure
       ( oneOf
           [ sne # \(C.Scene gooo) -> gooo
               { parent: Just me
               , scope: Local scope
-              , raiseId: \i -> Ref.write (Just i) sceneAvar
+              , raiseId: \i -> void $ Ref.write (Just i) sceneAvar
               }
               di
           , cam # \(C.Camera gooo) -> gooo
               { parent: Just me
               , scope: Local scope
-              , raiseId: \i -> Ref.write (Just i) cameraAvar
+              , raiseId: \i -> void $ Ref.write (Just i) cameraAvar
               }
               di
           ]
@@ -77,7 +77,7 @@ css3DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
       Nothing -> pure (pure unit)
       Just sceneId -> case cameraLR of
         Nothing -> pure (pure unit)
-        Just cameraId -> subscribe
+        Just cameraId -> subscribePure
           ( oneOf
               [ pure $ makeCSS3DRenderer
                   $ union
@@ -85,10 +85,10 @@ css3DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
                     , camera: cameraId
                     }
                     make
-              , makeEvent \k -> do
-                  usuRef <- Ref.new mempty
+              , makePureEvent \k -> do
+                  usuRef <- Ref.new (pure unit)
                   -- ugh, there's got to be a better way...
-                  unsub <- subscribe
+                  unsub <- subscribePure
                     ( props <#>
                         ( \(CSS3DRenderer msh) ->
                             msh # match
@@ -103,7 +103,7 @@ css3DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
                         )
                     )
                     k
-                  Ref.write unsub usuRef
+                  void $ Ref.write unsub usuRef
                   pure do
                     usu <- Ref.read usuRef
                     usu

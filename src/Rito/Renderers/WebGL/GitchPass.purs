@@ -2,10 +2,10 @@ module Rito.Renderers.WebGL.GlitchPass where
 
 import Prelude
 
-import Bolson.EffectFn.Core as Bolson
+import Bolson.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
-import FRP.Event.EffectFn ( makeEvent, subscribe)
+import FRP.Event ( makePureEvent, subscribePure)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -66,10 +66,10 @@ glitchPass ii' = Bolson.Element' $ C.Pass go
           , deleteFromCache
           , makeGlitchPass
           }
-      ) = makeEvent \k0 -> do
+      ) = makePureEvent \k0 -> do
     me <- ids
     psr.raiseId me
-    u1 <- subscribe
+    u1 <- subscribePure
           ( oneOf
               [ pure $ makeGlitchPass
                   { id: me

@@ -16,7 +16,7 @@ import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event.EffectFn (Event, makeEvent, subscribe)
+import FRP.Event (Event, makePureEvent, subscribePure)
 import Record (union)
 import Rito.BlendDst (BlendDst)
 import Rito.BlendEquation (BlendEquation)
@@ -401,10 +401,10 @@ meshBasicMaterial i' atts = C.Material go
         , setWireframe
         , setWireframeLinewidth
         }
-    ) = makeEvent \k -> do
+    ) = makePureEvent \k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribe
+    unsub <- subscribePure
       ( oneOf
           [ pure
               ( makeMeshBasicMaterial

@@ -2,13 +2,15 @@ module Rito.Core where
 
 import Prelude
 
-import Bolson.EffectFn.Core (Entity, Scope)
-import Bolson.EffectFn.Core as Bolson
+import Bolson.Core (Entity, Scope)
+import Bolson.Core as Bolson
+import Control.Monad.ST (ST)
+import Control.Monad.ST.Global as Region
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Deku.Core (ANut)
 import Effect (Effect)
-import FRP.Event.EffectFn (Event)
+import FRP.Event (Event)
 import Foreign (Foreign)
 import Foreign.Object as Object
 import Record (union)
@@ -71,7 +73,7 @@ cameraToGroup c = Bolson.Element' $
 type Ctor payload =
   { parent :: Maybe String
   , scope :: Scope
-  , raiseId :: String -> Effect Unit
+  , raiseId :: String -> ST Region.Global Unit
   }
   -> SimpleCtor payload
 
@@ -1447,7 +1449,7 @@ object3D
   }
 
 newtype ThreeInterpret payload = ThreeInterpret
-  { ids :: Effect String
+  { ids :: ST Region.Global String
   , effectComposerRender :: EffectComposerRender -> payload
   , webGLRender :: WebGLRender -> payload
   , css2DRender :: CSS2DRender -> payload

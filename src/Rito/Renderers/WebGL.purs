@@ -2,14 +2,14 @@ module Rito.Renderers.WebGL where
 
 import Prelude
 
-import Bolson.EffectFn.Core (Scope(..))
+import Bolson.Core (Scope(..))
+import Control.Monad.ST.Internal as Ref
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import Effect.Ref as Ref
-import FRP.Event.EffectFn (Event,  makeEvent, subscribe)
+import FRP.Event (Event, makePureEvent, subscribePure)
 import Rito.Core as C
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
@@ -180,24 +180,24 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
           , webGLRender
           , setSize
           }
-      ) = makeEvent \k0 -> do
+      ) = makePureEvent \k0 -> do
     me <- ids
     psr.raiseId me
     scope <- ids
     sceneAvar <- Ref.new Nothing
     cameraAvar <- Ref.new Nothing
-    u0 <- subscribe
+    u0 <- subscribePure
       ( oneOf
           [ sne # \(C.Scene gooo) -> gooo
               { parent: Just me
               , scope: Local scope
-              , raiseId: \i -> Ref.write (Just i) sceneAvar
+              , raiseId: \i -> void $ Ref.write (Just i) sceneAvar
               }
               di
           , cam # \(C.Camera gooo) -> gooo
               { parent: Just me
               , scope: Local scope
-              , raiseId: \i -> Ref.write (Just i) cameraAvar
+              , raiseId: \i -> void $ Ref.write (Just i) cameraAvar
               }
               di
           ]
@@ -209,7 +209,7 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
       Nothing -> pure (pure unit)
       Just sceneId -> case cameraLR of
         Nothing -> pure (pure unit)
-        Just cameraId -> subscribe
+        Just cameraId -> subscribePure
           ( oneOf
               [ pure $ makeWebGLRenderer
                   { id: me
@@ -227,10 +227,10 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
                   , depth: i.depth
                   , logarithmicDepthBuffer: i.logarithmicDepthBuffer
                   }
-              , makeEvent \k -> do
-                  usuRef <- Ref.new mempty
+              , makePureEvent \k -> do
+                  usuRef <- Ref.new (pure unit)
                   -- ugh, there's got to be a better way...
-                  unsub <- subscribe
+                  unsub <- subscribePure
                     ( props <#>
                         ( \(WebGLRenderer msh) ->
                             msh # match
@@ -245,7 +245,7 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
                         )
                     )
                     k
-                  Ref.write unsub usuRef
+                  void $ Ref.write unsub usuRef
                   pure do
                     usu <- Ref.read usuRef
                     usu

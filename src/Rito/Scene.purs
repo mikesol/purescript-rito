@@ -2,14 +2,14 @@ module Rito.Scene (scene, Scene(..), Background(..)) where
 
 import Prelude
 
-import Bolson.EffectFn.Control (flatten)
-import Bolson.EffectFn.Core (fixed)
-import Bolson.EffectFn.Core as Bolson
+import Bolson.Control (flatten)
+import Bolson.Core (fixed)
+import Bolson.Core as Bolson
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import FRP.Event.EffectFn (Event, makeEvent, subscribe)
+import FRP.Event (Event, makePureEvent, subscribePure)
 import Record (union)
 import Rito.Color as Col
 import Rito.Core as C
@@ -46,10 +46,10 @@ scene ctor props kidz = C.Scene go
           , setBackgroundTexture
           , setBackgroundColor
           }
-      ) = makeEvent \k -> do
+      ) = makePureEvent \k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribe
+    unsub <- subscribePure
       ( oneOf
           [ pure $ makeScene
               { id: me
@@ -77,7 +77,7 @@ scene ctor props kidz = C.Scene go
               , disconnectElement: unwrap >>> _.disconnect
               , toElt: \(C.Sceneful obj) -> Bolson.Element obj
               }
-              { parent: Just me, scope: parent.scope, raiseId: pure mempty }
+              { parent: Just me, scope: parent.scope, raiseId: \_ -> pure unit }
               di
               (fixed kidz)
           ]

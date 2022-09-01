@@ -39,7 +39,7 @@ import Effect.Random (randomInt)
 import Effect.Random as Random
 import Effect.Ref (new, read, write)
 import FRP.Behavior (behavior)
-import FRP.Event (Event, bang, makeEvent, subscribe)
+import FRP.Event (Event, bang, makePureEvent, subscribePure)
 import FRP.Event.Animate (animationFrameEvent)
 import FRP.Event.Class (biSampleOn)
 import FRP.Event.Time (withTime)
@@ -119,7 +119,7 @@ type UIEvents = V
   )
 
 e2e :: Effect ~> Event
-e2e e = makeEvent \k -> do
+e2e e = makePureEvent \k -> do
   e >>= k
   pure (pure unit)
 
@@ -136,7 +136,7 @@ buffers' =
   }
 
 random = behavior \e ->
-  makeEvent \k -> subscribe e \f ->
+  makePureEvent \k -> subscribePure e \f ->
     Random.random >>= k <<< f
 
 dgl d de g ge h he i =
@@ -642,7 +642,7 @@ main = launchAff_ do
                                       pure { x, y }
                                     ssub <- run2 ctx
                                       (music ctx randSound analyserE)
-                                    anisub <- subscribe animationFrameEvent
+                                    anisub <- subscribePure animationFrameEvent
                                       \_ -> do
                                         ae <- read analyserE
                                         for_ ae \a -> do

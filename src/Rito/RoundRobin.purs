@@ -8,22 +8,25 @@ module Rito.RoundRobin
 
 import Prelude
 
-import Bolson.EffectFn.Core as Bolson
+import Bolson.Core as Bolson
+import Control.Monad.ST (ST)
+import Control.Monad.ST.Global as Region
+import Control.Monad.ST.Internal as Ref
 import Control.Plus (empty)
 import Data.Array (nub, uncons, (..))
 import Data.Foldable (oneOf, traverse_)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import Effect (Effect, foreachE)
-import Effect.Ref as Ref
-import FRP.Event.EffectFn (Event, makeEvent, subscribe)
+import Effect (Effect)
+import FRP.Event (Event, makePureEvent, subscribePure)
 import Foreign.Object (values)
 import Foreign.Object as Object
 import Record (union)
 import Rito.Color (Color)
 import Rito.Core as C
 import Rito.Matrix4 (Matrix4)
+import Rito.ST.ForEach (foreachST)
 import Rito.THREE as THREE
 import Web.TouchEvent (Touch, TouchEvent)
 import Web.UIEvent.MouseEvent (MouseEvent)
@@ -53,9 +56,9 @@ derive instance Newtype Instance _
 newtype InstanceId = InstanceId { meshId :: String, instanceId :: Int }
 
 withRemoval'
-  :: forall a. Ref.Ref (Object.Object a) -> String -> a -> a -> Effect a
+  :: forall a. Ref.STRef Region.Global (Object.Object a) -> String -> a -> a -> ST Region.Global a
 withRemoval' p s attach remove = do
-  Ref.modify_ (Object.insert s remove) p
+  void $ Ref.modify (Object.insert s remove) p
   pure attach
 
 singleInstance
@@ -87,13 +90,13 @@ singleInstance props (InstanceId { meshId, instanceId }) = C.Instance
         , removeIMOnTouchMove
         , removeIMOnTouchCancel
         }
-    ) = makeEvent \k -> do
+    ) = makePureEvent \k -> do
 
-    u <- flip subscribe k $ oneOf
-      [ makeEvent \pusher -> do
+    u <- flip subscribePure k $ oneOf
+      [ makePureEvent \pusher -> do
           unsubs <- Ref.new Object.empty
           let withRemoval = withRemoval' unsubs
-          usu <- subscribe props \(Instance msh) -> pusher =<<
+          usu <- subscribePure props \(Instance msh) -> pusher =<<
             ( msh # match
                 { matrix4: \matrix4 -> pure $ setSingleInstancedMeshMatrix4 $
                     { id: meshId
@@ -162,7 +165,7 @@ singleInstance props (InstanceId { meshId, instanceId }) = C.Instance
           pure
             do
               removes <- Ref.read unsubs
-              foreachE (values removes) pusher
+              foreachST (values removes) pusher
               usu
 
       ]
@@ -194,12 +197,12 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
           , deleteFromCache
           , makeInstancedMesh
           }
-      ) = makeEvent \topK -> do
+      ) = makePureEvent \topK -> do
     me <- ids
     geoR <- Ref.new Nothing
     matR <- Ref.new Nothing
     parent.raiseId me
-    u0 <- flip subscribe topK $
+    u0 <- flip subscribePure topK $
       oneOf
         [ geo
             -- we set the parent to nothing
@@ -207,19 +210,19 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
             -- in makeInstancedMesh
             { parent: Nothing
             , scope: parent.scope
-            , raiseId: \id -> Ref.write (Just id) geoR
+            , raiseId: \id -> void $ Ref.write (Just id) geoR
             }
             di
         , mat
             { parent: Nothing
             , scope: parent.scope
-            , raiseId: \id -> Ref.write (Just id) matR
+            , raiseId: \id -> void $ Ref.write (Just id) matR
             }
             di
         ]
     geoId <- Ref.read geoR
     matId <- Ref.read matR
-    u1 <- flip subscribe topK $ case geoId, matId of
+    u1 <- flip subscribePure topK $ case geoId, matId of
       Nothing, _ -> empty
       _, Nothing -> empty
       Just gid, Just mid -> oneOf
@@ -235,12 +238,12 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
         -- todo: instanced logic is copied a fair bit from bolson's flatten
         -- but it's different enough that it's tough to merge it with flatten
         -- insert instanced logic here
-        , makeEvent \k -> do
+        , makePureEvent \k -> do
             available <- Ref.new (0 .. (count - 1))
             cancelInner <- Ref.new Object.empty
             cancelOuter <-
               -- each child gets its own scope
-              subscribe props \inner ->
+              subscribePure props \inner ->
                 do
                   -- holds the previous id
                   availableNow <- Ref.read available
@@ -248,18 +251,18 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
                   case currentHead of
                     Nothing -> pure unit
                     Just { head, tail } -> do
-                      Ref.write tail available
+                      void $ Ref.write tail available
                       myUnsubId <- ids
                       myUnsub <- Ref.new (pure unit)
                       eltsUnsubId <- ids
                       eltsUnsub <- Ref.new (pure unit)
                       myImmediateCancellation <- Ref.new (pure unit)
                       stageRef <- Ref.new Begin
-                      c0 <- subscribe inner \kid' -> do
+                      c0 <- subscribePure inner \kid' -> do
                         stage <- Ref.read stageRef
                         case kid', stage of
                           Release, Middle -> do
-                            Ref.write End stageRef
+                            void $ Ref.write End stageRef
                             -- we may need to run the cancellation twice
                             -- because the refs are not populated yet if it runs
                             -- immediately
@@ -270,24 +273,24 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
                                 -- as we may call it twice
                                 -- if the cancelation is immediate
                                 do
-                                  Ref.modify_ ((_ <> [ head ]) >>> nub)
+                                  void $ Ref.modify ((_ <> [ head ]) >>> nub)
                                     available
                                   join (Ref.read myUnsub)
                                   join (Ref.read eltsUnsub)
-                                  Ref.modify_
+                                  void $ Ref.modify
                                     (Object.delete myUnsubId)
                                     cancelInner
-                                  Ref.modify_
+                                  void $ Ref.modify
                                     (Object.delete eltsUnsubId)
                                     cancelInner
 
                             do
-                              Ref.write mic myImmediateCancellation
+                              void $ Ref.write mic myImmediateCancellation
                               mic
                           Acquire kid, Begin -> do
                             -- holds the current id
-                            Ref.write Middle stageRef
-                            c1 <- subscribe
+                            void $ Ref.write Middle stageRef
+                            c1 <- subscribePure
                               ( ( (\(C.Instance i) -> i) $ kid
                                     ( InstanceId
                                         { meshId: me, instanceId: head }
@@ -295,15 +298,16 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
                                 ) di
                               )
                               k
-                            Ref.modify_
+                            void $ Ref.modify
                               (Object.insert eltsUnsubId c1)
                               cancelInner
-                            Ref.write c1 eltsUnsub
+                            void $ Ref.write c1 eltsUnsub
                           _, _ -> pure unit
-                      Ref.write c0 myUnsub
-                      Ref.modify_ (Object.insert myUnsubId c0)
+                      void $ Ref.write c0 myUnsub
+                      void $ Ref.modify (Object.insert myUnsubId c0)
                         cancelInner
-                      join (Ref.read myImmediateCancellation)
+                      mycan <- Ref.read myImmediateCancellation
+                      mycan
             pure do
               Ref.read cancelInner >>= traverse_ identity
               cancelOuter

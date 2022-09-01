@@ -15,7 +15,7 @@ import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults
 import Data.Foldable (oneOf)
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event.EffectFn (Event, makeEvent, subscribe)
+import FRP.Event (Event, makePureEvent, subscribePure)
 import Record (union)
 import Rito.Core (object3D)
 import Rito.Core as C
@@ -144,10 +144,10 @@ perspectiveCamera i' atts = C.Camera go
           , setFocalLength
           , setViewOffset
           }
-      ) = makeEvent \k -> do
+      ) = makePureEvent \k -> do
     me <- ids
     parent.raiseId me
-    unsub <- subscribe
+    unsub <- subscribePure
       ( oneOf
           [ pure
               ( makePerspectiveCamera

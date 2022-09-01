@@ -112,12 +112,12 @@ let overrides =
       { bolson =
         { dependencies = [ "prelude", "heterogeneous" ]
         , repo = "https://github.com/mikesol/purescript-bolson.git"
-        , version = "effn-event"
+        , version = "effn-event2"
         }
       , deku =
         { dependencies = [ "prelude", "quickcheck" ]
         , repo = "https://github.com/mikesol/purescript-deku.git"
-        , version = "main"
+        , version = "effn-event2"
         }
       , ocarina =
         { dependencies =
@@ -165,13 +165,13 @@ let overrides =
           , "web-html"
           ]
         , repo = "https://github.com/mikesol/purescript-ocarina.git"
-        , version = "effn-event"
+        , version = "effn-event2"
         }
       , hyrule =
         { dependencies =
           [ "monoid-extras", "web-uievents", "js-timers", "unsafe-reference" ]
         , repo = "https://github.com/mikesol/purescript-hyrule.git"
-        , version = "effn-event"
+        , version = "effn-event2"
         }
       }
 
