@@ -22,7 +22,9 @@ foreign import load
   -> Effect Unit
 
 loadAff :: CubeTextureLoader -> Vect 6 String -> Aff CubeTexture
-loadAff l url = makeAff \f -> load l url (Right >>> f) (Left >>> f) *> mempty
+loadAff l url = makeAff \f -> do
+  load l url (Right >>> f) (Left >>> f)
+  mempty
 
 loadAffRecord :: CubeTextureLoader -> {right::String,left::String,top::String,bottom::String,front::String,back::String} -> Aff CubeTexture
 loadAffRecord l u = loadAff l (u.right : u.left : u.top : u.bottom : u.front : u.back : empty)

@@ -5,7 +5,7 @@ import Prelude
 import Bolson.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
-import FRP.Event ( makeEvent, subscribe)
+import FRP.Event ( makeLemmingEvent)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -66,10 +66,10 @@ glitchPass ii' = Bolson.Element' $ C.Pass go
           , deleteFromCache
           , makeGlitchPass
           }
-      ) = makeEvent \k0 -> do
+      ) = makeLemmingEvent \mySub k0 -> do
     me <- ids
     psr.raiseId me
-    u1 <- subscribe
+    u1 <- mySub
           ( oneOf
               [ pure $ makeGlitchPass
                   { id: me
@@ -80,4 +80,6 @@ glitchPass ii' = Bolson.Element' $ C.Pass go
               ]
           )
           k0
-    pure (k0 (deleteFromCache { id: me }) *> u1)
+    pure do
+      k0 (deleteFromCache { id: me })
+      u1

@@ -6,7 +6,7 @@ import Bolson.Core as Bolson
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
 import Data.Variant (Variant, match)
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event (Event,  makeLemmingEvent)
 import Rito.Core as C
 import Rito.THREE as THREE
 import Rito.Vector2 (Vector2)
@@ -111,10 +111,10 @@ unrealBloomPass ii' propz = Bolson.Element' $ C.Pass go
         , setRadius
         , setThreshold
         }
-    ) = makeEvent \k0 -> do
+    ) = makeLemmingEvent \mySub k0 -> do
     me <- ids
     psr.raiseId me
-    u1 <- subscribe
+    u1 <- mySub
       ( oneOf
           [ pure $ makeUnrealBloomPass
               { id: me
@@ -138,4 +138,6 @@ unrealBloomPass ii' propz = Bolson.Element' $ C.Pass go
           ]
       )
       k0
-    pure (k0 (deleteFromCache { id: me }) *> u1)
+    pure do
+      k0 (deleteFromCache { id: me })
+      u1

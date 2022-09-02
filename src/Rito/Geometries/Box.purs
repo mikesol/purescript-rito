@@ -8,7 +8,7 @@ module Rito.Geometries.Box
 import Prelude
 
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
-import FRP.Event ( makeEvent, subscribe)
+import FRP.Event (makeLemmingEvent)
 import Foreign.Object (Object, empty)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
@@ -129,28 +129,33 @@ box i' = C.Geometry go
   C.InitializeBox i = toInitializeBox i'
   go
     parent
-      ( C.ThreeInterpret
-          { ids
-          , deleteFromCache
-          , makeBox
-          }
-      ) = makeEvent \k -> do
+    ( C.ThreeInterpret
+        { ids
+        , deleteFromCache
+        , makeBox
+        }
+    ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      pure
-        ( makeBox
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , box: i.box
-            , width: i.width
-            , height: i.height
-            , depth: i.depth
-            , widthSegments: i.widthSegments
-            , heightSegments: i.heightSegments
-            , depthSegments: i.depthSegments
-            , bufferAttributes: i.bufferAttributes
-            , instancedBufferAttributes: i.instancedBufferAttributes
-            }
-        )
+    unsub <- mySub
+      ( pure
+          ( makeBox
+              { id: me
+              , parent: parent.parent
+              , scope: parent.scope
+              , box: i.box
+              , width: i.width
+              , height: i.height
+              , depth: i.depth
+              , widthSegments: i.widthSegments
+              , heightSegments: i.heightSegments
+              , depthSegments: i.depthSegments
+              , bufferAttributes: i.bufferAttributes
+              , instancedBufferAttributes: i.instancedBufferAttributes
+              }
+          )
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub

@@ -21,4 +21,6 @@ foreign import load
   -> Effect Unit
 
 loadAff :: TextureLoader -> String -> Aff Texture
-loadAff l url = makeAff \f -> load l url (Right >>> f) (Left >>> f) *> mempty
+loadAff l url = makeAff \f -> do
+  load l url (Right >>> f) (Left >>> f)
+  mempty

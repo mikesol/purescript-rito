@@ -11,12 +11,12 @@ module Rito.Lights.PointLight
 import Prelude
 
 import Bolson.Core as Bolson
-import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
+import Data.Foldable (oneOf)
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event (Event, makeLemmingEvent)
 import Record (union)
 import Rito.Color (Color)
 import Rito.Core as C
@@ -124,24 +124,24 @@ pointLight i' atts = Bolson.Element' $ C.Light go
           , setDistance
           , setDecay
           }
-      ) = makeEvent \k -> do
+      ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      pure
-        ( makePointLight
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , pointLight: i.pointLight
-            , color: i.color
-            , intensity: i.intensity
-            , distance: i.distance
-            , decay: i.decay
-            }
-        )
-        <|>
-          ( map
+    unsub <- mySub
+      ( oneOf
+          [ pure
+              ( makePointLight
+                  { id: me
+                  , parent: parent.parent
+                  , scope: parent.scope
+                  , pointLight: i.pointLight
+                  , color: i.color
+                  , intensity: i.intensity
+                  , distance: i.distance
+                  , decay: i.decay
+                  }
+              )
+          , map
               ( \(PointLight e) -> match
                   ( union
                       { color: setColor <<< { id: me, color: _ }
@@ -154,7 +154,12 @@ pointLight i' atts = Bolson.Element' $ C.Light go
                   e
               )
               atts
-          )
+          ]
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub
 
 pointLight_
   :: forall i lock payload

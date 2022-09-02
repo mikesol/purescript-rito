@@ -9,7 +9,7 @@ import Prelude
 
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Number (pi)
-import FRP.Event ( makeEvent, subscribe)
+import FRP.Event (makeLemmingEvent)
 import Foreign.Object (Object, empty)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
@@ -74,7 +74,6 @@ instance
     Number
     Number where
   convertOption _ _ = identity
-
 
 instance
   ConvertOption SphereOptions
@@ -141,29 +140,34 @@ sphere i' = C.Geometry go
   C.InitializeSphere i = toInitializeSphere i'
   go
     parent
-      ( C.ThreeInterpret
-          { ids
-          , deleteFromCache
-          , makeSphere
-          }
-      ) = makeEvent \k -> do
+    ( C.ThreeInterpret
+        { ids
+        , deleteFromCache
+        , makeSphere
+        }
+    ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      pure
-        ( makeSphere
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , sphere: i.sphere
-            , radius: i.radius
-            , widthSegments: i.widthSegments
-            , heightSegments: i.heightSegments
-            , phiStart: i.phiStart
-            , phiLength: i.phiLength
-            , thetaStart: i.thetaStart
-            , thetaLength: i.thetaLength
-            , bufferAttributes: i.bufferAttributes
-            , instancedBufferAttributes: i.instancedBufferAttributes
-            }
-        )
+    unsub <- mySub
+      ( pure
+          ( makeSphere
+              { id: me
+              , parent: parent.parent
+              , scope: parent.scope
+              , sphere: i.sphere
+              , radius: i.radius
+              , widthSegments: i.widthSegments
+              , heightSegments: i.heightSegments
+              , phiStart: i.phiStart
+              , phiLength: i.phiLength
+              , thetaStart: i.thetaStart
+              , thetaLength: i.thetaLength
+              , bufferAttributes: i.bufferAttributes
+              , instancedBufferAttributes: i.instancedBufferAttributes
+              }
+          )
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub

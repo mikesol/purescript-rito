@@ -4,12 +4,12 @@ import Prelude
 
 import Bolson.Core (Scope(..))
 import Bolson.Core as Bolson
+import Control.Monad.ST.Internal as Ref
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import Effect.Ref as Ref
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event (Event, makeLemmingEvent)
 import Record (union)
 import Rito.Core as C
 import Rito.THREE as THREE
@@ -46,24 +46,24 @@ css2DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
           , css2DRender
           , setSize
           }
-      ) = makeEvent \k0 -> do
+      ) = makeLemmingEvent \mySub k0 -> do
     me <- ids
     psr.raiseId me
     scope <- ids
     sceneAvar <- Ref.new Nothing
     cameraAvar <- Ref.new Nothing
-    u0 <- subscribe
+    u0 <- mySub
       ( oneOf
           [ sne # \(C.Scene gooo) -> gooo
               { parent: Just me
               , scope: Local scope
-              , raiseId: \i -> Ref.write (Just i) sceneAvar
+              , raiseId: \i -> void $ Ref.write (Just i) sceneAvar
               }
               di
           , cam # \(C.Camera gooo) -> gooo
               { parent: Just me
               , scope: Local scope
-              , raiseId: \i -> Ref.write (Just i) cameraAvar
+              , raiseId: \i -> void $ Ref.write (Just i) cameraAvar
               }
               di
           ]
@@ -77,7 +77,7 @@ css2DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
       Nothing -> pure (pure unit)
       Just sceneId -> case cameraLR of
         Nothing -> pure (pure unit)
-        Just cameraId -> subscribe
+        Just cameraId -> mySub
           ( oneOf
               [ pure $ makeCSS2DRenderer
                   $ union
@@ -85,10 +85,10 @@ css2DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
                     , camera: cameraId
                     }
                     make
-              , makeEvent \k -> do
-                  usuRef <- Ref.new mempty
+              , makeLemmingEvent \mySub k -> do
+                  usuRef <- Ref.new (pure unit)
                   -- ugh, there's got to be a better way...
-                  unsub <- subscribe
+                  unsub <- mySub
                     ( props <#>
                         ( \(CSS2DRenderer msh) ->
                             msh # match
@@ -103,11 +103,14 @@ css2DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
                         )
                     )
                     k
-                  Ref.write unsub usuRef
+                  void $ Ref.write unsub usuRef
                   pure do
                     usu <- Ref.read usuRef
                     usu
               ]
           )
           k0
-    pure (k0 (deleteFromCache { id: me }) *> u0 *> u1)
+    pure do
+      k0 (deleteFromCache { id: me })
+      u0
+      u1

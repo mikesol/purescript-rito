@@ -39,7 +39,7 @@ import Effect.Random (randomInt)
 import Effect.Random as Random
 import Effect.Ref (new, read, write)
 import FRP.Behavior (behavior)
-import FRP.Event (Event, bang, makeEvent, subscribe)
+import FRP.Event (Event, bang, makeLemmingEvent)
 import FRP.Event.Animate (animationFrameEvent)
 import FRP.Event.Class (biSampleOn)
 import FRP.Event.Time (withTime)
@@ -119,7 +119,7 @@ type UIEvents = V
   )
 
 e2e :: Effect ~> Event
-e2e e = makeEvent \k -> do
+e2e e = makeLemmingEvent \mySub k -> do
   e >>= k
   pure (pure unit)
 
@@ -136,7 +136,7 @@ buffers' =
   }
 
 random = behavior \e ->
-  makeEvent \k -> subscribe e \f ->
+  makeLemmingEvent \mySub k -> mySub e \f ->
     Random.random >>= k <<< f
 
 dgl d de g ge h he i =
@@ -642,7 +642,7 @@ main = launchAff_ do
                                       pure { x, y }
                                     ssub <- run2 ctx
                                       (music ctx randSound analyserE)
-                                    anisub <- subscribe animationFrameEvent
+                                    anisub <- mySub animationFrameEvent
                                       \_ -> do
                                         ae <- read analyserE
                                         for_ ae \a -> do

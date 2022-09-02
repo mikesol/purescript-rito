@@ -10,13 +10,13 @@ module Rito.Materials.MeshBasicMaterial
 
 import Prelude
 
-import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
+import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event (Event, makeLemmingEvent)
 import Record (union)
 import Rito.BlendDst (BlendDst)
 import Rito.BlendEquation (BlendEquation)
@@ -401,34 +401,34 @@ meshBasicMaterial i' atts = C.Material go
         , setWireframe
         , setWireframeLinewidth
         }
-    ) = makeEvent \k -> do
+    ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      pure
-        ( makeMeshBasicMaterial
-            ( { id: me
-              , parent: parent.parent
-              , scope: parent.scope
-              , parameters:
-                  { meshBasicMaterial: i.meshBasicMaterial
-                  , color: i.color
-                  , map: i.map
-                  , lightMap: i.lightMap
-                  , lightMapIntensity: i.lightMapIntensity
-                  , aoMap: i.aoMap
-                  , aoMapIntensity: i.aoMapIntensity
-                  , alphaMap: i.alphaMap
-                  , envMap: i.envMap
-                  , wireframe: i.wireframe
-                  , wireframeLinewidth: i.wireframeLinewidth
-                  }
-              , materialParameters: initializeDefaultMaterials i
-              }
-            )
-        )
-        <|>
-          ( map
+    unsub <- mySub
+      ( oneOf
+          [ pure
+              ( makeMeshBasicMaterial
+                  ( { id: me
+                    , parent: parent.parent
+                    , scope: parent.scope
+                    , parameters:
+                        { meshBasicMaterial: i.meshBasicMaterial
+                        , color: i.color
+                        , map: i.map
+                        , lightMap: i.lightMap
+                        , lightMapIntensity: i.lightMapIntensity
+                        , aoMap: i.aoMap
+                        , aoMapIntensity: i.aoMapIntensity
+                        , alphaMap: i.alphaMap
+                        , envMap: i.envMap
+                        , wireframe: i.wireframe
+                        , wireframeLinewidth: i.wireframeLinewidth
+                        }
+                    , materialParameters: initializeDefaultMaterials i
+                    }
+                  )
+              )
+          , map
               ( \(MeshBasicMaterial e) -> match
                   { color: setColor <<< { id: me, color: _ }
                   , map: setMap <<< { id: me, map: _ }
@@ -447,8 +447,12 @@ meshBasicMaterial i' atts = C.Material go
                   e
               )
               atts
-          )
-
+          ]
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub
 meshBasicMaterial_
   :: forall i lock payload
    . InitialMeshBasicMaterial i

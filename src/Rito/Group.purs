@@ -9,7 +9,7 @@ import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event (Event, makeLemmingEvent)
 import Rito.Core (ThreeInterpret(..))
 import Rito.Core as C
 import Rito.THREE as THREE
@@ -51,36 +51,41 @@ unsafeInternalGroup dif gp props kidz = Element' $ C.Group go
           { ids
           , deleteFromCache
           }
-      ) = makeEvent \k -> do
+      ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      oneOf
-        [ pure $ dif di
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , group: gp.group
-            }
-        , props <#>
-            ( \(Group msh) ->
-                msh # match (C.object3D me di)
-            )
-        , flatten
-            { doLogic: absurd
-            , ids: unwrap >>> _.ids
-            , disconnectElement: unwrap >>> _.disconnect
-            , toElt: \(C.Group obj) -> Bolson.Element obj
-            }
-            { parent: Just me, scope: parent.scope, raiseId: pure mempty }
-            di
-            ( fixed
-                ( map
-                    ( unsafeCoerce
-                        :: C.AGroupful lock payload
-                        -> C.AGroup lock payload
-                    )
-                    kidz
-                )
-            )
-        ]
+    unsub <- mySub
+      ( oneOf
+          [ pure $ dif di
+              { id: me
+              , parent: parent.parent
+              , scope: parent.scope
+              , group: gp.group
+              }
+          , props <#>
+              ( \(Group msh) ->
+                  msh # match (C.object3D me di)
+              )
+          , flatten
+              { doLogic: absurd
+              , ids: unwrap >>> _.ids
+              , disconnectElement: unwrap >>> _.disconnect
+              , toElt: \(C.Group obj) -> Bolson.Element obj
+              }
+              { parent: Just me, scope: parent.scope, raiseId: \_ -> pure unit }
+              di
+              ( fixed
+                  ( map
+                      ( unsafeCoerce
+                          :: C.AGroupful lock payload
+                          -> C.AGroup lock payload
+                      )
+                      kidz
+                  )
+              )
+          ]
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub

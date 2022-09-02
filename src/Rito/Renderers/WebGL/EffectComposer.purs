@@ -5,12 +5,12 @@ import Prelude
 import Bolson.Control (flatten)
 import Bolson.Core (Scope(..), fixed)
 import Bolson.Core as Bolson
+import Control.Monad.ST.Internal as Ref
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import Effect.Ref as Ref
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event (Event, makeLemmingEvent)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -37,17 +37,17 @@ effectComposer i rndr props kidz = C.EffectComposer go
           , makeEffectComposer
           , effectComposerRender
           }
-      ) = makeEvent \k -> do
+      ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
     scope <- ids
     rendererAvar <- Ref.new Nothing
-    u0 <- subscribe
+    u0 <- mySub
       ( oneOf
           [ rndr # \(C.WebGLRenderer gooo) -> gooo
               { parent: Just me
               , scope: Local scope
-              , raiseId: \iii -> Ref.write (Just iii) rendererAvar
+              , raiseId: \iii -> void $ Ref.write (Just iii) rendererAvar
               }
               di
           ]
@@ -56,7 +56,7 @@ effectComposer i rndr props kidz = C.EffectComposer go
     rendererLR <- Ref.read rendererAvar
     u1 <- case rendererLR of
       Nothing -> pure (pure unit)
-      Just rendererId -> k # subscribe
+      Just rendererId -> k # mySub
         ( oneOf
             [ pure $ makeEffectComposer
                 { id: me
@@ -76,9 +76,12 @@ effectComposer i rndr props kidz = C.EffectComposer go
                 , disconnectElement: unwrap >>> _.disconnectPass
                 , toElt: \(C.Pass obj) -> Bolson.Element obj
                 }
-                { parent: Just me, scope: parent.scope, raiseId: pure mempty }
+                { parent: Just me, scope: parent.scope, raiseId: \_ -> pure unit }
                 di
                 (fixed kidz)
             ]
         )
-    pure (k (deleteFromCache { id: me }) *> u0 *> u1)
+    pure do
+      k (deleteFromCache { id: me })
+      u0
+      u1

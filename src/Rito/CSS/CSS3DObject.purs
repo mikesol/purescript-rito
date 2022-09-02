@@ -8,11 +8,12 @@ import Prelude
 
 import Bolson.Core as Bolson
 import Control.Alt ((<|>))
+import Control.Monad.ST.Class (liftST)
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
 import Deku.Core (ANut(..))
 import Deku.Toplevel (runInElement')
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event (Event, makeEvent, subscribe)
 import Rito.Core as C
 import Rito.THREE as THREE
 import Web.DOM.Document (createElement)
@@ -29,7 +30,7 @@ instance Newtype CSS3DObject CSS3DObject'
 
 css3DObject
   :: forall lock payload
-   .  { css3DObject :: THREE.TCSS3DObject, nut :: ANut }
+   . { css3DObject :: THREE.TCSS3DObject, nut :: ANut }
   -> Event CSS3DObject
   -> C.ACSS3DObject lock payload
 css3DObject ipt@{ nut: ANut nut } atts = Bolson.Element' $ C.CSS3DObject go
@@ -43,22 +44,28 @@ css3DObject ipt@{ nut: ANut nut } atts = Bolson.Element' $ C.CSS3DObject go
           , makeCSS3DObject
           }
       ) = makeEvent \k -> do
-    me <- ids
-    parent.raiseId me
+    me <- liftST ids
+    liftST $ parent.raiseId me
     elt <- window >>= document >>= createElement "div" <<< toDocument
     dku <- runInElement' elt nut
-    map ((k (deleteFromCache { id: me }) *> dku) *> _) $ flip subscribe k $
-      pure
-        ( makeCSS3DObject
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , css3DObject: ipt.css3DObject
-            , nut: elt
-            }
-        )
-        <|>
-          ( map
-              ( \(CSS3DObject e) -> match (C.object3D me di) e              )
-              atts
+    unsub <- subscribe
+      ( pure
+          ( makeCSS3DObject
+              { id: me
+              , parent: parent.parent
+              , scope: parent.scope
+              , css3DObject: ipt.css3DObject
+              , nut: elt
+              }
           )
+          <|>
+            ( map
+                (\(CSS3DObject e) -> match (C.object3D me di) e)
+                atts
+            )
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      dku
+      unsub

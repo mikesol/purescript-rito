@@ -4,10 +4,10 @@ import Prelude
 
 import Bolson.Core (Scope(..))
 import Bolson.Core as Bolson
+import Control.Monad.ST.Internal as Ref
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
-import Effect.Ref as Ref
-import FRP.Event ( makeEvent, subscribe)
+import FRP.Event (makeLemmingEvent)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -27,17 +27,17 @@ effectComposerPass ii ecomp = Bolson.Element' $ C.Pass go
           , deleteFromCache
           , makeEffectComposerPass
           }
-      ) = makeEvent \k0 -> do
+      ) = makeLemmingEvent \mySub k0 -> do
     me <- ids
     psr.raiseId me
     scope <- ids
     effectComposerAvar <- Ref.new Nothing
-    u0 <- subscribe
+    u0 <- mySub
       ( oneOf
           [ ecomp # \(C.EffectComposer gooo) -> gooo
               { parent: Just me
               , scope: Local scope
-              , raiseId: \i -> Ref.write (Just i) effectComposerAvar
+              , raiseId: \i -> void $ Ref.write (Just i) effectComposerAvar
               }
               di
           ]
@@ -46,7 +46,7 @@ effectComposerPass ii ecomp = Bolson.Element' $ C.Pass go
     effectComposerLR <- Ref.read effectComposerAvar
     u1 <- case effectComposerLR of
       Nothing -> pure (pure unit)
-      Just effectComposerId -> subscribe
+      Just effectComposerId -> mySub
           ( oneOf
               [ pure $ makeEffectComposerPass
                   { id: me
@@ -57,4 +57,7 @@ effectComposerPass ii ecomp = Bolson.Element' $ C.Pass go
               ]
           )
           k0
-    pure (k0 (deleteFromCache { id: me }) *> u0 *> u1)
+    pure do
+      k0 (deleteFromCache { id: me })
+      u0
+      u1

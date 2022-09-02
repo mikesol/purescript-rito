@@ -10,14 +10,14 @@ module Rito.Materials.ShaderMaterial
 
 import Prelude
 
-import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
+import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Symbol (reflectSymbol)
 import Data.Variant (Unvariant(..), Variant, match, unvariant)
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event (Event, makeLemmingEvent)
 import Foreign (Foreign)
 import Prim.RowList (class RowToList)
 import Record (union)
@@ -318,27 +318,27 @@ shaderMaterial unifs i' atts = C.Material go
         , makeShaderMaterial
         , setUniform
         }
-    ) = makeEvent \k -> do
+    ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      pure
-        ( makeShaderMaterial
-            ( { id: me
-              , parent: parent.parent
-              , scope: parent.scope
-              , parameters:
-                  { shaderMaterial: i.shaderMaterial
-                  , fragmentShader: i.fragmentShader
-                  , vertexShader: i.vertexShader
-                  , uniforms: toUniformDecl i.uniforms
-                  }
-              , materialParameters: initializeDefaultMaterials i
-              }
-            )
-        )
-        <|>
-          ( map
+    unsub <- mySub
+      ( oneOf
+          [ pure
+              ( makeShaderMaterial
+                  ( { id: me
+                    , parent: parent.parent
+                    , scope: parent.scope
+                    , parameters:
+                        { shaderMaterial: i.shaderMaterial
+                        , fragmentShader: i.fragmentShader
+                        , vertexShader: i.vertexShader
+                        , uniforms: toUniformDecl i.uniforms
+                        }
+                    , materialParameters: initializeDefaultMaterials i
+                    }
+                  )
+              )
+          , map
               ( \(ShaderMaterial e) -> match
                   { uniform: \v -> do
                       let Unvariant uv = unvariant v
@@ -352,7 +352,12 @@ shaderMaterial unifs i' atts = C.Material go
                   e
               )
               atts
-          )
+          ]
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub
 
 shaderMaterial_
   :: forall i u url lock payload

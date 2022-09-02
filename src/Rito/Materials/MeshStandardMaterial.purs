@@ -10,13 +10,13 @@ module Rito.Materials.MeshStandardMaterial
 
 import Prelude
 
-import Control.Alt ((<|>))
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
+import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event,  makeEvent, subscribe)
+import FRP.Event (Event, makeLemmingEvent)
 import Record (union)
 import Rito.BlendDst (BlendDst)
 import Rito.BlendEquation (BlendEquation)
@@ -592,51 +592,51 @@ meshStandardMaterial i' atts = C.Material go
         , setWireframeLinewidth
         , setFlatShading
         }
-    ) = makeEvent \k -> do
+    ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      pure
-        ( makeMeshStandardMaterial
-            ( { id: me
-              , parent: parent.parent
-              , scope: parent.scope
-              , parameters:
-                  { meshStandardMaterial: i.meshStandardMaterial
-                  , color: i.color
-                  , roughness: i.roughness
-                  , metalness: i.metalness
-                  , map: i.map
-                  , lightMap: i.lightMap
-                  , lightMapIntensity: i.lightMapIntensity
-                  , aoMap: i.aoMap
-                  , aoMapIntensity: i.aoMapIntensity
-                  , emissive: i.emissive
-                  , emissiveIntensity: i.emissiveIntensity
-                  , emissiveMap: i.emissiveMap
-                  , bumpMap: i.bumpMap
-                  , bumpScale: i.bumpScale
-                  , normalMap: i.normalMap
-                  , normalMapType: i.normalMapType
-                  , normalScale: i.normalScale
-                  , displacementMap: i.displacementMap
-                  , displacementScale: i.displacementScale
-                  , displacementBias: i.displacementBias
-                  , roughnessMap: i.roughnessMap
-                  , metalnessMap: i.metalnessMap
-                  , alphaMap: i.alphaMap
-                  , envMap: i.envMap
-                  , envMapIntensity: i.envMapIntensity
-                  , wireframe: i.wireframe
-                  , wireframeLinewidth: i.wireframeLinewidth
-                  , flatShading: i.flatShading
-                  }
-              , materialParameters: initializeDefaultMaterials i
-              }
-            )
-        )
-        <|>
-          ( map
+    unsub <- mySub
+      ( oneOf
+          [ pure
+              ( makeMeshStandardMaterial
+                  ( { id: me
+                    , parent: parent.parent
+                    , scope: parent.scope
+                    , parameters:
+                        { meshStandardMaterial: i.meshStandardMaterial
+                        , color: i.color
+                        , roughness: i.roughness
+                        , metalness: i.metalness
+                        , map: i.map
+                        , lightMap: i.lightMap
+                        , lightMapIntensity: i.lightMapIntensity
+                        , aoMap: i.aoMap
+                        , aoMapIntensity: i.aoMapIntensity
+                        , emissive: i.emissive
+                        , emissiveIntensity: i.emissiveIntensity
+                        , emissiveMap: i.emissiveMap
+                        , bumpMap: i.bumpMap
+                        , bumpScale: i.bumpScale
+                        , normalMap: i.normalMap
+                        , normalMapType: i.normalMapType
+                        , normalScale: i.normalScale
+                        , displacementMap: i.displacementMap
+                        , displacementScale: i.displacementScale
+                        , displacementBias: i.displacementBias
+                        , roughnessMap: i.roughnessMap
+                        , metalnessMap: i.metalnessMap
+                        , alphaMap: i.alphaMap
+                        , envMap: i.envMap
+                        , envMapIntensity: i.envMapIntensity
+                        , wireframe: i.wireframe
+                        , wireframeLinewidth: i.wireframeLinewidth
+                        , flatShading: i.flatShading
+                        }
+                    , materialParameters: initializeDefaultMaterials i
+                    }
+                  )
+              )
+          , map
               ( \(MeshStandardMaterial e) -> match
                   { color: setColor <<< { id: me, color: _ }
                   , roughness: setRoughness <<< { id: me, roughness: _ }
@@ -680,7 +680,12 @@ meshStandardMaterial i' atts = C.Material go
                   e
               )
               atts
-          )
+          ]
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub
 
 meshStandardMaterial_
   :: forall i lock payload

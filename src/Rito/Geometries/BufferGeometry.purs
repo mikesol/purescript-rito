@@ -8,7 +8,7 @@ module Rito.Geometries.BufferGeometry
 import Prelude
 
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
-import FRP.Event ( makeEvent, subscribe)
+import FRP.Event (makeLemmingEvent)
 import Foreign.Object (Object, empty)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
@@ -59,11 +59,14 @@ instance InitialBufferGeometry C.InitializeBufferGeometry where
   toInitializeBufferGeometry = identity
 
 instance
-  ConvertOptionsWithDefaults BufferGeometryOptions { | BufferGeometryOptional } { | provided }
+  ConvertOptionsWithDefaults BufferGeometryOptions { | BufferGeometryOptional }
+    { | provided }
     { | BufferGeometryAll } =>
   InitialBufferGeometry { | provided } where
   toInitializeBufferGeometry provided = C.InitializeBufferGeometry
-    (convertOptionsWithDefaults BufferGeometryOptions defaultBufferGeometry provided)
+    ( convertOptionsWithDefaults BufferGeometryOptions defaultBufferGeometry
+        provided
+    )
 
 bufferGeometry
   :: forall i lock payload
@@ -75,22 +78,27 @@ bufferGeometry i' = C.Geometry go
   C.InitializeBufferGeometry i = toInitializeBufferGeometry i'
   go
     parent
-      ( C.ThreeInterpret
-          { ids
-          , deleteFromCache
-          , makeBufferGeometry
-          }
-      ) = makeEvent \k -> do
+    ( C.ThreeInterpret
+        { ids
+        , deleteFromCache
+        , makeBufferGeometry
+        }
+    ) = makeLemmingEvent \mySub k -> do
     me <- ids
     parent.raiseId me
-    map (k (deleteFromCache { id: me }) *> _) $ flip subscribe k $
-      pure
-        ( makeBufferGeometry
-            { id: me
-            , parent: parent.parent
-            , scope: parent.scope
-            , bufferGeometry: i.bufferGeometry
-            , bufferAttributes: i.bufferAttributes
-            , instancedBufferAttributes: i.instancedBufferAttributes
-            }
-        )
+    unsub <- mySub
+      ( pure
+          ( makeBufferGeometry
+              { id: me
+              , parent: parent.parent
+              , scope: parent.scope
+              , bufferGeometry: i.bufferGeometry
+              , bufferAttributes: i.bufferAttributes
+              , instancedBufferAttributes: i.instancedBufferAttributes
+              }
+          )
+      )
+      k
+    pure do
+      k (deleteFromCache { id: me })
+      unsub
