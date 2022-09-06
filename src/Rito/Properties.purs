@@ -25,6 +25,13 @@ radius
   -> nt
 radius = wrap <<< inj (Proxy :: Proxy "radius")
 
+visible
+  :: forall nt r
+   . Newtype nt (Variant (visible :: Boolean | r))
+  => Boolean
+  -> nt
+visible = wrap <<< inj (Proxy :: Proxy "visible")
+
 widthSegments
   :: forall nt r
    . Newtype nt (Variant (widthSegments :: Int | r))
