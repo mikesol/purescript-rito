@@ -35,6 +35,7 @@ data TGroup
 data TPlaneGeometry
 data TSphereGeometry
 data TBoxGeometry
+data TCylinderGeometry
 data TCapsuleGeometry
 data TPerspectiveCamera
 data TRaycaster
@@ -77,6 +78,7 @@ foreign import group :: Effect (Promise TGroup)
 foreign import instancedMesh :: Effect (Promise TInstancedMesh)
 foreign import planeGeometry :: Effect (Promise TPlaneGeometry)
 foreign import sphereGeometry :: Effect (Promise TSphereGeometry)
+foreign import cylinderGeometry :: Effect (Promise TCylinderGeometry)
 foreign import boxGeometry :: Effect (Promise TBoxGeometry)
 foreign import capsuleGeometry :: Effect (Promise TCapsuleGeometry)
 foreign import perspectiveCamera :: Effect (Promise TPerspectiveCamera)
@@ -122,6 +124,7 @@ instancedMeshAff = toAffE instancedMesh :: Aff TInstancedMesh
 planeGeometryAff = toAffE planeGeometry :: Aff TPlaneGeometry
 sphereGeometryAff = toAffE sphereGeometry :: Aff TSphereGeometry
 boxGeometryAff = toAffE boxGeometry :: Aff TBoxGeometry
+cylinderGeometryAff = toAffE cylinderGeometry :: Aff TCylinderGeometry
 capsuleGeometryAff = toAffE capsuleGeometry :: Aff TCapsuleGeometry
 perspectiveCameraAff = toAffE perspectiveCamera :: Aff TPerspectiveCamera
 raycasterAff = toAffE raycaster :: Aff TRaycaster

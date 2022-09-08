@@ -93,6 +93,8 @@ foreign import makeInstancedMesh_
   :: Core.MakeInstancedMesh Undefinable (Undefinable String) -> Payload
 foreign import makeCapsule_
   :: Core.MakeCapsule Undefinable (Undefinable String) -> Payload
+foreign import makeCylinder_
+  :: Core.MakeCylinder Undefinable (Undefinable String) -> Payload
 foreign import makeSphere_
   :: Core.MakeSphere Undefinable (Undefinable String) -> Payload
 foreign import makeBox_
@@ -566,6 +568,9 @@ instance FFIMe THREE.TGroup THREE.TGroup where
 instance FFIMe THREE.TBufferGeometry THREE.TBufferGeometry where
   ffiMe = identity
 
+instance FFIMe THREE.TCylinderGeometry THREE.TCylinderGeometry where
+  ffiMe = identity
+
 instance FFIMe THREE.TPlaneGeometry THREE.TPlaneGeometry where
   ffiMe = identity
 
@@ -646,6 +651,7 @@ effectfulThreeInterpret seed = Core.ThreeInterpret
   , makePoints: lcmap ffiize makePoints_
   , makeInstancedMesh: lcmap ffiize makeInstancedMesh_
   , makeCapsule: lcmap ffiize makeCapsule_
+  , makeCylinder: lcmap ffiize makeCylinder_
   , makeSphere: lcmap ffiize makeSphere_
   , makeBox: lcmap ffiize makeBox_
   , makePlane: lcmap ffiize makePlane_

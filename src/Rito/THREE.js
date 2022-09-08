@@ -96,6 +96,9 @@ export const sphereGeometry = () =>
 export const boxGeometry = () =>
 	import("three/src/geometries/BoxGeometry.js").then((r) => r.BoxGeometry);
 
+export const cylinderGeometry = () =>
+	import("three/src/geometries/CylinderGeometry.js").then((r) => r.CylinderGeometry);
+
 export const capsuleGeometry = () =>
 	import("three/src/geometries/CapsuleGeometry.js").then(
 		(r) => r.CapsuleGeometry

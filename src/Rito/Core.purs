@@ -902,6 +902,25 @@ type InitializeCapsule' =
   | Buffy
   )
 newtype InitializeCapsule = InitializeCapsule { | InitializeCapsule' }
+type MakeCylinder f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  | InitializeCylinder'
+  }
+type InitializeCylinder' =
+  ( cylinder :: THREE.TCylinderGeometry
+  , radiusTop :: Number
+  , radiusBottom :: Number
+  , height :: Number
+  , radialSegments :: Int
+  , heightSegments :: Int
+  , openEnded :: Boolean
+  , thetaStart :: Number
+  , thetaLength :: Number
+  | Buffy
+  )
+newtype InitializeCylinder = InitializeCylinder { | InitializeCylinder' }
 type MakePlane f s =
   { id :: String
   , scope :: s
@@ -1474,6 +1493,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeSphere :: MakeSphere Maybe Scope -> payload
   , makeBox :: MakeBox Maybe Scope -> payload
   , makeCapsule :: MakeCapsule Maybe Scope -> payload
+  , makeCylinder :: MakeCylinder Maybe Scope -> payload
   , makePlane :: MakePlane Maybe Scope -> payload
   , makeBufferGeometry :: MakeBufferGeometry Maybe Scope -> payload
   , makeDirectionalLight :: MakeDirectionalLight Maybe Scope -> payload

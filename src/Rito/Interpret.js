@@ -124,6 +124,23 @@ export const makeCapsule_ = genericMake_(
 )((x, y) => {
 	y.main.geometry = x.main;
 });
+export const makeCylinder_ = genericMake_(
+	withAtts(
+		(ctor) =>
+			new ctor.cylinder(
+				ctor.radiusTop,
+				ctor.radiusBottom,
+				ctor.height,
+				ctor.radialSegments,
+				ctor.heightSegments,
+				ctor.openEnded,
+				ctor.thetaStart,
+				ctor.thetaLength
+			)
+	)
+)((x, y) => {
+	y.main.geometry = x.main;
+});
 export const makeSphere_ = genericMake_(
 	withAtts(
 		(ctor) =>
@@ -144,10 +161,10 @@ export const makePerspectiveCamera_ = (a) => (state) => () => {
 	genericMake_(
 		(ctor) =>
 			new ctor.perspectiveCamera(ctor.fov, ctor.aspect, ctor.near, ctor.far)
-	)(() => {})(a)(state)();
+	)(() => { })(a)(state)();
 };
 export const makeGLTFCamera_ = (a) => (state) => () => {
-	genericMake_(({ camera }) => camera)(() => {})(a)(state)();
+	genericMake_(({ camera }) => camera)(() => { })(a)(state)();
 };
 
 const ascSort = function (a, b) {
@@ -312,7 +329,7 @@ export const setSize_ = (a) => (state) => () => {
 export const setSizeThroughEffectComposer_ = (a) => (state) => () => {
 	state.units[a.id].main.renderer.setSize(a.width, a.height);
 };
-export const makeScene_ = genericMake_((ctor) => new ctor.scene())(() => {});
+export const makeScene_ = genericMake_((ctor) => new ctor.scene())(() => { });
 export const makeGroup_ = genericMake_((ctor) => new ctor.group())((x, y) => {
 	y.main.add(x.main);
 });
@@ -401,7 +418,7 @@ export const makeRenderPass_ = (a) => (state) => () => {
 };
 
 export const makeRaycaster_ = (a) => (state) => () => {
-		setUpForRaycasting(a, state);
+	setUpForRaycasting(a, state);
 }
 
 export const makeGlitchPass_ = (a) => (state) => () => {
@@ -413,17 +430,17 @@ export const makeGlitchPass_ = (a) => (state) => () => {
 };
 
 export const makeEffectComposerPass_ = (a) => (state) => () => {
-		const pass = new a.effectComposerPass(state.units[a.effectComposer].main);
-		state.units[a.id] = { main: pass };
-		if (a.parent !== undefined) {
-			state.units[a.parent].main.addPass(pass);
-		}
+	const pass = new a.effectComposerPass(state.units[a.effectComposer].main);
+	state.units[a.id] = { main: pass };
+	if (a.parent !== undefined) {
+		state.units[a.parent].main.addPass(pass);
+	}
 }
 
 export const makeBloomPass_ = (a) => (state) => () => {
 	const pass = new a.bloomPass(
 		a.strength,
-	  a.kernelSize,
+		a.kernelSize,
 		a.sigma,
 		a.resolution
 	);
@@ -1102,17 +1119,17 @@ export const setFocalLength_ = (a) => (state) => () => {
 };
 export const setViewOffset_ =
 	({ id, fullWidth, fullHeight, x, y, width, height }) =>
-	(state) =>
-	() => {
-		state.units[id].main.setViewOffset(
-			fullWidth,
-			fullHeight,
-			x,
-			y,
-			width,
-			height
-		);
-	};
+		(state) =>
+			() => {
+				state.units[id].main.setViewOffset(
+					fullWidth,
+					fullHeight,
+					x,
+					y,
+					width,
+					height
+				);
+			};
 
 //
 export const makeFFIThreeSnapshot = () => {
