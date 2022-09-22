@@ -115,7 +115,7 @@ let overrides =
         , version = "main"
         }
       , deku =
-        { dependencies = [ "prelude", "quickcheck" ]
+        { dependencies = [ "prelude", "catenable-lists", "quickcheck" ]
         , repo = "https://github.com/mikesol/purescript-deku.git"
         , version = "main"
         }

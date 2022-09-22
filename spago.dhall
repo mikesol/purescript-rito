@@ -22,6 +22,8 @@
   , "newtype"
   , "numbers"
   , "prelude"
+  , "random"
+  , "refs"
   , "profunctor"
   , "quickcheck"
   , "record"

@@ -29,9 +29,9 @@ import Data.UInt (toNumber)
 import Data.Variant (inj)
 import Deku.Attribute (attr, cb, (:=))
 import Deku.Control (text, text_)
-import Deku.Core (ANut(..))
+import Deku.Core (ANut(..), vbussed)
 import Deku.DOM as D
-import Deku.Toplevel (runInBody1)
+import Deku.Toplevel (runInBody)
 import Effect (Effect)
 import Effect.Aff (Aff, ParAff, launchAff_)
 import Effect.Class (liftEffect)
@@ -39,13 +39,20 @@ import Effect.Random (randomInt)
 import Effect.Random as Random
 import Effect.Ref (new, read, write)
 import FRP.Behavior (behavior)
-import FRP.Event (Event, bang, makeLemmingEvent)
+import FRP.Event (Event, makeEvent, makeLemmingEvent, subscribe)
 import FRP.Event.Animate (animationFrameEvent)
-import FRP.Event.Class (biSampleOn)
 import FRP.Event.Time (withTime)
-import FRP.Event.VBus (V, vbus)
+import FRP.Event.VBus (V)
 import Foreign.Object (fromHomogeneous, values)
 import Heterogeneous.Folding (class FoldingWithIndex, hfoldlWithIndex)
+import Ocarina.Clock (withACTime)
+import Ocarina.Control (analyser_, bandpass, delay, fan1, fix, gain, gain_, highpass, lowpass, playBuf)
+import Ocarina.Core (Audible, AudioEnvelope(..), AudioNumeric(..), Po2(..), _linear, bangOn)
+import Ocarina.Interpret (close, constant0Hack, context, decodeAudioDataFromUri, getByteFrequencyData)
+import Ocarina.Math (calcSlope)
+import Ocarina.Properties as P
+import Ocarina.Run (run2)
+import Ocarina.WebAPI (AnalyserNodeCb(..))
 import Prim.Row (class Cons, class Lacks)
 import Random.LCG (mkSeed)
 import Record (insert, union)
@@ -73,14 +80,6 @@ import Rito.THREE as THREE
 import Rito.Vector3 (vector3)
 import Test.QuickCheck.Gen (elements, evalGen)
 import Type.Proxy (Proxy(..))
-import Ocarina.Clock (withACTime)
-import Ocarina.Control (analyser_, bandpass, delay, fan1, fix, gain, gain_, highpass, lowpass, playBuf)
-import Ocarina.Core (Audible, AudioEnvelope(..), AudioNumeric(..), Po2(..), _linear, bangOn)
-import Ocarina.Interpret (close, constant0Hack, context, decodeAudioDataFromUri, getByteFrequencyData)
-import Ocarina.Math (calcSlope)
-import Ocarina.Properties as P
-import Ocarina.Run (run2)
-import Ocarina.WebAPI (AnalyserNodeCb(..))
 import Web.DOM as Web.DOM
 import Web.Event.Event (target)
 import Web.HTML (window)
@@ -119,7 +118,7 @@ type UIEvents = V
   )
 
 e2e :: Effect ~> Event
-e2e e = makeLemmingEvent \mySub k -> do
+e2e e = makeEvent \k -> do
   e >>= k
   pure (pure unit)
 
@@ -136,7 +135,7 @@ buffers' =
   }
 
 random = behavior \e ->
-  makeLemmingEvent \mySub k -> mySub e \f ->
+  makeEvent \k -> subscribe e \f ->
     Random.random >>= k <<< f
 
 dgl d de g ge h he i =
@@ -150,7 +149,7 @@ dgb d de g ge h he i =
 
 twoPi = 2.0 * pi :: Number
 
-fade0 = bang
+fade0 = pure
   $ P.gain
   $ AudioEnvelope
     { p: [ 1.0, 1.0, 0.75, 0.5, 0.75, 0.5, 0.75, 0.5, 0.25, 0.5, 0.25, 0.0 ]
@@ -158,7 +157,7 @@ fade0 = bang
     , d: 24.0
     }
 
-fade1 = bang
+fade1 = pure
   $ P.gain
   $ AudioEnvelope
     { p: [ 1.0, 1.0, 0.75, 0.5, 0.75, 0.5, 0.75, 0.5, 0.25, 0.5, 0.25, 0.0 ]
@@ -179,11 +178,11 @@ cvsys = show cvsy <> "px"
 cvsyn :: Number
 cvsyn = Int.toNumber cvsy
 
-fenv s e = bang
+fenv s e = pure
   $ P.frequency
   $ AudioEnvelope { p: [ s, e ], o: 0.0, d: 16.0 }
 
-denv s e = bang
+denv s e = pure
   $ P.delayTime
   $ AudioEnvelope { p: [ s, e ], o: 0.0, d: 16.0 }
 
@@ -224,7 +223,7 @@ runThree tdi delt canvas iw ih e = do
                       { pointLight: tdi.pointLight
                       , color: color tdi.color $ RGB 1.0 1.0 1.0
                       }
-                      ( oneOfMap bang
+                      ( oneOfMap pure
                           [ positionX 1.0
                           , positionY (-0.5)
                           , positionZ 1.0
@@ -261,10 +260,10 @@ void main()
 }
                         """
                         }
-                        ( biSampleOn (withTime (pure unit))
-                            ( { now: _, start: _ } <$> withTime
+                        ( ( { now: _, start: _ } <$> withTime
                                 ((canvas $> unit) <|> pure unit)
-                            )
+                            ) <*> (withTime (pure unit))
+                            
                             <#>
                               \{ now: { time: timeN }, start: { time: timeS } } ->
                                 uniform
@@ -454,8 +453,8 @@ main = launchAff_ do
     (decodeAudioDataFromUri ctx')
     (Rc.homogeneous buffers')
   close ctx'
-  liftEffect $ runInBody1
-    ( vbus (Proxy :: _ UIEvents) \push event -> -- here
+  liftEffect $ runInBody
+    ( vbussed (Proxy :: _ UIEvents) \push event -> -- here
 
         do
           let
@@ -561,13 +560,13 @@ main = launchAff_ do
               ]
           D.div_
             [ D.div
-                ( bang
+                ( pure
                     ( D.Style :=
                         "position:absolute;"
                     )
                 )
                 [ D.canvas
-                    ( oneOfMap bang
+                    ( oneOfMap pure
                         [ D.Width := cvsxs
                         , D.Height := cvsys
                         , D.Style := "width: 100%;position:absolute;top:0px;"
@@ -582,7 +581,7 @@ main = launchAff_ do
                     )
                     []
                 , D.div
-                    ( oneOfMap bang
+                    ( oneOfMap pure
                         [ D.Style := "width:100%;position:absolute;top:0px;"
                         , D.Self := push.renderElement
                         ]
@@ -594,7 +593,7 @@ main = launchAff_ do
                     "position: absolute; width:100%; background-color: rgba(200,200,200,0.8);"
                 )
                 [ D.input
-                    ( oneOfMap bang
+                    ( oneOfMap pure
                         [ D.Xtype := "range"
                         , D.Min := "0"
                         , D.Max := "100"
@@ -642,7 +641,7 @@ main = launchAff_ do
                                       pure { x, y }
                                     ssub <- run2 ctx
                                       (music ctx randSound analyserE)
-                                    anisub <- mySub animationFrameEvent
+                                    anisub <- subscribe animationFrameEvent
                                       \_ -> do
                                         ae <- read analyserE
                                         for_ ae \a -> do
