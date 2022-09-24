@@ -10,12 +10,13 @@ import Control.Monad.ST.Internal as RRef
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
 import Effect (Effect)
+import Effect.Uncurried (EffectFn1, runEffectFn1)
 import FRP.Event (subscribe)
 import Rito.Core as C
 import Rito.Interpret (FFIThreeSnapshot, effectfulThreeInterpret, makeFFIThreeSnapshot)
 
 run
-  :: (forall lock. (C.ARenderer lock (FFIThreeSnapshot -> Effect Unit)))
+  :: (forall lock. (C.ARenderer lock (EffectFn1 FFIThreeSnapshot Unit)))
   -> Effect (Effect Unit)
 run s = do
   ffi <- makeFFIThreeSnapshot
@@ -31,5 +32,5 @@ run s = do
         (effectfulThreeInterpret rf)
         s
     )
-    (_ $ ffi)
+    (\f -> runEffectFn1 f ffi)
   pure u

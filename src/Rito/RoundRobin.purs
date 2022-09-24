@@ -90,9 +90,9 @@ singleInstance props (InstanceId { meshId, instanceId }) = C.Instance
         , removeIMOnTouchMove
         , removeIMOnTouchCancel
         }
-    ) = makeLemmingEvent \mySub k -> do
+    ) = makeLemmingEvent \mySub0 k -> do
 
-    u <- flip mySub k $ oneOf
+    u <- flip mySub0 k $ oneOf
       [ makeLemmingEvent \mySub pusher -> do
           unsubs <- Ref.new Object.empty
           let withRemoval = withRemoval' unsubs
@@ -197,12 +197,12 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
           , deleteFromCache
           , makeInstancedMesh
           }
-      ) = makeLemmingEvent \mySub topK -> do
+      ) = makeLemmingEvent \mySub0 topK -> do
     me <- ids
     geoR <- Ref.new Nothing
     matR <- Ref.new Nothing
     parent.raiseId me
-    u0 <- flip mySub topK $
+    u0 <- flip mySub0 topK $
       oneOf
         [ geo
             -- we set the parent to nothing
@@ -222,7 +222,7 @@ roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
         ]
     geoId <- Ref.read geoR
     matId <- Ref.read matR
-    u1 <- flip mySub topK $ case geoId, matId of
+    u1 <- flip mySub0 topK $ case geoId, matId of
       Nothing, _ -> empty
       _, Nothing -> empty
       Just gid, Just mid -> oneOf

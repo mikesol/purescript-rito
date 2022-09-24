@@ -13,6 +13,7 @@ import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
 import Data.Symbol (class IsSymbol)
 import Effect (Effect)
+import Effect.Uncurried (EffectFn1)
 import Foreign (Foreign)
 import Foreign.Object (Object)
 import Prim.Row (class Cons, class Lacks)
@@ -49,7 +50,7 @@ import Type.Proxy (Proxy(..))
 import Web.DOM as Web.DOM
 import Web.HTML (HTMLCanvasElement)
 
-type Payload = FFIThreeSnapshot -> Effect Unit
+type Payload = EffectFn1 FFIThreeSnapshot Unit
 
 -- foreign
 data FFIThreeSnapshot

@@ -6,10 +6,8 @@ import Data.Newtype (class Newtype, wrap)
 import Data.Variant (Variant, inj)
 import Effect (Effect)
 import Rito.Box3 as Box3
-import Rito.Color (Color)
 import Rito.Color as Color
 import Rito.Euler (Euler)
-import Rito.InstancedMesh (InstancedMesh, Setter)
 import Rito.Matrix4 (Matrix4)
 import Rito.Quaternion (Quaternion)
 import Rito.Scene (Background)
@@ -294,18 +292,6 @@ target
 target = wrap <<< (inj (Proxy :: Proxy "orbitControls")) <<<
   (inj (Proxy :: Proxy "target"))
 
---
-setColorAt
-  :: forall n
-   . Setter n Color
-  -> InstancedMesh n
-setColorAt = wrap <<< inj (Proxy :: Proxy "setColor")
-
-setMatrixAt
-  :: forall n
-   . Setter n Matrix4
-  -> InstancedMesh n
-setMatrixAt = wrap <<< inj (Proxy :: Proxy "setMatrix4")
 
 -- listeners
 onClick
