@@ -10,6 +10,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Deku.Core (ANut)
 import Effect (Effect)
+import Effect.Uncurried (EffectFn1, EffectFn2)
 import FRP.Event (Event)
 import Foreign (Foreign)
 import Foreign.Object as Object
@@ -1029,9 +1030,9 @@ type GetBoundingBox = { id :: String, box :: Box3.Box3 -> Effect Unit }
 type GetBoundingSphere =
   { id :: String, sphere :: Sphere.Sphere -> Effect Unit }
 type SetInstancedMeshMatrix4 =
-  { id :: String, setMatrix4 :: (Int -> Matrix4 -> Effect Unit) -> Effect Unit }
+  { id :: String, setMatrix4 :: EffectFn1 (EffectFn2 Int Matrix4 Unit) Unit }
 type SetInstancedMeshColor =
-  { id :: String, setColor :: (Int -> Color -> Effect Unit) -> Effect Unit }
+  { id :: String, setColor :: EffectFn1 (EffectFn2 Int Color Unit) Unit }
 type SetSingleInstancedMeshMatrix4 =
   { id :: String, instanceId :: Int, matrix4 :: Matrix4 }
 type SetSingleInstancedMeshColor =
