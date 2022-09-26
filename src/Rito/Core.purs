@@ -1468,6 +1468,108 @@ object3D
   , lookAt: setLookAt <<< { id: me, v: _ }
   }
 
+pureObject3D
+  :: forall m payload
+   . Applicative m
+  => String
+  -> ThreeInterpret payload
+  -> { lookAt :: Vector3 -> m payload
+     , matrix4 :: Matrix4 -> m payload
+     , positionX :: Number -> m payload
+     , positionY :: Number -> m payload
+     , positionZ :: Number -> m payload
+     , quaternion :: Quaternion -> m payload
+     , rotateOnAxis ::
+         { angle :: Number
+         , axis :: Vector3
+         }
+         -> m payload
+     , rotateOnWorldAxis ::
+         { angle :: Number
+         , axis :: Vector3
+         }
+         -> m payload
+     , rotateX :: Number -> m payload
+     , rotateY :: Number -> m payload
+     , rotateZ :: Number -> m payload
+     , rotationFromAxisAngle ::
+         { angle :: Number
+         , axis :: Vector3
+         }
+         -> m payload
+     , rotationFromEuler :: Euler -> m payload
+     , rotationFromMatrix :: Matrix4 -> m payload
+     , rotationFromQuaternion :: Quaternion -> m payload
+     , scaleX :: Number -> m payload
+     , scaleY :: Number -> m payload
+     , scaleZ :: Number -> m payload
+     , translateOnAxis ::
+         { axis :: Vector3
+         , distance :: Number
+         }
+         -> m payload
+     , translateX :: Number -> m payload
+     , translateY :: Number -> m payload
+     , translateZ :: Number -> m payload
+     }
+pureObject3D
+  me
+  ( ThreeInterpret
+      { setMatrix4
+      , setQuaternion
+      , setRotationFromAxisAngle
+      , setRotationFromEuler
+      , setRotationFromMatrix
+      , setRotationFromQuaternion
+      , setRotateOnAxis
+      , setRotateOnWorldAxis
+      , setRotateX
+      , setRotateY
+      , setRotateZ
+      , setTranslateOnAxis
+      , setTranslateX
+      , setTranslateY
+      , setTranslateZ
+      , setPositionX
+      , setPositionY
+      , setPositionZ
+      , setScaleX
+      , setScaleY
+      , setScaleZ
+      , setLookAt
+      }
+  ) =
+  { matrix4: pure <<< setMatrix4 <<< { id: me, matrix4: _ }
+  , quaternion: pure <<< setQuaternion <<< { id: me, quaternion: _ }
+  , rotationFromAxisAngle: \{ axis, angle } ->
+      pure $ setRotationFromAxisAngle { id: me, axis, angle }
+  , rotationFromEuler: pure <<< setRotationFromEuler <<<
+      { id: me, euler: _ }
+  , rotationFromMatrix: pure <<< setRotationFromMatrix <<<
+      { id: me, matrix4: _ }
+  , rotationFromQuaternion: pure <<< setRotationFromQuaternion <<<
+      { id: me, quaternion: _ }
+  , rotateOnAxis: \{ axis, angle } -> pure $ setRotateOnAxis
+      { id: me, axis, angle }
+  , rotateOnWorldAxis: \{ axis, angle } -> pure $ setRotateOnWorldAxis
+      { id: me, axis, angle }
+  , rotateX: pure <<< setRotateX <<< { id: me, rotateX: _ }
+  , rotateY: pure <<< setRotateY <<< { id: me, rotateY: _ }
+  , rotateZ: pure <<< setRotateZ <<< { id: me, rotateZ: _ }
+  , translateOnAxis: \{ axis, distance } -> pure $ setTranslateOnAxis
+      { id: me, axis, distance }
+  , translateX: pure <<< setTranslateX <<< { id: me, translateX: _ }
+  , translateY: pure <<< setTranslateY <<< { id: me, translateY: _ }
+  , translateZ: pure <<< setTranslateZ <<< { id: me, translateZ: _ }
+  , positionX: pure <<< setPositionX <<< { id: me, positionX: _ }
+  , positionY: pure <<< setPositionY <<< { id: me, positionY: _ }
+  , positionZ: pure <<< setPositionZ <<< { id: me, positionZ: _ }
+  , scaleX: pure <<< setScaleX <<< { id: me, scaleX: _ }
+  , scaleY: pure <<< setScaleY <<< { id: me, scaleY: _ }
+  , scaleZ: pure <<< setScaleZ <<< { id: me, scaleZ: _ }
+  , lookAt: pure <<< setLookAt <<< { id: me, v: _ }
+  }
+
 newtype ThreeInterpret payload = ThreeInterpret
   { ids :: ST Region.Global String
   , effectComposerRender :: EffectComposerRender -> payload

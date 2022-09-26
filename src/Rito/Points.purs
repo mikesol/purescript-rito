@@ -21,7 +21,6 @@ import Effect (Effect)
 import FRP.Event (Event, makeLemmingEvent)
 import Foreign.Object (Object, values)
 import Foreign.Object as Object
-import Heterogeneous.Mapping (class Mapping, hmap)
 import Record (union)
 import Rito.Core as C
 import Rito.ST.ForEach (foreachST)
@@ -45,11 +44,6 @@ type Points' = Variant
 newtype Points = Points Points'
 
 instance Newtype Points Points'
-
-data MakeEvent = MakeEvent
-
-instance Mapping MakeEvent (x -> a) (x -> ST Region.Global a) where
-  mapping MakeEvent = map pure
 
 withRemoval' :: forall a. Ref.STRef Region.Global (Object a) -> String -> a -> a -> ST Region.Global a
 withRemoval' p s attach remove = do
@@ -90,10 +84,10 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
           , removeOnTouchMove
           , removeOnTouchCancel
           }
-      ) = makeLemmingEvent \mySub k -> do
+      ) = makeLemmingEvent \mySub0 k -> do
     me <- ids
     parent.raiseId me
-    unsub <- mySub 
+    unsub <- mySub0
       (oneOf
         [ pure $ makePoints
             { id: me
@@ -173,7 +167,7 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
                               { id: me, onTouchCancel }
                           )
                       }
-                      (hmap MakeEvent (C.object3D me di))
+                      (C.pureObject3D me di)
                   )
               )
             pure do
