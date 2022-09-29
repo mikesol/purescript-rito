@@ -72,6 +72,10 @@ export const meshStandardMaterial = () =>
 		(r) => r.MeshStandardMaterial
 	);
 
+export const meshLambertMaterial = () =>
+	import("three/src/materials/MeshLambertMaterial.js").then(
+		(r) => r.MeshLambertMaterial
+	);
 export const meshBasicMaterial = () =>
 	import("three/src/materials/MeshBasicMaterial.js").then(
 		(r) => r.MeshBasicMaterial

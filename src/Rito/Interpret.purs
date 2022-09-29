@@ -107,6 +107,8 @@ foreign import makeBufferGeometry_
   :: Core.MakeBufferGeometry Undefinable (Undefinable String) -> Payload
 foreign import makeMeshStandardMaterial_
   :: Core.MakeMeshStandardMaterial' Undefinable (Undefinable String) -> Payload
+foreign import makeMeshLambertMaterial_
+  :: Core.MakeMeshLambertMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeRawShaderMaterial_
   :: Core.MakeRawShaderMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeShaderMaterial_
@@ -552,6 +554,9 @@ instance FFIMe THREE.TInstancedMesh THREE.TInstancedMesh where
 instance FFIMe THREE.TMeshStandardMaterial THREE.TMeshStandardMaterial where
   ffiMe = identity
 
+instance FFIMe THREE.TMeshLambertMaterial THREE.TMeshLambertMaterial where
+  ffiMe = identity
+
 instance FFIMe THREE.TFogExp2 THREE.TFogExp2 where
   ffiMe = identity
 
@@ -674,6 +679,7 @@ effectfulThreeInterpret seed = Core.ThreeInterpret
   , makeMeshPhongMaterial: lcmap ffiize makeMeshPhongMaterial_
   , makeMeshBasicMaterial: lcmap ffiize makeMeshBasicMaterial_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
+  , makeMeshLambertMaterial: lcmap ffiize makeMeshLambertMaterial_
   , makeCSS2DObject: lcmap ffiize makeCSS2DObject_
   , makeCSS3DObject: lcmap ffiize makeCSS3DObject_
   -- scene

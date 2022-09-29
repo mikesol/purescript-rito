@@ -597,6 +597,73 @@ newtype InitializeMeshStandardMaterial = InitializeMeshStandardMaterial
           Side
       )
   }
+-- lambert
+type MakeMeshLambertMaterial f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  , parameters :: { | InitializeMeshLambertMaterial' Maybe NormalMapType () }
+  , materialParameters ::
+      { | AllMaterials Maybe BlendDst BlendEquation
+          Blending
+          BlendSrc
+          DepthMode
+          Precision
+          Side
+      }
+  }
+type MakeMeshLambertMaterial' f s =
+  { id :: String
+  , scope :: s
+  , parent :: f String
+  , parameters :: { | InitializeMeshLambertMaterial' Undefinable Int () }
+  , materialParameters ::
+      { | AllMaterials Undefinable Int Int Int Int Int String Int }
+  }
+type InitializeMeshLambertMaterial'
+  (opt :: Type -> Type)
+  normalMapType
+  r =
+  ( meshLambertMaterial :: THREE.TMeshLambertMaterial
+  , color :: opt Color
+  , roughness :: opt Number
+  , metalness :: opt Number
+  , map :: opt Texture
+  , lightMap :: opt Texture
+  , lightMapIntensity :: opt Number
+  , aoMap :: opt Texture
+  , aoMapIntensity :: opt Number
+  , emissive :: opt Color
+  , emissiveIntensity :: opt Number
+  , emissiveMap :: opt Texture
+  , bumpMap :: opt Texture
+  , bumpScale :: opt Number
+  , normalMap :: opt Texture
+  , normalMapType :: opt normalMapType
+  , normalScale :: opt Vector2
+  , displacementMap :: opt Texture
+  , displacementScale :: opt Number
+  , displacementBias :: opt Number
+  , roughnessMap :: opt Texture
+  , metalnessMap :: opt Texture
+  , alphaMap :: opt Texture
+  , envMap :: opt Texture
+  , envMapIntensity :: opt Number
+  , wireframe :: opt Boolean
+  , wireframeLinewidth :: opt Number
+  , flatShading :: opt Boolean
+  | r
+  )
+newtype InitializeMeshLambertMaterial = InitializeMeshLambertMaterial
+  { | InitializeMeshLambertMaterial' Maybe NormalMapType
+      ( AllMaterials Maybe BlendDst BlendEquation
+          Blending
+          BlendSrc
+          DepthMode
+          Precision
+          Side
+      )
+  }
 -- phong
 type MakeMeshPhongMaterial f s =
   { id :: String
@@ -1615,6 +1682,7 @@ newtype ThreeInterpret payload = ThreeInterpret
   , makeShaderMaterial :: MakeShaderMaterial Maybe Scope -> payload
   , makeMeshBasicMaterial :: MakeMeshBasicMaterial Maybe Scope -> payload
   , makeMeshStandardMaterial :: MakeMeshStandardMaterial Maybe Scope -> payload
+  , makeMeshLambertMaterial :: MakeMeshLambertMaterial Maybe Scope -> payload
   , makeMeshPhongMaterial :: MakeMeshPhongMaterial Maybe Scope -> payload
   , makePerspectiveCamera :: MakePerspectiveCamera Maybe Scope -> payload
   , makeGLTFCamera :: MakeGLTFCamera Maybe Scope -> payload

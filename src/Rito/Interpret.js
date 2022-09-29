@@ -321,6 +321,14 @@ export const makeMeshStandardMaterial_ = genericMake_(
 )((x, y) => {
 	y.main.material = x.main;
 });
+export const makeMeshLambertMaterial_ = genericMake_(
+	withMaterialParameters_(
+		({ parameters: { meshLambertMaterial, ...options } }) =>
+			new meshLambertMaterial(options)
+	)
+)((x, y) => {
+	y.main.material = x.main;
+});
 export const setSize_ = (a) => (state) => {
 	state.units[a.id].main.setSize(a.width, a.height);
 };
