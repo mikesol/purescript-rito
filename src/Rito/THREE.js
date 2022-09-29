@@ -88,6 +88,9 @@ export const directionalLight = () =>
 export const ambientLight = () =>
 	import("three/src/lights/AmbientLight.js").then((r) => r.AmbientLight);
 
+export const fogExp2 = () =>
+	import("three/src/scenes/FogExp2.js").then((r) => r.FogExp2);
+
 export const sphereGeometry = () =>
 	import("three/src/geometries/SphereGeometry.js").then(
 		(r) => r.SphereGeometry

@@ -31,6 +31,7 @@ import Rito.CombineOperation (CombineOperation(..))
 import Rito.Core (RawCamera, RawGroup)
 import Rito.Core as Core
 import Rito.DepthMode as DepthMode
+import Rito.FogExp2 (FogExp2)
 import Rito.InstancedBufferAttribute (InstancedBufferAttribute)
 import Rito.NormalMapType (NormalMapType(..))
 import Rito.Precision as Precision
@@ -323,6 +324,9 @@ class FFIMe i o | i -> o where
 instance FFIMe BufferAttribute BufferAttribute where
   ffiMe = identity
 
+instance FFIMe FogExp2 FogExp2 where
+  ffiMe = identity
+
 instance FFIMe InstancedBufferAttribute InstancedBufferAttribute where
   ffiMe = identity
 
@@ -546,6 +550,9 @@ instance FFIMe THREE.TInstancedMesh THREE.TInstancedMesh where
   ffiMe = identity
 
 instance FFIMe THREE.TMeshStandardMaterial THREE.TMeshStandardMaterial where
+  ffiMe = identity
+
+instance FFIMe THREE.TFogExp2 THREE.TFogExp2 where
   ffiMe = identity
 
 instance FFIMe THREE.TMeshBasicMaterial THREE.TMeshBasicMaterial where

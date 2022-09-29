@@ -327,7 +327,13 @@ export const setSize_ = (a) => (state) => {
 export const setSizeThroughEffectComposer_ = (a) => (state) => {
 	state.units[a.id].main.renderer.setSize(a.width, a.height);
 };
-export const makeScene_ = genericMake_((ctor) => new ctor.scene())(nada);
+export const makeScene_ = genericMake_((ctor) => {
+	const o = new ctor.scene();
+	if (ctor.fog) {
+		o.fog = new ctor.fog.ctor(ctor.fog.color, ctor.fog.density);
+	}
+	return o;
+})(nada);
 export const makeGroup_ = genericMake_((ctor) => new ctor.group())((x, y) => {
 	y.main.add(x.main);
 });

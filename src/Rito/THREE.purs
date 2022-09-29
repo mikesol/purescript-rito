@@ -49,6 +49,7 @@ data TGlitchPass
 data TBloomPass
 data TUnrealBloomPass
 data TEffectComposerPass
+data TFogExp2
 
 foreign import css2DRenderer :: Effect (Promise TCSS2DRenderer)
 foreign import css2DObject :: Effect (Promise TCSS2DObject)
@@ -95,6 +96,7 @@ foreign import glitchPass :: Effect (Promise TGlitchPass)
 foreign import bloomPass :: Effect (Promise TBloomPass)
 foreign import unrealBloomPass :: Effect (Promise TUnrealBloomPass)
 foreign import effectComposerPass :: Effect (Promise TEffectComposerPass)
+foreign import fogExp2 :: Effect (Promise TFogExp2)
 
 css2DRendererAff = toAffE css2DRenderer :: Aff TCSS2DRenderer
 css2DObjectAff = toAffE css2DObject :: Aff TCSS2DObject
@@ -141,3 +143,4 @@ glitchPassAff = toAffE glitchPass :: Aff TGlitchPass
 bloomPassAff = toAffE bloomPass :: Aff TBloomPass
 unrealBloomPassAff = toAffE unrealBloomPass :: Aff TUnrealBloomPass
 effectComposerPassAff = toAffE effectComposerPass :: Aff TEffectComposerPass
+fogExp2Aff = toAffE fogExp2 :: Aff TFogExp2

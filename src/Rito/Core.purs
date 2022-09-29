@@ -308,6 +308,15 @@ type MakeScene f s =
   , scope :: s
   , parent :: f String
   , scene :: THREE.TScene
+  , fog :: f { ctor :: THREE.TFogExp2, color :: Color, density :: Number }
+  }
+
+data FogInfo = FogExp2Info
+  { ctor :: THREE.TFogExp2, color :: Color, density :: Number }
+
+newtype InitializeScene = InitializeScene
+  { scene :: THREE.TScene
+  , fog :: Maybe FogInfo
   }
 type MakeGroup f s =
   { id :: String
