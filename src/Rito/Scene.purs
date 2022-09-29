@@ -2,6 +2,7 @@ module Rito.Scene
   ( scene
   , class InitialScene
   , toInitializeScene
+  , SceneOptions(..)
   , Scene(..)
   , Background(..)
   ) where
