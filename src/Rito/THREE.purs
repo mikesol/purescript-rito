@@ -24,6 +24,7 @@ data TWebGLRenderer
 data TMesh
 data TInstancedMesh
 data TMeshStandardMaterial
+data TMeshLambertMaterial
 data TMeshPhongMaterial
 data TMeshBasicMaterial
 data TShaderMaterial
@@ -49,6 +50,7 @@ data TGlitchPass
 data TBloomPass
 data TUnrealBloomPass
 data TEffectComposerPass
+data TFogExp2
 
 foreign import css2DRenderer :: Effect (Promise TCSS2DRenderer)
 foreign import css2DObject :: Effect (Promise TCSS2DObject)
@@ -69,6 +71,7 @@ foreign import scene :: Effect (Promise TScene)
 foreign import webGLRenderer :: Effect (Promise TWebGLRenderer)
 foreign import mesh :: Effect (Promise TMesh)
 foreign import meshStandardMaterial :: Effect (Promise TMeshStandardMaterial)
+foreign import meshLambertMaterial :: Effect (Promise TMeshLambertMaterial)
 foreign import meshPhongMaterial :: Effect (Promise TMeshPhongMaterial)
 foreign import meshBasicMaterial :: Effect (Promise TMeshBasicMaterial)
 foreign import pointLight :: Effect (Promise TPointLight)
@@ -95,6 +98,7 @@ foreign import glitchPass :: Effect (Promise TGlitchPass)
 foreign import bloomPass :: Effect (Promise TBloomPass)
 foreign import unrealBloomPass :: Effect (Promise TUnrealBloomPass)
 foreign import effectComposerPass :: Effect (Promise TEffectComposerPass)
+foreign import fogExp2 :: Effect (Promise TFogExp2)
 
 css2DRendererAff = toAffE css2DRenderer :: Aff TCSS2DRenderer
 css2DObjectAff = toAffE css2DObject :: Aff TCSS2DObject
@@ -115,6 +119,7 @@ sceneAff = toAffE scene :: Aff TScene
 webGLRendererAff = toAffE webGLRenderer :: Aff TWebGLRenderer
 meshAff = toAffE mesh :: Aff TMesh
 meshStandardMaterialAff = toAffE meshStandardMaterial :: Aff TMeshStandardMaterial
+meshLambertMaterialAff = toAffE meshLambertMaterial :: Aff TMeshLambertMaterial
 meshBasicMaterialAff = toAffE meshBasicMaterial :: Aff TMeshBasicMaterial
 pointLightAff = toAffE pointLight :: Aff TPointLight
 directionalLightAff = toAffE directionalLight :: Aff TDirectionalLight
@@ -141,3 +146,4 @@ glitchPassAff = toAffE glitchPass :: Aff TGlitchPass
 bloomPassAff = toAffE bloomPass :: Aff TBloomPass
 unrealBloomPassAff = toAffE unrealBloomPass :: Aff TUnrealBloomPass
 effectComposerPassAff = toAffE effectComposerPass :: Aff TEffectComposerPass
+fogExp2Aff = toAffE fogExp2 :: Aff TFogExp2

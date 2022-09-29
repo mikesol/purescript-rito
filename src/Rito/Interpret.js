@@ -321,13 +321,27 @@ export const makeMeshStandardMaterial_ = genericMake_(
 )((x, y) => {
 	y.main.material = x.main;
 });
+export const makeMeshLambertMaterial_ = genericMake_(
+	withMaterialParameters_(
+		({ parameters: { meshLambertMaterial, ...options } }) =>
+			new meshLambertMaterial(options)
+	)
+)((x, y) => {
+	y.main.material = x.main;
+});
 export const setSize_ = (a) => (state) => {
 	state.units[a.id].main.setSize(a.width, a.height);
 };
 export const setSizeThroughEffectComposer_ = (a) => (state) => {
 	state.units[a.id].main.renderer.setSize(a.width, a.height);
 };
-export const makeScene_ = genericMake_((ctor) => new ctor.scene())(nada);
+export const makeScene_ = genericMake_((ctor) => {
+	const o = new ctor.scene();
+	if (ctor.fog) {
+		o.fog = new ctor.fog.ctor(ctor.fog.color, ctor.fog.density);
+	}
+	return o;
+})(nada);
 export const makeGroup_ = genericMake_((ctor) => new ctor.group())((x, y) => {
 	y.main.add(x.main);
 });

@@ -31,6 +31,7 @@ import Rito.CombineOperation (CombineOperation(..))
 import Rito.Core (RawCamera, RawGroup)
 import Rito.Core as Core
 import Rito.DepthMode as DepthMode
+import Rito.FogExp2 (FogExp2)
 import Rito.InstancedBufferAttribute (InstancedBufferAttribute)
 import Rito.NormalMapType (NormalMapType(..))
 import Rito.Precision as Precision
@@ -106,6 +107,8 @@ foreign import makeBufferGeometry_
   :: Core.MakeBufferGeometry Undefinable (Undefinable String) -> Payload
 foreign import makeMeshStandardMaterial_
   :: Core.MakeMeshStandardMaterial' Undefinable (Undefinable String) -> Payload
+foreign import makeMeshLambertMaterial_
+  :: Core.MakeMeshLambertMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeRawShaderMaterial_
   :: Core.MakeRawShaderMaterial' Undefinable (Undefinable String) -> Payload
 foreign import makeShaderMaterial_
@@ -321,6 +324,9 @@ class FFIMe i o | i -> o where
   ffiMe :: i -> o
 
 instance FFIMe BufferAttribute BufferAttribute where
+  ffiMe = identity
+
+instance FFIMe FogExp2 FogExp2 where
   ffiMe = identity
 
 instance FFIMe InstancedBufferAttribute InstancedBufferAttribute where
@@ -548,6 +554,12 @@ instance FFIMe THREE.TInstancedMesh THREE.TInstancedMesh where
 instance FFIMe THREE.TMeshStandardMaterial THREE.TMeshStandardMaterial where
   ffiMe = identity
 
+instance FFIMe THREE.TMeshLambertMaterial THREE.TMeshLambertMaterial where
+  ffiMe = identity
+
+instance FFIMe THREE.TFogExp2 THREE.TFogExp2 where
+  ffiMe = identity
+
 instance FFIMe THREE.TMeshBasicMaterial THREE.TMeshBasicMaterial where
   ffiMe = identity
 
@@ -667,6 +679,7 @@ effectfulThreeInterpret seed = Core.ThreeInterpret
   , makeMeshPhongMaterial: lcmap ffiize makeMeshPhongMaterial_
   , makeMeshBasicMaterial: lcmap ffiize makeMeshBasicMaterial_
   , makeMeshStandardMaterial: lcmap ffiize makeMeshStandardMaterial_
+  , makeMeshLambertMaterial: lcmap ffiize makeMeshLambertMaterial_
   , makeCSS2DObject: lcmap ffiize makeCSS2DObject_
   , makeCSS3DObject: lcmap ffiize makeCSS3DObject_
   -- scene
