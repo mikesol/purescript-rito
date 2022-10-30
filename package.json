@@ -1,6 +1,6 @@
 {
 	"name": "purescript-rito",
-	"version": "0.3.1",
+	"version": "0.3.2",
 	"description": "A WebGL graphics FRP library backed by three.js.",
 	"scripts": {
 		"postinstall": "node node_modules/puppeteer/install.js",

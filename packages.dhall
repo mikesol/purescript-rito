@@ -112,12 +112,48 @@ let overrides =
       { bolson =
         { dependencies = [ "prelude", "heterogeneous" ]
         , repo = "https://github.com/mikesol/purescript-bolson.git"
-        , version = "main"
+        , version = "v0.3.1"
         }
       , deku =
-        { dependencies = [ "prelude", "catenable-lists", "quickcheck" ]
+        { dependencies =
+          [ "aff"
+          , "arrays"
+          , "bolson"
+          , "catenable-lists"
+          , "control"
+          , "effect"
+          , "either"
+          , "fast-vect"
+          , "filterable"
+          , "foldable-traversable"
+          , "foreign-object"
+          , "hyrule"
+          , "maybe"
+          , "newtype"
+          , "ordered-collections"
+          , "prelude"
+          , "profunctor"
+          , "quickcheck"
+          , "record"
+          , "safe-coerce"
+          , "st"
+          , "strings"
+          , "transformers"
+          , "tuples"
+          , "unsafe-coerce"
+          , "web-dom"
+          , "web-events"
+          , "web-html"
+          , "web-uievents"
+          ]
         , repo = "https://github.com/mikesol/purescript-deku.git"
-        , version = "main"
+        , version = "v0.8.1"
+        }
+      , hyrule =
+        { dependencies =
+          [ "monoid-extras", "web-uievents", "js-timers", "unsafe-reference" ]
+        , repo = "https://github.com/mikesol/purescript-hyrule.git"
+        , version = "v2.3.2"
         }
       , ocarina =
         { dependencies =
@@ -165,13 +201,7 @@ let overrides =
           , "web-html"
           ]
         , repo = "https://github.com/mikesol/purescript-ocarina.git"
-        , version = "main"
-        }
-      , hyrule =
-        { dependencies =
-          [ "monoid-extras", "web-uievents", "js-timers", "unsafe-reference" ]
-        , repo = "https://github.com/mikesol/purescript-hyrule.git"
-        , version = "master"
+        , version = "v1.5.2"
         }
       }
 
