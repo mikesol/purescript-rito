@@ -6,11 +6,12 @@ import Bolson.Control (flatten)
 import Bolson.Core (Scope(..), fixed)
 import Bolson.Core as Bolson
 import Control.Monad.ST.Internal as Ref
+import Control.Monad.ST.Uncurried (mkSTFn2, runSTFn1, runSTFn2)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, makeLemmingEvent)
+import FRP.Event (Event, Subscriber(..), makeLemmingEventO)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -37,12 +38,12 @@ effectComposer i rndr props kidz = C.EffectComposer go
           , makeEffectComposer
           , effectComposerRender
           }
-      ) = makeLemmingEvent \mySub k -> do
+      ) = makeLemmingEventO $ mkSTFn2 \(Subscriber mySub) k -> do
     me <- ids
     parent.raiseId me
     scope <- ids
     rendererAvar <- Ref.new Nothing
-    u0 <- mySub
+    u0 <- runSTFn2 mySub
       ( oneOf
           [ rndr # \(C.WebGLRenderer gooo) -> gooo
               { parent: Just me
@@ -56,7 +57,7 @@ effectComposer i rndr props kidz = C.EffectComposer go
     rendererLR <- Ref.read rendererAvar
     u1 <- case rendererLR of
       Nothing -> pure (pure unit)
-      Just rendererId -> k # mySub
+      Just rendererId -> runSTFn2 mySub
         ( oneOf
             [ pure $ makeEffectComposer
                 { id: me
@@ -80,8 +81,8 @@ effectComposer i rndr props kidz = C.EffectComposer go
                 di
                 (fixed kidz)
             ]
-        )
+        ) k
     pure do
-      k (deleteFromCache { id: me })
+      runSTFn1 k (deleteFromCache { id: me })
       u0
       u1

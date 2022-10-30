@@ -7,8 +7,9 @@ module Rito.Geometries.Capsule
 
 import Prelude
 
+import Control.Monad.ST.Uncurried (mkSTFn2, runSTFn1, runSTFn2)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
-import FRP.Event (makeLemmingEvent)
+import FRP.Event (Subscriber(..), makeLemmingEventO)
 import Foreign.Object (Object, empty)
 import Rito.BufferAttribute (BufferAttribute)
 import Rito.Core as C
@@ -116,10 +117,10 @@ capsule i' = C.Geometry go
         , deleteFromCache
         , makeCapsule
         }
-    ) = makeLemmingEvent \mySub k -> do
+    ) = makeLemmingEventO $ mkSTFn2 \(Subscriber mySub) k -> do
     me <- ids
     parent.raiseId me
-    unsub <- mySub
+    unsub <- runSTFn2 mySub
       ( pure
           ( makeCapsule
               { id: me
@@ -137,5 +138,5 @@ capsule i' = C.Geometry go
       )
       k
     pure do
-      k (deleteFromCache { id: me })
+      runSTFn1 k (deleteFromCache { id: me })
       unsub

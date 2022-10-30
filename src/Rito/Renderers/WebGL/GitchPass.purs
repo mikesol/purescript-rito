@@ -3,9 +3,10 @@ module Rito.Renderers.WebGL.GlitchPass where
 import Prelude
 
 import Bolson.Core as Bolson
+import Control.Monad.ST.Uncurried (mkSTFn2, runSTFn1, runSTFn2)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
-import FRP.Event ( makeLemmingEvent)
+import FRP.Event (Subscriber(..), makeLemmingEventO)
 import Rito.Core as C
 import Rito.THREE as THREE
 
@@ -66,10 +67,10 @@ glitchPass ii' = Bolson.Element' $ C.Pass go
           , deleteFromCache
           , makeGlitchPass
           }
-      ) = makeLemmingEvent \mySub k0 -> do
+      ) = makeLemmingEventO $ mkSTFn2 \(Subscriber mySub) k0 -> do
     me <- ids
     psr.raiseId me
-    u1 <- mySub
+    u1 <- runSTFn2 mySub
           ( oneOf
               [ pure $ makeGlitchPass
                   { id: me
@@ -81,5 +82,5 @@ glitchPass ii' = Bolson.Element' $ C.Pass go
           )
           k0
     pure do
-      k0 (deleteFromCache { id: me })
+      runSTFn1 k0 (deleteFromCache { id: me })
       u1

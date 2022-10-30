@@ -5,11 +5,12 @@ import Prelude
 import Bolson.Core (Scope(..))
 import Bolson.Core as Bolson
 import Control.Monad.ST.Internal as Ref
+import Control.Monad.ST.Uncurried (mkSTFn2, runSTFn1, runSTFn2)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, makeLemmingEvent)
+import FRP.Event (Event, Subscriber(..), makeLemmingEventO)
 import Record (union)
 import Rito.Core as C
 import Rito.THREE as THREE
@@ -46,13 +47,13 @@ css3DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
           , css3DRender
           , setSize
           }
-      ) = makeLemmingEvent \mySub k0 -> do
+      ) = makeLemmingEventO $ mkSTFn2 \(Subscriber mySub0) k0 -> do
     me <- ids
     psr.raiseId me
     scope <- ids
     sceneAvar <- Ref.new Nothing
     cameraAvar <- Ref.new Nothing
-    u0 <- mySub
+    u0 <- runSTFn2 mySub0
       ( oneOf
           [ sne # \(C.Scene gooo) -> gooo
               { parent: Just me
@@ -77,7 +78,7 @@ css3DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
       Nothing -> pure (pure unit)
       Just sceneId -> case cameraLR of
         Nothing -> pure (pure unit)
-        Just cameraId -> mySub
+        Just cameraId -> runSTFn2 mySub0
           ( oneOf
               [ pure $ makeCSS3DRenderer
                   $ union
@@ -85,10 +86,10 @@ css3DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
                     , camera: cameraId
                     }
                     make
-              , makeLemmingEvent \mySub k -> do
+              , makeLemmingEventO $ mkSTFn2 \(Subscriber mySub) k -> do
                   usuRef <- Ref.new (pure unit)
                   -- ugh, there's got to be a better way...
-                  unsub <- mySub
+                  unsub <- runSTFn2 mySub
                     ( props <#>
                         ( \(CSS3DRenderer msh) ->
                             msh # match
@@ -111,6 +112,6 @@ css3DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
           )
           k0
     pure do
-      k0 (deleteFromCache { id: me })
+      runSTFn1 k0 (deleteFromCache { id: me })
       u0
       u1

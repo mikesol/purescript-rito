@@ -8,12 +8,13 @@ import Bolson.Core as Bolson
 import Control.Monad.ST.Global as Region
 import Control.Monad.ST.Internal (ST)
 import Control.Monad.ST.Internal as Ref
+import Control.Monad.ST.Uncurried (mkSTFn1, mkSTFn2, runSTFn1, runSTFn2)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import Effect (Effect)
-import FRP.Event (Event, makeLemmingEvent)
+import FRP.Event (Event, Subscriber(..), makeLemmingEventO)
 import Foreign.Object (Object, values)
 import Foreign.Object as Object
 import Record (union)
@@ -85,10 +86,10 @@ mesh' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $
           , removeOnTouchMove
           , removeOnTouchCancel
           }
-      ) = makeLemmingEvent \mySub0 k -> do
+      ) = makeLemmingEventO $ mkSTFn2 \(Subscriber mySub0) k -> do
     me <- ids
     parent.raiseId me
-    unsub <- mySub0
+    unsub <- runSTFn2 mySub0
       ( oneOf
           [ pure $ makeMesh
               { id: me
@@ -108,11 +109,11 @@ mesh' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $
               , raiseId: \_ -> pure unit
               }
               di
-          , makeLemmingEvent \mySub pusher -> do
+          , makeLemmingEventO $ mkSTFn2 \(Subscriber mySub) pusher -> do
               unsubs <- Ref.new Object.empty
               let withRemoval = withRemoval' unsubs
-              usu <- mySub props \(Mesh msh) -> pusher =<<
-                ( msh # match
+              usu <- runSTFn2 mySub props $ mkSTFn1 \(Mesh msh) ->  do
+                x <- ( msh # match
                     ( union
                         { onClick: \onClick -> withRemoval "click"
                             (setOnClick { id: me, onClick })
@@ -172,9 +173,10 @@ mesh' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $
                         (C.pureObject3D me di)
                     )
                 )
+                runSTFn1 pusher x
               pure do
                 removes <- Ref.read unsubs
-                foreachST (values removes) pusher
+                foreachST (values removes) \i -> runSTFn1 pusher i
                 usu
           , flatten
               { doLogic: absurd
@@ -189,7 +191,7 @@ mesh' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $
       )
       k
     pure do
-      k (deleteFromCache { id: me })
+      runSTFn1 k (deleteFromCache { id: me })
       unsub
 
 mesh

@@ -3,10 +3,11 @@ module Rito.Renderers.WebGL.UnrealBloomPass where
 import Prelude
 
 import Bolson.Core as Bolson
+import Control.Monad.ST.Uncurried (mkSTFn2, runSTFn1, runSTFn2)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
 import Data.Variant (Variant, match)
-import FRP.Event (Event,  makeLemmingEvent)
+import FRP.Event (Event, Subscriber(..), makeLemmingEventO)
 import Rito.Core as C
 import Rito.THREE as THREE
 import Rito.Vector2 (Vector2)
@@ -111,10 +112,10 @@ unrealBloomPass ii' propz = Bolson.Element' $ C.Pass go
         , setRadius
         , setThreshold
         }
-    ) = makeLemmingEvent \mySub k0 -> do
+    ) = makeLemmingEventO $ mkSTFn2 \(Subscriber mySub) k0 -> do
     me <- ids
     psr.raiseId me
-    u1 <- mySub
+    u1 <- runSTFn2 mySub
       ( oneOf
           [ pure $ makeUnrealBloomPass
               { id: me
@@ -124,8 +125,8 @@ unrealBloomPass ii' propz = Bolson.Element' $ C.Pass go
               , strength: ii.strength
               , radius: ii.radius
               , threshold: ii.threshold
-              },
-              map
+              }
+          , map
               ( \(UnrealBloomPass e) -> match
                   { resolution: setResolution <<< { id: me, resolution: _ }
                   , strength: setStrength <<< { id: me, strength: _ }
@@ -139,5 +140,5 @@ unrealBloomPass ii' propz = Bolson.Element' $ C.Pass go
       )
       k0
     pure do
-      k0 (deleteFromCache { id: me })
+      runSTFn1 k0 (deleteFromCache { id: me })
       u1

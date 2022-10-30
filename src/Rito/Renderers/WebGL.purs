@@ -4,12 +4,13 @@ import Prelude
 
 import Bolson.Core (Scope(..))
 import Control.Monad.ST.Internal as Ref
+import Control.Monad.ST.Uncurried (mkSTFn2, runSTFn1, runSTFn2)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, makeLemmingEvent)
+import FRP.Event (Event, Subscriber(..), makeLemmingEventO)
 import Rito.Core as C
 import Rito.Renderers.WebGLRenderingPowerPreference as WPP
 import Rito.Renderers.WebGLRenderingPrecision as WRP
@@ -180,13 +181,13 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
           , webGLRender
           , setSize
           }
-      ) = makeLemmingEvent \mySub k0 -> do
+      ) = makeLemmingEventO $ mkSTFn2 \(Subscriber mySub1) k0 -> do
     me <- ids
     psr.raiseId me
     scope <- ids
     sceneAvar <- Ref.new Nothing
     cameraAvar <- Ref.new Nothing
-    u0 <- mySub
+    u0 <- runSTFn2 mySub1
       ( oneOf
           [ sne # \(C.Scene gooo) -> gooo
               { parent: Just me
@@ -209,7 +210,7 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
       Nothing -> pure (pure unit)
       Just sceneId -> case cameraLR of
         Nothing -> pure (pure unit)
-        Just cameraId -> mySub
+        Just cameraId -> runSTFn2 mySub1
           ( oneOf
               [ pure $ makeWebGLRenderer
                   { id: me
@@ -227,10 +228,10 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
                   , depth: i.depth
                   , logarithmicDepthBuffer: i.logarithmicDepthBuffer
                   }
-              , makeLemmingEvent \mySub k -> do
+              , makeLemmingEventO $ mkSTFn2 \(Subscriber mySub2) k -> do
                   usuRef <- Ref.new (pure unit)
                   -- ugh, there's got to be a better way...
-                  unsub <- mySub
+                  unsub <- runSTFn2 mySub2
                     ( props <#>
                         ( \(WebGLRenderer msh) ->
                             msh # match
@@ -253,6 +254,6 @@ webGLRenderer sne cam i' props = C.WebGLRenderer go
           )
           k0
     pure do
-      k0 (deleteFromCache { id: me })
+      runSTFn1 k0 (deleteFromCache { id: me })
       u0
       u1

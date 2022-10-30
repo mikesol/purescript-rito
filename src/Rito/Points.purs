@@ -13,12 +13,13 @@ import Bolson.Core as Bolson
 import Control.Monad.ST.Global as Region
 import Control.Monad.ST.Internal (ST)
 import Control.Monad.ST.Internal as Ref
+import Control.Monad.ST.Uncurried (mkSTFn1, mkSTFn2, runSTFn1, runSTFn2)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
 import Effect (Effect)
-import FRP.Event (Event, makeLemmingEvent)
+import FRP.Event (Event, Subscriber(..), makeLemmingEventO)
 import Foreign.Object (Object, values)
 import Foreign.Object as Object
 import Record (union)
@@ -84,10 +85,10 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
           , removeOnTouchMove
           , removeOnTouchCancel
           }
-      ) = makeLemmingEvent \mySub0 k -> do
+      ) = makeLemmingEventO $ mkSTFn2 \(Subscriber mySub0) k -> do
     me <- ids
     parent.raiseId me
-    unsub <- mySub0
+    unsub <- runSTFn2 mySub0
       (oneOf
         [ pure $ makePoints
             { id: me
@@ -107,72 +108,73 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
             , raiseId: \_ -> pure unit
             }
             di
-        , makeLemmingEvent \mySub pusher -> do
+        , makeLemmingEventO $ mkSTFn2 \(Subscriber mySub) pusher -> do
             unsubs <- Ref.new Object.empty
             let withRemoval = withRemoval' unsubs
-            usu <- mySub props \(Points msh) -> pusher =<<
-              ( msh # match
-                  ( union
-                      { onClick: \onClick -> withRemoval "click"
-                          (setOnClick { id: me, onClick })
-                          (removeOnClick { id: me, onClick })
-                      , onMouseDown: \onMouseDown -> withRemoval "mousedown"
-                          ( setOnMouseDown
-                              { id: me, onMouseDown }
-                          )
-                          ( removeOnMouseDown
-                              { id: me, onMouseDown }
-                          )
-                      , onMouseUp: \onMouseUp -> withRemoval "mouseup"
-                          ( setOnMouseUp
-                              { id: me, onMouseUp }
-                          )
-                          ( removeOnMouseUp
-                              { id: me, onMouseUp }
-                          )
-                      , onMouseMove: \onMouseMove -> withRemoval "mousemove"
-                          ( setOnMouseMove
-                              { id: me, onMouseMove }
-                          )
-                          ( removeOnMouseMove
-                              { id: me, onMouseMove }
-                          )
-                      , onTouchStart: \onTouchStart -> withRemoval "touchstart"
-                          ( setOnTouchStart
-                              { id: me, onTouchStart }
-                          )
-                          ( removeOnTouchStart
-                              { id: me, onTouchStart }
-                          )
-                      , onTouchEnd: \onTouchEnd -> withRemoval "touchend"
-                          ( setOnTouchEnd
-                              { id: me, onTouchEnd }
-                          )
-                          ( removeOnTouchEnd
-                              { id: me, onTouchEnd }
-                          )
-                      , onTouchMove: \onTouchMove -> withRemoval "touchmove"
-                          ( setOnTouchMove
-                              { id: me, onTouchMove }
-                          )
-                          ( removeOnTouchMove
-                              { id: me, onTouchMove }
-                          )
-                      , onTouchCancel: \onTouchCancel -> withRemoval
-                          "touchcancel"
-                          ( setOnTouchCancel
-                              { id: me, onTouchCancel }
-                          )
-                          ( removeOnTouchCancel
-                              { id: me, onTouchCancel }
-                          )
-                      }
-                      (C.pureObject3D me di)
-                  )
-              )
+            usu <- runSTFn2 mySub props $ mkSTFn1 \(Points msh) -> do
+                x <- ( msh # match
+                    ( union
+                        { onClick: \onClick -> withRemoval "click"
+                            (setOnClick { id: me, onClick })
+                            (removeOnClick { id: me, onClick })
+                        , onMouseDown: \onMouseDown -> withRemoval "mousedown"
+                            ( setOnMouseDown
+                                { id: me, onMouseDown }
+                            )
+                            ( removeOnMouseDown
+                                { id: me, onMouseDown }
+                            )
+                        , onMouseUp: \onMouseUp -> withRemoval "mouseup"
+                            ( setOnMouseUp
+                                { id: me, onMouseUp }
+                            )
+                            ( removeOnMouseUp
+                                { id: me, onMouseUp }
+                            )
+                        , onMouseMove: \onMouseMove -> withRemoval "mousemove"
+                            ( setOnMouseMove
+                                { id: me, onMouseMove }
+                            )
+                            ( removeOnMouseMove
+                                { id: me, onMouseMove }
+                            )
+                        , onTouchStart: \onTouchStart -> withRemoval "touchstart"
+                            ( setOnTouchStart
+                                { id: me, onTouchStart }
+                            )
+                            ( removeOnTouchStart
+                                { id: me, onTouchStart }
+                            )
+                        , onTouchEnd: \onTouchEnd -> withRemoval "touchend"
+                            ( setOnTouchEnd
+                                { id: me, onTouchEnd }
+                            )
+                            ( removeOnTouchEnd
+                                { id: me, onTouchEnd }
+                            )
+                        , onTouchMove: \onTouchMove -> withRemoval "touchmove"
+                            ( setOnTouchMove
+                                { id: me, onTouchMove }
+                            )
+                            ( removeOnTouchMove
+                                { id: me, onTouchMove }
+                            )
+                        , onTouchCancel: \onTouchCancel -> withRemoval
+                            "touchcancel"
+                            ( setOnTouchCancel
+                                { id: me, onTouchCancel }
+                            )
+                            ( removeOnTouchCancel
+                                { id: me, onTouchCancel }
+                            )
+                        }
+                        (C.pureObject3D me di)
+                    )
+                )
+                runSTFn1 pusher x
             pure do
               removes <- Ref.read unsubs
-              foreachST (values removes) pusher
+              foreachST (values removes) \i -> runSTFn1 pusher i
               usu
         , flatten
             { doLogic: absurd
@@ -185,7 +187,7 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
             (fixed kidz)
         ]) k
     pure do
-      k (deleteFromCache { id: me })
+      runSTFn1 k (deleteFromCache { id: me })
       unsub
 
 points

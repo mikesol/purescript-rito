@@ -10,6 +10,7 @@ module Rito.Materials.RawShaderMaterial
 
 import Prelude
 
+import Control.Monad.ST.Uncurried (mkSTFn2, runSTFn1, runSTFn2)
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
@@ -17,7 +18,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Symbol (reflectSymbol)
 import Data.Variant (Unvariant(..), Variant, match, unvariant)
-import FRP.Event (Event, makeLemmingEvent)
+import FRP.Event (Event, Subscriber(..), makeLemmingEventO)
 import Foreign (Foreign)
 import Prim.RowList (class RowToList)
 import Record (union)
@@ -318,10 +319,10 @@ rawShaderMaterial unifs i' atts = C.Material go
         , makeRawShaderMaterial
         , setUniform
         }
-    ) = makeLemmingEvent \mySub k -> do
+    ) = makeLemmingEventO $ mkSTFn2 \(Subscriber mySub) k -> do
     me <- ids
     parent.raiseId me
-    unsub <- mySub
+    unsub <- runSTFn2 mySub
       ( oneOf
           [ pure
               ( makeRawShaderMaterial
@@ -356,7 +357,7 @@ rawShaderMaterial unifs i' atts = C.Material go
       )
       k
     pure do
-      k (deleteFromCache { id: me })
+      runSTFn1 k (deleteFromCache { id: me })
       unsub
 
 rawShaderMaterial_

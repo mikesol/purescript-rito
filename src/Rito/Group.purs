@@ -5,11 +5,12 @@ import Prelude
 import Bolson.Control (flatten)
 import Bolson.Core (Entity(..), Scope, fixed)
 import Bolson.Core as Bolson
+import Control.Monad.ST.Uncurried (mkSTFn2, runSTFn1, runSTFn2)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, makeLemmingEvent)
+import FRP.Event (Event, Subscriber(..), makeLemmingEventO)
 import Rito.Core (ThreeInterpret(..))
 import Rito.Core as C
 import Rito.THREE as THREE
@@ -51,10 +52,10 @@ unsafeInternalGroup dif gp props kidz = Element' $ C.Group go
           { ids
           , deleteFromCache
           }
-      ) = makeLemmingEvent \mySub k -> do
+      ) = makeLemmingEventO $ mkSTFn2 \(Subscriber mySub) k -> do
     me <- ids
     parent.raiseId me
-    unsub <- mySub
+    unsub <- runSTFn2 mySub
       ( oneOf
           [ pure $ dif di
               { id: me
@@ -87,5 +88,5 @@ unsafeInternalGroup dif gp props kidz = Element' $ C.Group go
       )
       k
     pure do
-      k (deleteFromCache { id: me })
+      runSTFn1 k (deleteFromCache { id: me })
       unsub

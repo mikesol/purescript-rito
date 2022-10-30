@@ -10,13 +10,14 @@ module Rito.Materials.MeshBasicMaterial
 
 import Prelude
 
+import Control.Monad.ST.Uncurried (mkSTFn2, runSTFn1, runSTFn2)
 import Control.Plus (empty)
 import ConvertableOptions (class ConvertOption, class ConvertOptionsWithDefaults, convertOptionsWithDefaults)
 import Data.Foldable (oneOf)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Variant (Variant, match)
-import FRP.Event (Event, makeLemmingEvent)
+import FRP.Event (Event, Subscriber(..), makeLemmingEventO)
 import Record (union)
 import Rito.BlendDst (BlendDst)
 import Rito.BlendEquation (BlendEquation)
@@ -401,10 +402,10 @@ meshBasicMaterial i' atts = C.Material go
         , setWireframe
         , setWireframeLinewidth
         }
-    ) = makeLemmingEvent \mySub k -> do
+    ) = makeLemmingEventO $ mkSTFn2 \(Subscriber mySub) k -> do
     me <- ids
     parent.raiseId me
-    unsub <- mySub
+    unsub <- runSTFn2 mySub
       ( oneOf
           [ pure
               ( makeMeshBasicMaterial
@@ -451,7 +452,7 @@ meshBasicMaterial i' atts = C.Material go
       )
       k
     pure do
-      k (deleteFromCache { id: me })
+      runSTFn1 k (deleteFromCache { id: me })
       unsub
 meshBasicMaterial_
   :: forall i lock payload
