@@ -83,12 +83,12 @@ newtype Scene = Scene
 derive instance Newtype Scene _
 
 scene
-  :: forall i lock payload
+  :: forall i payload
    . InitialScene i
   => i
   -> Event Scene
-  -> Array (C.ASceneful lock payload)
-  -> C.Scene lock payload
+  -> Array (C.ASceneful payload)
+  -> C.Scene payload
 scene ctor' props kidz = C.Scene go
   where
   (C.InitializeScene ctor) = toInitializeScene ctor'

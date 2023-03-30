@@ -52,13 +52,13 @@ withRemoval' p s attach remove = do
   pure attach
 
 points'
-  :: forall lock payload
+  :: forall payload
    . { points :: THREE.TPoints }
-  -> C.Geometry lock payload
-  -> C.Material lock payload
+  -> C.Geometry payload
+  -> C.Material payload
   -> Event Points
-  -> Array (C.APoints lock payload)
-  -> C.APoints lock payload
+  -> Array (C.APoints payload)
+  -> C.APoints payload
 points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ C.Points go
   where
   go
@@ -191,10 +191,10 @@ points' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $ 
       unsub
 
 points
-  :: forall lock payload
+  :: forall payload
    . { points :: THREE.TPoints }
-  -> C.Geometry lock payload
-  -> C.Material lock payload
+  -> C.Geometry payload
+  -> C.Material payload
   -> Event Points
-  -> C.APoints lock payload
+  -> C.APoints payload
 points msh geo mat props = points' msh geo mat props []

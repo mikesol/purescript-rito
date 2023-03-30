@@ -132,10 +132,10 @@ instance
     (convertOptionsWithDefaults SphereOptions defaultSphere provided)
 
 sphere
-  :: forall i lock payload
+  :: forall i payload
    . InitialSphere i
   => i
-  -> C.Geometry lock payload
+  -> C.Geometry payload
 sphere i' = C.Geometry go
   where
   C.InitializeSphere i = toInitializeSphere i'

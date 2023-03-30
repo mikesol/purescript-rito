@@ -105,11 +105,11 @@ newtype PointLight = PointLight PointLight'
 instance Newtype PointLight PointLight'
 
 pointLight
-  :: forall i lock payload
+  :: forall i payload
    . InitialPointLight i
   => i
   -> Event PointLight
-  -> C.ALight lock payload
+  -> C.ALight payload
 pointLight i' atts = Bolson.Element' $ C.Light go
   where
   C.InitializePointLight i = toInitializePointLight i'
@@ -163,8 +163,8 @@ pointLight i' atts = Bolson.Element' $ C.Light go
       unsub
 
 pointLight_
-  :: forall i lock payload
+  :: forall i payload
    . InitialPointLight i
   => i
-  -> C.ALight lock payload
+  -> C.ALight payload
 pointLight_ i = pointLight i empty

@@ -551,11 +551,11 @@ newtype MeshLambertMaterial = MeshLambertMaterial MeshLambertMaterial'
 instance Newtype MeshLambertMaterial MeshLambertMaterial'
 
 meshLambertMaterial
-  :: forall i lock payload
+  :: forall i payload
    . InitialMeshLambertMaterial i
   => i
   -> Event MeshLambertMaterial
-  -> C.Material lock payload
+  -> C.Material payload
 meshLambertMaterial i' atts = C.Material go
   where
   C.InitializeMeshLambertMaterial i = toInitializeMeshLambertMaterial i'
@@ -689,8 +689,8 @@ meshLambertMaterial i' atts = C.Material go
       unsub
 
 meshLambertMaterial_
-  :: forall i lock payload
+  :: forall i payload
    . InitialMeshLambertMaterial i
   => i
-  -> C.Material lock payload
+  -> C.Material payload
 meshLambertMaterial_ i = meshLambertMaterial i empty

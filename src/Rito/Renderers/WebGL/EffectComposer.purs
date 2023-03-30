@@ -21,12 +21,12 @@ newtype EffectComposer = EffectComposer EffectComposer'
 instance Newtype EffectComposer EffectComposer'
 
 effectComposer
-  :: forall lock payload
+  :: forall payload
    . { effectComposer :: THREE.TEffectComposer }
-  -> C.WebGLRenderer lock payload
+  -> C.WebGLRenderer payload
   -> Event EffectComposer
-  -> Array (C.APass lock payload)
-  -> C.EffectComposer lock payload
+  -> Array (C.APass payload)
+  -> C.EffectComposer payload
 effectComposer i rndr props kidz = C.EffectComposer go
   where
   go

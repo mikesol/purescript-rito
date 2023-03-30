@@ -119,11 +119,11 @@ newtype PerspectiveCamera = PerspectiveCamera PerspectiveCamera'
 instance Newtype PerspectiveCamera PerspectiveCamera'
 
 perspectiveCamera
-  :: forall i lock payload
+  :: forall i payload
    . InitialPerspectiveCamera i
   => i
   -> Event PerspectiveCamera
-  -> C.Camera lock payload
+  -> C.Camera payload
 perspectiveCamera i' atts = C.Camera go
   where
   C.InitializePerspectiveCamera i = toInitializePerspectiveCamera i'
@@ -208,8 +208,8 @@ perspectiveCamera i' atts = C.Camera go
       runSTFn1 k (deleteFromCache { id: me })
       unsub
 perspectiveCamera_
-  :: forall i lock payload
+  :: forall i payload
    . InitialPerspectiveCamera i
   => i
-  -> C.Camera lock payload
+  -> C.Camera payload
 perspectiveCamera_ i = perspectiveCamera i empty

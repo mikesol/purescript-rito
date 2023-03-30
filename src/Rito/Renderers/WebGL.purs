@@ -161,13 +161,13 @@ newtype WebGLRenderer = WebGLRenderer WebGLRenderer'
 instance Newtype WebGLRenderer WebGLRenderer'
 
 webGLRenderer
-  :: forall i lock payload
+  :: forall i payload
    . InitialWebGLRenderer i
-  => C.Scene lock payload
-  -> C.Camera lock payload
+  => C.Scene payload
+  -> C.Camera payload
   -> i
   -> Event WebGLRenderer
-  -> C.WebGLRenderer lock payload
+  -> C.WebGLRenderer payload
 webGLRenderer sne cam i' props = C.WebGLRenderer go
   where
   C.InitializeWebGLRenderer i = toInitializeWebGLRenderer i'

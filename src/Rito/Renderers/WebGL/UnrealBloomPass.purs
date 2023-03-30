@@ -93,11 +93,11 @@ newtype UnrealBloomPass = UnrealBloomPass
   )
 
 unrealBloomPass
-  :: forall i lock payload
+  :: forall i payload
    . InitialUnrealBloomPass i
   => i
   -> Event UnrealBloomPass
-  -> C.APass lock payload
+  -> C.APass payload
 unrealBloomPass ii' propz = Bolson.Element' $ C.Pass go
   where
   C.InitializeUnrealBloomPass ii = toInitializeUnrealBloomPass ii'

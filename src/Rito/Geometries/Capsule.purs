@@ -103,10 +103,10 @@ instance
     (convertOptionsWithDefaults CapsuleOptions defaultCapsule provided)
 
 capsule
-  :: forall i lock payload
+  :: forall i payload
    . InitialCapsule i
   => i
-  -> C.Geometry lock payload
+  -> C.Geometry payload
 capsule i' = C.Geometry go
   where
   C.InitializeCapsule i = toInitializeCapsule i'

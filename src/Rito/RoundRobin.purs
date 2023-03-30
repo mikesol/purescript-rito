@@ -68,10 +68,10 @@ withRemoval' p s attach remove = do
   pure attach
 
 singleInstance
-  :: forall lock payload
+  :: forall payload
    . Event Instance
   -> InstanceId
-  -> C.Instance lock payload
+  -> C.Instance payload
 singleInstance props (InstanceId { meshId, instanceId }) = C.Instance
   go
   where
@@ -190,17 +190,17 @@ data Stage = Begin | Middle | End
 data Semaphore a = Acquire a | Release
 
 roundRobinInstancedMesh
-  :: forall lock payload
+  :: forall payload
    . { matrix4 :: THREE.TMatrix4
      , mesh :: THREE.TMesh
      , instancedMesh :: THREE.TInstancedMesh
      }
   -> Int
-  -> C.Geometry lock payload
-  -> C.Material lock payload
+  -> C.Geometry payload
+  -> C.Material payload
   -> Event
-       (Event (Semaphore (InstanceId -> C.Instance lock payload)))
-  -> C.AMesh lock payload
+       (Event (Semaphore (InstanceId -> C.Instance payload)))
+  -> C.AMesh payload
 roundRobinInstancedMesh mmi count (C.Geometry geo) (C.Material mat) props =
   Bolson.Element' $ C.Mesh go
   where

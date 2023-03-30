@@ -5,6 +5,7 @@ import Prelude
 import Bolson.Core (Entity, Scope)
 import Bolson.Core as Bolson
 import Control.Monad.ST (ST)
+import Control.Monad.ST as ST
 import Control.Monad.ST.Global as Region
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
@@ -49,27 +50,27 @@ import Web.HTML (HTMLCanvasElement)
 import Web.TouchEvent (Touch, TouchEvent)
 import Web.UIEvent.MouseEvent (MouseEvent)
 
-plain :: forall logic obj lock. obj -> Entity logic obj lock
+plain :: forall logic obj. obj -> Entity logic obj
 plain = Bolson.Element'
 
 class Sceneable ctor where
   toScene
-    :: forall lock payload
-     . Entity Void (ctor lock payload) lock
-    -> Entity Void (Sceneful lock payload) lock
+    :: forall payload
+     . Entity Void (ctor payload)
+    -> Entity Void (Sceneful payload)
 
 class Groupable ctor where
   toGroup
-    :: forall lock payload
-     . Entity Void (ctor lock payload) lock
-    -> Entity Void (Groupful lock payload) lock
+    :: forall payload
+     . Entity Void (ctor payload)
+    -> Entity Void (Groupful payload)
 
 cameraToGroup
-  :: forall lock payload
-   . Camera lock payload
-  -> Entity Void (Groupful lock payload) lock
+  :: forall payload
+   . Camera payload
+  -> Entity Void (Groupful payload)
 cameraToGroup c = Bolson.Element' $
-  (unsafeCoerce :: Camera lock payload -> Groupful lock payload) c
+  (unsafeCoerce :: Camera payload -> Groupful payload) c
 
 type Ctor payload =
   { parent :: Maybe String
@@ -82,49 +83,49 @@ type SimpleCtor payload =
   ThreeInterpret payload
   -> Event payload
 
-newtype WebGLRenderer (lock :: Type) payload = WebGLRenderer (Ctor payload)
+newtype WebGLRenderer payload = WebGLRenderer (Ctor payload)
 
 webGLRendererToRenderer
-  :: forall lock payload
-   . WebGLRenderer lock payload
-  -> Renderer lock payload
+  :: forall payload
+   . WebGLRenderer payload
+  -> Renderer payload
 webGLRendererToRenderer = coerce
 
-newtype EffectComposer (lock :: Type) payload = EffectComposer (Ctor payload)
+newtype EffectComposer payload = EffectComposer (Ctor payload)
 
 effectComposerToRenderer
-  :: forall lock payload
-   . EffectComposer lock payload
-  -> Renderer lock payload
+  :: forall payload
+   . EffectComposer payload
+  -> Renderer payload
 effectComposerToRenderer = coerce
 
-newtype Renderer (lock :: Type) payload = Renderer (Ctor payload)
-type ARenderer lock payload = Entity Void (Renderer lock payload) lock
-newtype Pass (lock :: Type) payload = Pass (Ctor payload)
-type APass lock payload = Entity Void (Pass lock payload) lock
-newtype Light (lock :: Type) payload = Light (Ctor payload)
-type ALight lock payload = Entity Void (Light lock payload) lock
-newtype CSS2DObject (lock :: Type) payload = CSS2DObject (Ctor payload)
-type ACSS2DObject lock payload = Entity Void (CSS2DObject lock payload) lock
-newtype CSS3DObject (lock :: Type) payload = CSS3DObject (Ctor payload)
-type ACSS3DObject lock payload = Entity Void (CSS3DObject lock payload) lock
-newtype Geometry (lock :: Type) payload = Geometry (Ctor payload)
-newtype Material (lock :: Type) payload = Material (Ctor payload)
-newtype Mesh (lock :: Type) payload = Mesh (Ctor payload)
-newtype Instance (lock :: Type) payload = Instance (SimpleCtor payload)
-type AMesh lock payload = Entity Void (Mesh lock payload) lock
-newtype Points (lock :: Type) payload = Points (Ctor payload)
-type APoints lock payload = Entity Void (Points lock payload) lock
-newtype Group (lock :: Type) payload = Group (Ctor payload)
-type AGroup lock payload = Entity Void (Group lock payload) lock
-newtype Scene (lock :: Type) payload = Scene (Ctor payload)
--- type AScene lock payload = Entity Void (Scene lock payload) lock
-newtype Sceneful (lock :: Type) payload = Sceneful (Ctor payload)
-type ASceneful lock payload = Entity Void (Sceneful lock payload) lock
-newtype Groupful (lock :: Type) payload = Groupful (Ctor payload)
-type AGroupful lock payload = Entity Void (Groupful lock payload) lock
-newtype Camera (lock :: Type) payload = Camera (Ctor payload)
--- type ACamera lock payload = Entity Void (Camera lock payload) lock
+newtype Renderer payload = Renderer (Ctor payload)
+type ARenderer payload = Entity Void (Renderer payload)
+newtype Pass payload = Pass (Ctor payload)
+type APass payload = Entity Void (Pass payload)
+newtype Light payload = Light (Ctor payload)
+type ALight payload = Entity Void (Light payload)
+newtype CSS2DObject payload = CSS2DObject (Ctor payload)
+type ACSS2DObject payload = Entity Void (CSS2DObject payload)
+newtype CSS3DObject payload = CSS3DObject (Ctor payload)
+type ACSS3DObject payload = Entity Void (CSS3DObject payload)
+newtype Geometry payload = Geometry (Ctor payload)
+newtype Material payload = Material (Ctor payload)
+newtype Mesh payload = Mesh (Ctor payload)
+newtype Instance payload = Instance (SimpleCtor payload)
+type AMesh payload = Entity Void (Mesh payload)
+newtype Points payload = Points (Ctor payload)
+type APoints payload = Entity Void (Points payload)
+newtype Group payload = Group (Ctor payload)
+type AGroup payload = Entity Void (Group payload)
+newtype Scene payload = Scene (Ctor payload)
+-- type AScene payload = Entity Void (Scene payload)
+newtype Sceneful payload = Sceneful (Ctor payload)
+type ASceneful payload = Entity Void (Sceneful payload)
+newtype Groupful payload = Groupful (Ctor payload)
+type AGroupful payload = Entity Void (Groupful payload)
+newtype Camera payload = Camera (Ctor payload)
+-- type ACamera payload = Entity Void (Camera payload)
 
 instance Sceneable Light where
   toScene = unsafeCoerce
@@ -1329,21 +1330,25 @@ type ConnectGeometry =
   { id :: String
   , parent :: String
   , scope :: Scope
+  , raiseId :: String -> ST.ST Region.Global Unit
   }
 type ConnectScene =
   { id :: String
   , parent :: String
   , scope :: Scope
+  , raiseId :: String -> ST.ST Region.Global Unit
   }
 type ConnectCamera =
   { id :: String
   , parent :: String
   , scope :: Scope
+  , raiseId :: String -> ST.ST Region.Global Unit
   }
 type ConnectMaterial =
   { id :: String
   , parent :: String
   , scope :: Scope
+  , raiseId :: String -> ST.ST Region.Global Unit
   }
 type DeleteFromCache = { id :: String }
 

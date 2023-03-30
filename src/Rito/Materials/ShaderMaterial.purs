@@ -300,14 +300,14 @@ newtype ShaderMaterial u = ShaderMaterial (ShaderMaterial' u)
 instance Newtype (ShaderMaterial u) (ShaderMaterial' u)
 
 shaderMaterial
-  :: forall i u url lock payload
+  :: forall i u url payload
    . InitialShaderMaterial i { | u }
   => RowToList u url
   => IsUniform url
   => { | u }
   -> i
   -> Event (ShaderMaterial u)
-  -> C.Material lock payload
+  -> C.Material payload
 shaderMaterial unifs i' atts = C.Material go
   where
   C.InitializeShaderMaterial i = toInitializeShaderMaterial unifs i'
@@ -361,11 +361,11 @@ shaderMaterial unifs i' atts = C.Material go
       unsub
 
 shaderMaterial_
-  :: forall i u url lock payload
+  :: forall i u url payload
    . InitialShaderMaterial i { | u }
   => RowToList u url
   => IsUniform url
   => { | u }
   -> i
-  -> C.Material lock payload
+  -> C.Material payload
 shaderMaterial_ u i = shaderMaterial u i empty
