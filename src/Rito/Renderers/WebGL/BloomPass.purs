@@ -81,10 +81,10 @@ instance
     (convertOptionsWithDefaults BloomPassOptions defaultBloomPass provided)
 
 bloomPass
-  :: forall i lock payload
+  :: forall i payload
    . InitialBloomPass i
   => i
-  -> C.APass lock payload
+  -> C.APass payload
 bloomPass ii' = Bolson.Element' $ C.Pass go
   where
   C.InitializeBloomPass ii = toInitializeBloomPass ii'

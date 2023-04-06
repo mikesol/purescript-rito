@@ -14,10 +14,10 @@ import Rito.THREE as THREE
 
 -- todo: copy-paste from webgl effectComposerer with the avars. fix?
 effectComposerPass
-  :: forall lock payload
+  :: forall payload
    . { effectComposerPass :: THREE.TEffectComposerPass }
-  -> C.EffectComposer lock payload
-  -> C.APass lock payload
+  -> C.EffectComposer payload
+  -> C.APass payload
 effectComposerPass ii ecomp = Bolson.Element' $ C.Pass go
   where
   go

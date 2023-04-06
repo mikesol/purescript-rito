@@ -45,7 +45,7 @@ import FRP.Event.Time (withTime)
 import FRP.Event.VBus (V)
 import Foreign.Object (fromHomogeneous, values)
 import Heterogeneous.Folding (class FoldingWithIndex, hfoldlWithIndex)
-import Ocarina.Clock (withACTime)
+import Ocarina.C(withACTime)
 import Ocarina.Control (analyser_, bandpass, delay, fan1, fix, gain, gain_, highpass, lowpass, playBuf)
 import Ocarina.Core (Audible, AudioEnvelope(..), AudioNumeric(..), Po2(..), _linear, bangOn)
 import Ocarina.Interpret (close, constant0Hack, context, decodeAudioDataFromUri, getByteFrequencyData)
@@ -461,7 +461,7 @@ main = launchAff_ do
             startE = pure unit <|> event.startStop.start
             stopE = event.startStop.stop
 
-            music :: forall lock. _ -> _ -> _ -> Array (Audible _ lock _)
+            music :: forall lock. _ -> _ -> _ -> Array (Audible _ _)
             music ctx buffer analyserE = do
               let
                 sliderE = (\{ acTime, value } -> acTime /\ value) <$> withACTime

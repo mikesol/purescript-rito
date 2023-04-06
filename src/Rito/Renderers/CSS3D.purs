@@ -26,15 +26,15 @@ newtype CSS3DRenderer = CSS3DRenderer CSS3DRenderer'
 instance Newtype CSS3DRenderer CSS3DRenderer'
 
 css3DRenderer
-  :: forall lock payload
-   . C.Scene lock payload
-  -> C.Camera lock payload
+  :: forall payload
+   . C.Scene payload
+  -> C.Camera payload
   -> { canvas :: HTMLCanvasElement
      , element :: Web.DOM.Element
      , css3DRenderer :: THREE.TCSS3DRenderer
      }
   -> Event CSS3DRenderer
-  -> C.ARenderer lock payload
+  -> C.ARenderer payload
 css3DRenderer sne cam make props = Bolson.Element' $ C.Renderer go
   where
   go

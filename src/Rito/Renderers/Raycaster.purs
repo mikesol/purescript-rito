@@ -14,10 +14,10 @@ import Rito.THREE as THREE
 import Web.HTML (HTMLCanvasElement)
 
 raycaster
-  :: forall lock payload
+  :: forall payload
    . { raycaster :: THREE.TRaycaster, canvas :: HTMLCanvasElement }
-  -> C.Camera lock payload
-  -> C.ARenderer lock payload
+  -> C.Camera payload
+  -> C.ARenderer payload
 raycaster i cam = Bolson.Element' $ C.Renderer go
   where
   go

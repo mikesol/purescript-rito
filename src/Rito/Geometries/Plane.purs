@@ -103,10 +103,10 @@ instance
     (convertOptionsWithDefaults PlaneOptions defaultPlane provided)
 
 plane
-  :: forall i lock payload
+  :: forall i payload
    . InitialPlane i
   => i
-  -> C.Geometry lock payload
+  -> C.Geometry payload
 plane i' = C.Geometry go
   where
   C.InitializePlane i = toInitializePlane i'

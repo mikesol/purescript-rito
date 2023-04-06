@@ -70,10 +70,10 @@ instance
     )
 
 bufferGeometry
-  :: forall i lock payload
+  :: forall i payload
    . InitialBufferGeometry i
   => i
-  -> C.Geometry lock payload
+  -> C.Geometry payload
 bufferGeometry i' = C.Geometry go
   where
   C.InitializeBufferGeometry i = toInitializeBufferGeometry i'

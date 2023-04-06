@@ -87,11 +87,11 @@ newtype AmbientLight = AmbientLight AmbientLight'
 instance Newtype AmbientLight AmbientLight'
 
 ambientLight
-  :: forall i lock payload
+  :: forall i payload
    . InitialAmbientLight i
   => i
   -> Event AmbientLight
-  -> C.ALight lock payload
+  -> C.ALight payload
 ambientLight i' atts = Bolson.Element' $ C.Light go
   where
   C.InitializeAmbientLight i = toInitializeAmbientLight i'
@@ -139,8 +139,8 @@ ambientLight i' atts = Bolson.Element' $ C.Light go
       unsub
 
 ambientLight_
-  :: forall i lock payload
+  :: forall i payload
    . InitialAmbientLight i
   => i
-  -> C.ALight lock payload
+  -> C.ALight payload
 ambientLight_ i = ambientLight i empty

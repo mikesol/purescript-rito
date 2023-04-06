@@ -16,7 +16,7 @@ import Rito.Core as C
 import Rito.Interpret (FFIThreeSnapshot, effectfulThreeInterpret, makeFFIThreeSnapshot)
 
 run
-  :: (forall lock. (C.ARenderer lock (EffectFn1 FFIThreeSnapshot Unit)))
+  :: (forall lock. (C.ARenderer (EffectFn1 FFIThreeSnapshot Unit)))
   -> Effect (Effect Unit)
 run s = do
   ffi <- makeFFIThreeSnapshot

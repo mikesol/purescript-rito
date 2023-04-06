@@ -14,11 +14,11 @@ import Rito.THREE as THREE
 
 -- todo: copy-paste from webgl renderer with the avars. fix?
 renderPass
-  :: forall lock payload
+  :: forall payload
    . { renderPass :: THREE.TRenderPass }
-  -> C.Scene lock payload
-  -> C.Camera lock payload
-  -> C.APass lock payload
+  -> C.Scene payload
+  -> C.Camera payload
+  -> C.APass payload
 renderPass ii sne cam = Bolson.Element' $ C.Pass go
   where
   go

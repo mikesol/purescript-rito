@@ -532,11 +532,11 @@ newtype MeshPhongMaterial = MeshPhongMaterial MeshPhongMaterial'
 instance Newtype MeshPhongMaterial MeshPhongMaterial'
 
 meshPhongMaterial
-  :: forall i lock payload
+  :: forall i payload
    . InitialMeshPhongMaterial i
   => i
   -> Event MeshPhongMaterial
-  -> C.Material lock payload
+  -> C.Material payload
 meshPhongMaterial i' atts = C.Material go
   where
   C.InitializeMeshPhongMaterial i = toInitializeMeshPhongMaterial i'
@@ -686,8 +686,8 @@ meshPhongMaterial i' atts = C.Material go
       unsub
 
 meshPhongMaterial_
-  :: forall i lock payload
+  :: forall i payload
    . InitialMeshPhongMaterial i
   => i
-  -> C.Material lock payload
+  -> C.Material payload
 meshPhongMaterial_ i = meshPhongMaterial i empty

@@ -141,10 +141,10 @@ instance
     (convertOptionsWithDefaults CylinderOptions defaultCylinder provided)
 
 cylinder
-  :: forall i lock payload
+  :: forall i payload
    . InitialCylinder i
   => i
-  -> C.Geometry lock payload
+  -> C.Geometry payload
 cylinder i' = C.Geometry go
   where
   C.InitializeCylinder i = toInitializeCylinder i'

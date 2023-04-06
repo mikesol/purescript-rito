@@ -27,11 +27,11 @@ foreign import load
 foreign import sceneImpl :: GLTF -> C.RawGroup
 
 scene
-  :: forall lock payload
+  :: forall payload
    . GLTF
   -> Event Group
-  -> Array (C.AGroupful lock payload)
-  -> C.AGroup lock payload
+  -> Array (C.AGroupful payload)
+  -> C.AGroup payload
 scene gltf = unsafeInternalGroup
   (\(ThreeInterpret { makeGLTFGroup }) -> makeGLTFGroup)
   { group: sceneImpl gltf }
@@ -44,7 +44,7 @@ scene gltf = unsafeInternalGroup
 
 -- foreign import scenesImpl :: GLTF -> Array C.RawGroup
 
--- scenes :: forall lock payload. GLTF -> Array (C.AGroup lock payload)
+-- scenes :: forall payload. GLTF -> Array (C.AGroup payload)
 -- scenes gltf = map
 --   ( \group -> unsafeInternalGroup
 --       \(ThreeInterpret { makeGLTFGroup }) { id, scope, parent } ->
@@ -52,9 +52,9 @@ scene gltf = unsafeInternalGroup
 --   )
 --   (scenesImpl gltf)
 
--- foreign import camerasImpl :: forall lock payload. GLTF -> Array C.RawCamera
+-- foreign import camerasImpl :: forall payload. GLTF -> Array C.RawCamera
 
--- cameras :: forall lock payload. GLTF -> Array (C.Camera lock payload)
+-- cameras :: forall payload. GLTF -> Array (C.Camera payload)
 -- cameras = camerasImpl
 
 -- foreign import assetImpl :: GLTF -> Foreign

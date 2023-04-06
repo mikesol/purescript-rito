@@ -87,11 +87,11 @@ newtype DirectionalLight = DirectionalLight DirectionalLight'
 instance Newtype DirectionalLight DirectionalLight'
 
 directionalLight
-  :: forall i lock payload
+  :: forall i payload
    . InitialDirectionalLight i
   => i
   -> Event DirectionalLight
-  -> C.ALight lock payload
+  -> C.ALight payload
 directionalLight i' atts = Bolson.Element' $ C.Light go
   where
   C.InitializeDirectionalLight i = toInitializeDirectionalLight i'
@@ -139,8 +139,8 @@ directionalLight i' atts = Bolson.Element' $ C.Light go
       unsub
 
 directionalLight_
-  :: forall i lock payload
+  :: forall i payload
    . InitialDirectionalLight i
   => i
-  -> C.ALight lock payload
+  -> C.ALight payload
 directionalLight_ i = directionalLight i empty

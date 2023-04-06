@@ -53,10 +53,10 @@ instance
     (convertOptionsWithDefaults GlitchPassOptions defaultGlitchPass provided)
 
 glitchPass
-  :: forall i lock payload
+  :: forall i payload
    . InitialGlitchPass i
   => i
-  -> C.APass lock payload
+  -> C.APass payload
 glitchPass ii' = Bolson.Element' $ C.Pass go
   where
   C.InitializeGlitchPass ii = toInitializeGlitchPass ii'

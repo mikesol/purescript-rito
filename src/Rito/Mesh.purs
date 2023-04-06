@@ -52,13 +52,13 @@ withRemoval' p s attach remove = do
   pure attach
 
 mesh'
-  :: forall lock payload
+  :: forall payload
    . { mesh :: THREE.TMesh }
-  -> C.Geometry lock payload
-  -> C.Material lock payload
+  -> C.Geometry payload
+  -> C.Material payload
   -> Event Mesh
-  -> Array (C.AMesh lock payload)
-  -> C.AMesh lock payload
+  -> Array (C.AMesh payload)
+  -> C.AMesh payload
 mesh' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $
   C.Mesh go
   where
@@ -195,10 +195,10 @@ mesh' mshhhh (C.Geometry geo) (C.Material mat) props kidz = Bolson.Element' $
       unsub
 
 mesh
-  :: forall lock payload
+  :: forall payload
    . { mesh :: THREE.TMesh }
-  -> C.Geometry lock payload
-  -> C.Material lock payload
+  -> C.Geometry payload
+  -> C.Material payload
   -> Event Mesh
-  -> C.AMesh lock payload
+  -> C.AMesh payload
 mesh msh geo mat props = mesh' msh geo mat props []

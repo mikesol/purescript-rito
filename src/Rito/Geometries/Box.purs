@@ -121,10 +121,10 @@ instance
     (convertOptionsWithDefaults BoxOptions defaultBox provided)
 
 box
-  :: forall i lock payload
+  :: forall i payload
    . InitialBox i
   => i
-  -> C.Geometry lock payload
+  -> C.Geometry payload
 box i' = C.Geometry go
   where
   C.InitializeBox i = toInitializeBox i'

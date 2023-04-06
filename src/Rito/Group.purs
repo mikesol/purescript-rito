@@ -22,15 +22,15 @@ newtype Group = Group
 derive instance Newtype Group _
 
 group
-  :: forall lock payload
+  :: forall payload
    . { group :: THREE.TGroup }
   -> Event Group
-  -> Array (C.AGroupful lock payload)
-  -> C.AGroup lock payload
+  -> Array (C.AGroupful payload)
+  -> C.AGroup payload
 group = unsafeInternalGroup \(ThreeInterpret { makeGroup }) -> makeGroup
 
 unsafeInternalGroup
-  :: forall group lock payload
+  :: forall group payload
    . ( ThreeInterpret payload
        -> { id :: String
           , scope :: Scope
@@ -41,8 +41,8 @@ unsafeInternalGroup
      )
   -> { group :: group }
   -> Event Group
-  -> Array (C.AGroupful lock payload)
-  -> C.AGroup lock payload
+  -> Array (C.AGroupful payload)
+  -> C.AGroup payload
 unsafeInternalGroup dif gp props kidz = Element' $ C.Group go
   where
   go
@@ -78,8 +78,8 @@ unsafeInternalGroup dif gp props kidz = Element' $ C.Group go
               ( fixed
                   ( map
                       ( unsafeCoerce
-                          :: C.AGroupful lock payload
-                          -> C.AGroup lock payload
+                          :: C.AGroupful payload
+                          -> C.AGroup payload
                       )
                       kidz
                   )

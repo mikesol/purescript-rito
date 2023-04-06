@@ -551,11 +551,11 @@ newtype MeshStandardMaterial = MeshStandardMaterial MeshStandardMaterial'
 instance Newtype MeshStandardMaterial MeshStandardMaterial'
 
 meshStandardMaterial
-  :: forall i lock payload
+  :: forall i payload
    . InitialMeshStandardMaterial i
   => i
   -> Event MeshStandardMaterial
-  -> C.Material lock payload
+  -> C.Material payload
 meshStandardMaterial i' atts = C.Material go
   where
   C.InitializeMeshStandardMaterial i = toInitializeMeshStandardMaterial i'
@@ -689,8 +689,8 @@ meshStandardMaterial i' atts = C.Material go
       unsub
 
 meshStandardMaterial_
-  :: forall i lock payload
+  :: forall i payload
    . InitialMeshStandardMaterial i
   => i
-  -> C.Material lock payload
+  -> C.Material payload
 meshStandardMaterial_ i = meshStandardMaterial i empty

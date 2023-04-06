@@ -29,10 +29,10 @@ newtype CSS3DObject = CSS3DObject CSS3DObject'
 instance Newtype CSS3DObject CSS3DObject'
 
 css3DObject
-  :: forall lock payload
+  :: forall payload
    . { css3DObject :: THREE.TCSS3DObject, nut :: ANut }
   -> Event CSS3DObject
-  -> C.ACSS3DObject lock payload
+  -> C.ACSS3DObject payload
 css3DObject ipt@{ nut: ANut nut } atts = Bolson.Element' $ C.CSS3DObject go
   where
   go

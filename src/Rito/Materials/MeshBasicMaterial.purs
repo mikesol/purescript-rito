@@ -377,11 +377,11 @@ newtype MeshBasicMaterial = MeshBasicMaterial MeshBasicMaterial'
 instance Newtype MeshBasicMaterial MeshBasicMaterial'
 
 meshBasicMaterial
-  :: forall i lock payload
+  :: forall i payload
    . InitialMeshBasicMaterial i
   => i
   -> Event MeshBasicMaterial
-  -> C.Material lock payload
+  -> C.Material payload
 meshBasicMaterial i' atts = C.Material go
   where
   C.InitializeMeshBasicMaterial i = toInitializeMeshBasicMaterial i'
@@ -455,8 +455,8 @@ meshBasicMaterial i' atts = C.Material go
       runSTFn1 k (deleteFromCache { id: me })
       unsub
 meshBasicMaterial_
-  :: forall i lock payload
+  :: forall i payload
    . InitialMeshBasicMaterial i
   => i
-  -> C.Material lock payload
+  -> C.Material payload
 meshBasicMaterial_ i = meshBasicMaterial i empty
