@@ -8,12 +8,12 @@ in  upstream
       [ "hyrule"
       ]
     , repo = "https://github.com/mikesol/purescript-bolson.git"
-    , version = "main"
+    , version = "v0.3.9"
     }
   with deku =
     { dependencies =
       [ "bolson", "stringutils", "css", "free"
       ]
     , repo = "https://github.com/mikesol/purescript-deku.git"
-    , version = "main"
+    , version = "v0.9.20"
     }
